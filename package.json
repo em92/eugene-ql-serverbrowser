@@ -1,0 +1,9 @@
+{
+  "name": "eugene-ql-serverbrowser",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "^4.13.4",
+    "game-server-query": "^1.0.8"
+  }
+}
