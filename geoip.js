@@ -6,9 +6,9 @@ var cache = require('./geoip.json');
 var lookup = function(host, done) {
 	if (typeof(cache[host]) == 'undefined') {
 		var options = {
-			host: 'api.db-ip.com',
+			host: 'ip-api.com',
 			port: 80,
-			path: "/addrinfo?addr=" + host + "&api_key=b2a0e4d8d0d0c2c8c85d6119b95770880edf34ee",
+			path: "/json/" + host,
 		};
 		http.get(options, function(response) {
 			var data = "";
@@ -16,9 +16,9 @@ var lookup = function(host, done) {
 				data += chunk;
 			});
 			response.on("end", function() {
-				console.log(data);
 				data = JSON.parse(data);
-				cache[host] = {country: data.country, city: data.city.split(" (")[0]};
+				cache[host] = {country: data.countryCode, city: data.city.split(" (")[0]};
+				console.log(cache[host]);
 				fs.writeFile("./geoip.json", JSON.stringify(cache)); 
 				done(cache[host]);
 			});

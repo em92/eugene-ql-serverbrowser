@@ -1,0 +1,10 @@
+body {
+	background-color: #ededed;
+}
+
+tr:nth-child(even) {background: #ededed}
+tr:nth-child(odd) {background: #dddddd}
+
+table {
+	border-collapse: collapse;
+}
