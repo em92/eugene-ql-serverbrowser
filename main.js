@@ -7,17 +7,28 @@ var app = express();
 var servers = fs.readFileSync('servers.txt').toString().split("\n");
 var serverInfo = {};
 
+var UPDATE_SERVER_INFO_THREADS_COUNT = 10;
+
 var updateServerInfo = function(server_index) {
 	if (typeof server_index == 'undefined') {
 		console.log('-------------------------');
 		console.log('updateServerInfo -- start');
-		server_index = 0;
+		for(var i=0; i<UPDATE_SERVER_INFO_THREADS_COUNT; i++) {
+			updateServerInfo(i);
+		}
+		return;
 	}
 	
-	if (server_index >= servers.length) {
-		console.log('updateServerInfo -- fin');
-		console.log('-----------------------');
-		setTimeout(updateServerInfo, 30000);
+	if (server_index == servers.length) {
+		console.log('--------');
+		console.log('thread #' + server_index%UPDATE_SERVER_INFO_THREADS_COUNT + ': fin');
+		console.log('--------');
+		setTimeout(updateServerInfo, 10000);
+		return;
+	} else if (server_index > servers.length) {
+		console.log('--------');
+		console.log('thread #' + server_index%UPDATE_SERVER_INFO_THREADS_COUNT + ': fin');
+		console.log('--------');
 		return;
 	}
 	
@@ -41,7 +52,7 @@ var updateServerInfo = function(server_index) {
 			});
 		}
 		
-		updateServerInfo(server_index + 1);
+		updateServerInfo(server_index + UPDATE_SERVER_INFO_THREADS_COUNT);
 	});
 };
 
@@ -80,7 +91,6 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 			return 0;
 		} else if (typeof filter_data == 'object') {
 			for(var i in filter_data) {
-				console.log("hey -- " + i);
 				if (checkServerUsingFilterData(server, filter_data[i], i) == 0) {
 					return 0;
 				}

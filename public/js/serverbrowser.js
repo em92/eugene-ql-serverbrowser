@@ -5,7 +5,7 @@ var Location = React.createClass({
 		return React.createElement(
 			"td",
 			null,
-			React.createElement("img", { src: "http://qlstats.net/static/images/flags/" + this.props.geo.country.toLowerCase() + ".png" }),
+			React.createElement("div", { className: "flag flag-" + this.props.geo.country.toLowerCase() }),
 			React.createElement(
 				"span",
 				null,
@@ -19,14 +19,23 @@ var GameType = React.createClass({
 	displayName: "GameType",
 
 	render: function render() {
-		// why not "ad" for "Attack and Defend"?
-		// 'cos my adblock blocks it
-		var original_factory = ['ffa', 'duel', 'race', 'tdm', 'ca', 'ctf', '1f', 'wut?', 'har', 'ft', 'dom', 'atatadedede', 'rr'][this.props.id];
-		return React.createElement(
-			"td",
-			null,
-			React.createElement("img", { src: "images/" + original_factory + ".png" })
-		);
+		var original_factory = [
+			[['Free For All'], ['InstaFFA']],
+			[['Duel'], ['InstaDuel']],
+			[['Race'], ['Race']],
+			[['Team Deathmatch'], ['InstaTDM']],
+			[['Clan Arena'], ['InstaCA']],
+			[['Capture the Flag'], ['InstaCTF']],
+			[['1-Flag CTF'], ['Insta1FCTF']],
+			[['wut?'], ['wat?']],
+			[['Harvester'], ['InstaHAR']],
+			[['Freeze Tag'], ['InstaFreeze']],
+			[['Domination'], ['InstaDOM']],
+			[['Attack and Defend'], ['InstaAD']],
+			[['Red Rover'], ['InstaRR']]
+		][this.props.server.gameinfo.g_gametype][this.props.server.gameinfo.g_instagib];
+		
+		return React.createElement("td", null, original_factory);
 	}
 });
 
@@ -64,15 +73,11 @@ var Server = React.createClass({
 	displayName: "Server",
 
 	render: function render() {
-		if (this.props.server.gameinfo.players.length == 0) {
-			return React.createElement("tr", { style: { display: 'none' } });
-		}
-
 		return React.createElement(
 			"tr",
 			null,
 			React.createElement(Location, { geo: this.props.server.location }),
-			React.createElement(GameType, { id: this.props.server.gameinfo.g_gametype }),
+			React.createElement(GameType, { server: this.props.server }),
 			React.createElement(
 				"td",
 				null,
@@ -97,16 +102,63 @@ var Server = React.createClass({
 	}
 });
 
+var FilterOptions = React.createClass({
+	displayName: "FilterOptions",
+	
+	getInitialState: function() {
+		if (typeof this.props.filterData == "undefined") {
+			return { jsonValid: true, filterData: "" };
+		} else {
+			try {
+				filterData = window.atob(this.props.filterData);
+				JSON.parse(filterData);
+				return { jsonValid: true, filterData: filterData };
+			} catch(e) {
+				return { jsonValid: false, filterData: filterData };
+			}
+		}
+	},
+	
+	onClick: function(event) {
+		this.props.acceptFilterCallback(this.state.filterData);
+	},
+	
+	onChange: function(event) {
+		try {
+			JSON.parse(event.target.value);
+			this.setState({jsonValid: true, filterData: event.target.value })
+		} catch(e) {
+			this.setState({jsonValid: false, filterData: event.target.value })
+		}
+	},
+	
+	render: function render() {
+		return React.createElement(
+			"div", null,
+			React.createElement("textarea", {rows: 5, cols: 120, onChange: this.onChange, value: this.state.filterData}),
+			React.createElement("br", null),
+			React.createElement("button", {onClick: this.onClick, disabled: !this.state.jsonValid}, "Filter")
+		);
+	}
+});
+
 var ServerList = React.createClass({
 	displayName: "ServerList",
 
+	filterData: "/" + window.location.hash.substring(1),
+	
 	getInitialState: function getInitialState() {
 		return { servers: [] };
+	},
+	
+	acceptFilter: function(filterDataIn) {
+		this.filterData = "/" + window.btoa(filterDataIn);
+		this.downloadServerList();
 	},
 
 	downloadServerList: function downloadServerList() {
 		$.ajax({
-			url: this.props.url,
+			url: "/serverlist" + this.filterData,
 			dataType: 'json',
 			cache: false,
 			success: (function (data) {
@@ -120,6 +172,7 @@ var ServerList = React.createClass({
 
 	componentDidMount: function componentDidMount() {
 		this.downloadServerList();
+		setInterval(this.downloadServerList, 60000);
 	},
 
 	render: function render() {
@@ -127,40 +180,22 @@ var ServerList = React.createClass({
 		var result = state.servers.map(function (server) {
 			return React.createElement(Server, { server: server });
 		});
-		return React.createElement(
-			"table",
-			null,
-			React.createElement(
-				"tbody",
-				null,
-				result
+		
+		var header = React.createElement("thead", null, React.createElement("tr", null,
+			React.createElement("th", null, "Location"),
+			React.createElement("th", null, "Gametype"),
+			React.createElement("th", null, "Hostname"),
+			React.createElement("th", null, "Map"),
+			React.createElement("th", null, "Players"),
+			React.createElement("th", null, ":3")
+		));
+		
+		return React.createElement('div', null,
+			React.createElement(FilterOptions, {acceptFilterCallback: this.acceptFilter, filterData: window.location.hash.substring(1)}),
+			React.createElement("table", null,
+				header,
+				React.createElement("tbody", null, result)
 			)
 		);
 	}
 });
-
-var FilterOptions = React.createClass({
-	displayName: "FilterOptions",
-	
-	render: function render() {
-		return React.createElement(
-			"div", null,
-			React.createElement("textarea", null),
-			React.createElement("br", null),
-			React.createElement("button", null, "Filter")
-		);
-	}
-});
-
-var MainContent = React.createClass({
-	displayName: "MainContent",
-	
-	render: function render() {
-		return React.createElement(
-			"div", null,
-			React.createElement(FilterOptions, null),
-			React.createElement(ServerList, { url: "/serverlist" })
-		);
-	}
-});
-

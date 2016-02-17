@@ -8,3 +8,17 @@ tr:nth-child(odd) {background: #dddddd}
 table {
 	border-collapse: collapse;
 }
+
+th, td {
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.flag {
+	margin-right: 2px;
+}
+
+th {
+	background-color: black;
+	color: white;
+}

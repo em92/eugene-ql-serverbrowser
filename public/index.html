@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+<link rel="stylesheet" href="flags.css">
 <link rel="stylesheet" href="counterstrikesource.css"> <!-- :D -->
 <meta charset="UTF-8" />
-<title>Hello React!</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<title>Eugene's Quake Live Server Browser</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 </head>
 <body>
 <div id="content"></div>
 <script type="text/javascript" src="js/serverbrowser.js"></script> <!-- -->
 <script type="text/javascript">
 $(document).ready(function() {
-	ReactDOM.render(React.createElement(ServerList, { url: "/serverlist/eyJtaW5fcGxheWVycyI6IDEsICJfIjoKW3siZ19nYW1ldHlwZSI6IDAsICJnX2luc3RhZ2liIjogMX0sCnsiZ19nYW1ldHlwZSI6IDUsICJnX2luc3RhZ2liIjogMX0sCnsiZ19nYW1ldHlwZSI6IDExfV19" }), document.getElementById('content'));
+	ReactDOM.render(React.createElement(ServerList), document.getElementById('content'));
 });
 </script>
 </body>
