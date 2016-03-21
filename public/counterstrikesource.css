@@ -22,3 +22,55 @@ th {
 	background-color: black;
 	color: white;
 }
+
+noscript {
+	text-align: center;
+	width: 100%;
+	position: absolute;
+	vertical-align: center;
+	top: 20px;
+	font-size: 16px;
+}
+
+.gametypetabhead {
+	width: 100px;
+	display: inline;
+	margin-right: 5px;
+	border: 1px solid black;
+	cursor: pointer;
+	padding: 3px;
+	top: 0;
+	position: relative;
+}
+
+.gametypetabhead.active {
+	background-color: #eeaa00;
+}
+
+.gametypetabhead:hover {
+	background-color: #dddddd;
+}
+
+.gametypetabhead.selected {
+	background-color: #dddddd;
+	border-bottom: none;
+}
+
+.gamesettings {
+	position: relative;
+	width: 600px;
+}
+
+.gamesetting {
+	height: 25px;
+}
+
+.gamesetting .key {
+	float: left;
+	width: 200px;
+}
+
+.gamesetting .val {
+	float: right;
+	width: 200px;
+}

@@ -2,6 +2,7 @@ var gsq = require("game-server-query");
 var express = require('express');
 var fs = require('fs');
 var geoip = require('./geoip.js');
+var c2c = require('./c2c.json');
 
 var app = express();
 var servers = fs.readFileSync('servers.txt').toString().split("\n");
@@ -38,6 +39,15 @@ var updateServerInfo = function(server_index) {
 	gsq({ type: "synergy", host: host, port: port }, function(state) {
 		if (state.error) {
 			console.log(server_index + "	:" + state.error + " " + server)
+			if (typeof(serverInfo[server]) != "undefined") {
+				if (typeof(serverInfo[server].error_cnt) == "undefined") {
+					serverInfo[server].error_cnt = 0;
+				} else if (serverInfo[server].error_cnt == 5) {
+					delete serverInfo[server];
+				} else {
+					serverInfo[server].error_cnt = serverInfo[server].error_cnt + 1;
+				}
+			}
 		} else {
 			delete state.query;
 			
@@ -67,10 +77,20 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 			case 'g_gametype':
 			case 'g_instagib':
 			case 'mapname':
-				return server.gameinfo[key] == value;
+				return ( (server.gameinfo[key] == value) || (server.gameinfo[key] == 'any') )
 			
 			case 'min_players':
-				return server.gameinfo.players.length >= value;
+				return server.gameinfo.players.length >= value
+			
+			case 'region':
+				return c2c[server.location.country] == value
+			
+			case 'country':
+				return server.location.country == value
+			
+			case 'private':
+				return server.password == value
+				
 			
 			default:
 				return -1;
@@ -79,6 +99,20 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 	
 	if (typeof checking_key == 'undefined') {
 		checking_key = "_";
+	}
+	
+	if (checking_key[0] == "!") {
+		switch(checkServerUsingFilterData(server, filter_data, checking_key.substring(1))) {
+			case 1:
+				return 0;
+			
+			case 0:
+				return 1;
+			
+			default:
+				return -1;
+		}
+		
 	}
 	
 	if (checking_key[0] == "_") {
@@ -91,11 +125,14 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 			return 0;
 		} else if (typeof filter_data == 'object') {
 			for(var i in filter_data) {
+				var result = -1;
 				if (checkServerUsingFilterData(server, filter_data[i], i) == 0) {
 					return 0;
+				} else {
+					result = 1;
 				}
 			}
-			return 1;
+			return result;
 		} else {
 			return -1;
 		}
@@ -132,7 +169,7 @@ var serverList = function(filter_data) {
 			password: serverInfo[server].password,
 			gameinfo: {
 				bots: serverInfo[server].bot,
-				g_customSettings: serverInfo[server].raw.rules.g_customSettings ? parseInt(serverInfo[server].raw.rules.g_customSettings) : 0,
+				//g_customSettings: serverInfo[server].raw.rules.g_customSettings ? parseInt(serverInfo[server].raw.rules.g_customSettings) : 0,
 				g_gamestate: serverInfo[server].raw.rules.g_gameState,
 				g_gametype: parseInt(serverInfo[server].raw.rules.g_gametype),
 				g_instagib: serverInfo[server].raw.rules.g_instaGib ? parseInt(serverInfo[server].raw.rules.g_instaGib) : 0,
@@ -170,6 +207,11 @@ app.get('/serverlist', function (req, res) {
 app.get('/rawserverlist', function (req, res) {
 	res.setHeader("Content-Type", "application/json");
 	res.send(serverInfo);
+});
+
+app.get('/serverinfo/:endpoint', function (req, res) {
+	res.setHeader("Content-Type", "application/json");
+	res.send(serverInfo[req.params.endpoint]);
 });
 
 app.use(express.static('public'));
