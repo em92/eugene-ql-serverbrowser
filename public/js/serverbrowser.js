@@ -20,19 +20,19 @@ var GameType = React.createClass({
 
 	render: function() {
 		var original_factory = [
-			[['Free For All'], ['InstaFFA']],
+			[['FFA'], ['InstaFFA']],
 			[['Duel'], ['InstaDuel']],
 			[['Race'], ['Race']],
-			[['Team Deathmatch'], ['InstaTDM']],
-			[['Clan Arena'], ['InstaCA']],
-			[['Capture the Flag'], ['InstaCTF']],
-			[['1-Flag CTF'], ['Insta1FCTF']],
-			[['wut?'], ['wat?']],
-			[['Harvester'], ['InstaHAR']],
-			[['Freeze Tag'], ['InstaFreeze']],
-			[['Domination'], ['InstaDOM']],
-			[['Attack and Defend'], ['InstaAD']],
-			[['Red Rover'], ['InstaRR']]
+			[['TDM'], ['InstaTDM']],
+			[['CA'], ['InstaCA']],
+			[['CTF'], ['InstaCTF']],
+			[['1FCTF'], ['Insta1FCTF']],
+			[['wut?'], ['the fuck?']],
+			[['HAR'], ['InstaHAR']],
+			[['FT'], ['InstaFT']],
+			[['DOM'], ['InstaDOM']],
+			[['A&D'], ['InstaA&D']],
+			[['RR'], ['InstaRR']]
 		][this.props.server.gameinfo.g_gametype][this.props.server.gameinfo.g_instagib];
 		
 		return React.createElement("td", null, original_factory);
@@ -102,18 +102,8 @@ var Server = React.createClass({
 	}
 });
 
-
 var GameTypeTabHead = React.createClass({
 	displayName: "GameTypeTabHead",
-	
-	getInitialState: function() {
-		if (typeof(window.localStorage[this.props.factory]) == 'undefined') {
-			window.localStorage.setItem(this.props.factory, true);
-			return { active: true };
-		} else {
-			return { active: window.localStorage[this.props.factory] == 'true'};
-		}
-	},
 	
 	onSelected: function() {
 		this.props.onGametypeSelectedCallback(this.props.index);
@@ -122,51 +112,34 @@ var GameTypeTabHead = React.createClass({
 	render: function() {
 		return React.createElement(
 			"div",
-			{onClick: this.onSelected, className: "gametypetabhead" + (this.state.active ? " active" : "") + (this.props.working ? " selected" : "")},
+			{onClick: this.onSelected, className: "gametypetabhead" + (this.props.working ? " selected" : "")},
 			this.props.factory
 		);
 	}
 });
 
-//*
-var GameTypeSettingActive = React.createClass({
-	displayName: "GameTypeSettingActive",
-	
-	onChange: function(event) {
-		this.props.onChangeCallback(this.props.key, event.target.checked);
-	},
-	
-	render: function() {
-		return React.createElement(
-			"div",
-			{className: "gamesetting"},
-			React.createElement('div', {className: "key"}, "Show this gametype"),
-			React.createElement('div', {className: "val"},
-				React.createElement('input', {type: 'checkbox', onChange: this.onChange, defaultChecked: this.props.active})
-			)
-		);
-	}
-});
-
-var GameTypeSettings = React.createClass({
-	displayName: "GameTypeSettings",
+var GametypeSettings = React.createClass({
+	displayName: "GametypeSettings",
 	
 	getInitialState: function() {
-		if (typeof(window.localStorage[this.props.factory]) == 'undefined') {
-			return { active: true, settings: this.props.settings };
-		}
+		var state = {
+			settings: {}
+		};
+		var active = (typeof(window.localStorage[this.props.factory]) == 'undefined') ? true : window.localStorage[this.props.factory] == 'true';
 		
-		if (typeof(window.localStorage[this.props.factory]) == 'undefined') {
-			return { active: true };
-		} else {
-			return { active: window.localStorage[this.props.factory] == 'true'};
-		}
+		this.props.setGametypeSettings(this.props.index, active);
+		
+		return $.extend({active: active}, state);
 	},
 	
 	onChangeActive: function(value) {
 		window.localStorage[this.props.factory] = value;
-		this.setState({active: value});
-		this.props.onGametypeChangeActiveCallback();
+		this.setState({active: value, settings: this.state.settings});
+		if (value == false) {
+			this.props.setGametypeSettings(this.props.index, null);
+		} else {
+			this.props.setGametypeSettings(this.props.index, this.state.settings);
+		}
 	},
 	
 	toggle: function() {
@@ -177,7 +150,14 @@ var GameTypeSettings = React.createClass({
 		return React.createElement(
 			"div",
 			{className: "gamesettings"},
-			React.createElement(GameTypeSettingActive, {onChangeCallback: this.onChangeActive, factory: this.props.factory, active: this.state.active})
+			React.createElement(
+				"div",
+				{className: "gamesetting"},
+				React.createElement('div', {className: "key"}, "Show this gametype"),
+				React.createElement('div', {className: "val"},
+					React.createElement('input', {type: 'checkbox', onChange: this.onChangeActive})
+				)
+			)
 		);
 	}
 });
@@ -192,29 +172,30 @@ var Settings = React.createClass({
 	},
 	
 	factories: [
-		{factory: 'FFA',	settings: {g_gametype: 0, g_instagib: 0}},
-		{factory: 'Duel',	settings: {g_gametype: 1}},
-		{factory: 'Race',	settings: {g_gametype: 2}},
-		{factory: 'TDM',	settings: {g_gametype: 3}},
-		{factory: 'CA',		settings: {g_gametype: 4}},
-		{factory: 'CTF',	settings: {g_gametype: 5, g_instagib: 0}},
-		{factory: '1F',		settings: {g_gametype: 6}},
-		{factory: 'HAR',	settings: {g_gametype: 8}},
-		{factory: 'FT',		settings: {g_gametype: 9, g_instagib: 0}},
-		{factory: 'DOM',	settings: {g_gametype: 10}},
-		{factory: 'A&D',	settings: {g_gametype: 11}},
-		{factory: 'RR',		settings: {g_gametype: 12}},
-		{factory: 'iFFA',	settings: {g_gametype: 0, g_instagib: 1}},
-		{factory: 'iCTF',	settings: {g_gametype: 5, g_instagib: 1}},
-		{factory: 'iFT',	settings: {g_gametype: 9, g_instagib: 1}}
+		{factory: 'FFA',	factory_settings: {g_gametype: 0, g_instagib: 0}},
+		{factory: 'Duel',	factory_settings: {g_gametype: 1}},
+		{factory: 'Race',	factory_settings: {g_gametype: 2}},
+		{factory: 'TDM',	factory_settings: {g_gametype: 3}},
+		{factory: 'CA',		factory_settings: {g_gametype: 4}},
+		{factory: 'CTF',	factory_settings: {g_gametype: 5, g_instagib: 0}},
+		{factory: '1F',		factory_settings: {g_gametype: 6}},
+		{factory: 'HAR',	factory_settings: {g_gametype: 8}},
+		{factory: 'FT',		factory_settings: {g_gametype: 9, g_instagib: 0}},
+		{factory: 'DOM',	factory_settings: {g_gametype: 10}},
+		{factory: 'A&D',	factory_settings: {g_gametype: 11}},
+		{factory: 'RR',		factory_settings: {g_gametype: 12}},
+		{factory: 'iFFA',	factory_settings: {g_gametype: 0, g_instagib: 1}},
+		{factory: 'iCTF',	factory_settings: {g_gametype: 5, g_instagib: 1}},
+		{factory: 'iFT',	factory_settings: {g_gametype: 9, g_instagib: 1}}
 	],
 	
 	onGametypeSelectedCallback: function(key) {
 		this.setState({selectedFactoryIndex: key});
 	},
 	
-	onGametypeChangeActiveCallback: function() {
-		this.setState(this.state);
+	onGametypeSettingsChanged: function(factory_index, value) {
+		this.factories[factory_index].settings = value;
+		console.table(this.factories);
 	},
 	
 	render: function() {
@@ -224,11 +205,10 @@ var Settings = React.createClass({
 		});
 		
 		return React.createElement(
-			"div", {className: 'settings_head'},
+			"div", {className: 'settings'},
 			heads,
-			React.createElement(GameTypeSettings,
-				this.factories[this.state.selectedFactoryIndex],
-				onGametypeChangeActiveCallback: this.onGametypeChangeActiveCallback
+			React.createElement(GametypeSettings,
+				$.extend({setGametypeSettings: this.onGametypeSettingsChanged}, this.factories[this.state.selectedFactoryIndex])
 			)
 		);
 	}

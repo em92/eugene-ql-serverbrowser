@@ -3,14 +3,29 @@ var express = require('express');
 var fs = require('fs');
 var geoip = require('./geoip.js');
 var c2c = require('./c2c.json');
+var danmer = require('./danmer.js');
 
 var app = express();
 var servers = fs.readFileSync('servers.txt').toString().split("\n");
 var serverInfo = {};
+var time_to_update_server_list = false;
 
 var UPDATE_SERVER_INFO_THREADS_COUNT = 10;
 
+setInterval(function() {
+	time_to_update_server_list = true;
+}, 60*1000*60);
+
 var updateServerInfo = function(server_index) {
+	if (time_to_update_server_list == true) {
+		danmer.getServersAddresses(function() {
+			servers = fs.readFileSync('servers.txt').toString().split("\n");
+			time_to_update_server_list = false;
+			updateServerInfo();
+		});
+		return;
+	}
+	
 	if (typeof server_index == 'undefined') {
 		console.log('-------------------------');
 		console.log('updateServerInfo -- start');
@@ -34,36 +49,44 @@ var updateServerInfo = function(server_index) {
 	}
 	
 	var server = servers[server_index];
+	if (server == '')
+		return;
 	var host = server.split(':')[0];
 	var port = parseInt(server.split(':')[1]);
-	gsq({ type: "synergy", host: host, port: port }, function(state) {
-		if (state.error) {
-			console.log(server_index + "	:" + state.error + " " + server)
-			if (typeof(serverInfo[server]) != "undefined") {
-				if (typeof(serverInfo[server].error_cnt) == "undefined") {
-					serverInfo[server].error_cnt = 0;
-				} else if (serverInfo[server].error_cnt == 5) {
-					delete serverInfo[server];
-				} else {
-					serverInfo[server].error_cnt = serverInfo[server].error_cnt + 1;
+	try {
+		gsq({ type: "synergy", host: host, port: port }, function(state) {
+			if (state.error) {
+				console.log(server_index + "	:" + state.error + " " + server)
+				if (typeof(serverInfo[server]) != "undefined") {
+					if (typeof(serverInfo[server].error_cnt) == "undefined") {
+						serverInfo[server].error_cnt = 0;
+					} else if (serverInfo[server].error_cnt == 5) {
+						delete serverInfo[server];
+					} else {
+						serverInfo[server].error_cnt = serverInfo[server].error_cnt + 1;
+					}
 				}
+			} else {
+				delete state.query;
+				
+				state.players = state.players.filter(function(player) {
+					return (player.time < 43200);
+				});
+				
+				geoip.lookup(host, function(data) {
+					state['geo'] = data;
+					serverInfo[server] = state;
+					console.log(server_index + "	: " + server);
+				}, function(e) {
+					console.log(server_index + "	: " + server + " - geoip error: " + e.message);
+				});
 			}
-		} else {
-			delete state.query;
 			
-			state.players = state.players.filter(function(player) {
-				return (player.time < 43200);
-			});
-			
-			geoip.lookup(host, function(data) {
-				state['geo'] = data;
-				serverInfo[server] = state;
-				console.log(server_index + "	: " + server)
-			});
-		}
-		
-		updateServerInfo(server_index + UPDATE_SERVER_INFO_THREADS_COUNT);
-	});
+			updateServerInfo(server_index + UPDATE_SERVER_INFO_THREADS_COUNT);
+		});
+	} catch (e) {
+		console.log(server_index + "	:" + state.error + " " + server)
+	}
 };
 
 var checkServerUsingFilterData = function(server, filter_data, checking_key) {
@@ -77,7 +100,7 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 			case 'g_gametype':
 			case 'g_instagib':
 			case 'mapname':
-				return ( (server.gameinfo[key] == value) || (server.gameinfo[key] == 'any') )
+				return ( (server.gameinfo[key] == value) || (value == 'any') )
 			
 			case 'min_players':
 				return server.gameinfo.players.length >= value
@@ -112,7 +135,6 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 			default:
 				return -1;
 		}
-		
 	}
 	
 	if (checking_key[0] == "_") {
@@ -160,6 +182,8 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 var serverList = function(filter_data) {
 	var result = [];
 	for (var server in serverInfo) {
+		if (!(serverInfo[server].raw)) // 87.249.207.170:27961
+			continue;
 		if (!(serverInfo[server].raw.rules)) // 87.249.207.170:27961
 			continue;
 		result.push({
