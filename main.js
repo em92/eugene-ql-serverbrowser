@@ -3,30 +3,45 @@ var express = require('express');
 var fs = require('fs');
 var geoip = require('./geoip.js');
 var c2c = require('./c2c.json');
-var danmer = require('./danmer.js');
+var https = require('https');
 
 var app = express();
-var servers = fs.readFileSync('servers.txt').toString().split("\n");
+var servers = [];
 var serverInfo = {};
-var time_to_update_server_list = false;
+var time_to_update_server_list = true;
 
 var UPDATE_SERVER_INFO_THREADS_COUNT = 10;
+var MAX_SERVER_OUTPUT_COUNT = 100;
 
 setInterval(function() {
 	time_to_update_server_list = true;
 }, 60*1000*60);
 
 var updateServerInfo = function(server_index) {
-	if (time_to_update_server_list == true) {
-		danmer.getServersAddresses(function() {
-			servers = fs.readFileSync('servers.txt').toString().split("\n");
-			time_to_update_server_list = false;
-			updateServerInfo();
-		});
-		return;
-	}
-	
 	if (typeof server_index == 'undefined') {
+		if (time_to_update_server_list == true) {
+			console.log("Querying syncore's server list");
+			https.get('https://ql.syncore.org/api/servers', function(res) {
+				var data = "";
+				res.on('data', function(chunk) {
+					data += chunk;
+				});
+				res.on("end", function() {
+					data = JSON.parse(data);
+					servers = data.servers.map(function(item) {
+						return item.address;
+					});
+					time_to_update_server_list = false;
+					updateServerInfo();
+				});
+			
+			}).on('error', function(e) {
+				console.error(e);
+				updateServerInfo();
+			});
+			return;
+		}
+	
 		console.log('-------------------------');
 		console.log('updateServerInfo -- start');
 		for(var i=0; i<UPDATE_SERVER_INFO_THREADS_COUNT; i++) {
@@ -215,6 +230,9 @@ var serverList = function(filter_data) {
 			return (checkServerUsingFilterData(server, filter_data) == 1);
 		});
 	}
+	result = result.filter(function(server, i) {
+		return i < MAX_SERVER_OUTPUT_COUNT;
+	});
 	return {servers: result};
 };
 
