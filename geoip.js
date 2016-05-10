@@ -12,11 +12,14 @@ var lookup = function(host, done, fuck) {
 			path: "/json/" + host,
 		};
 		// */
+		// if you are banned for some reason in ip-api.com, use webproxy like below
+		//*
 		var options = {
 			host: 'new.great-windmill.com',
 			port: 80,
 			path: "/js/upload/browse.php?u=http%3A%2F%2Fip-api.com%2Fjson%2F" + host,
 		};
+		// 
 		http.get(options, function(response) {
 			var data = "";
 			response.on("data", function(chunk) {
@@ -29,8 +32,8 @@ var lookup = function(host, done, fuck) {
 				fs.writeFile("./geoip.json", JSON.stringify(cache));
 				done(cache[host]);
 			});
-		}).on('error', function(e) {
-			fuck(e);
+		}).on('error', function(yourself) {
+			fuck(yourself);
 		});
 	} else {
 		done(cache[host]);

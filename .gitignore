@@ -1,5 +1,6 @@
 snapshots/*
 node_modules/*
+public/pickup-status.json
 npm-debug.log
 Копия geoip.json
 1.txt

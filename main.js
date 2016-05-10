@@ -1,9 +1,9 @@
 var gsq = require("game-server-query");
 var express = require('express');
-var fs = require('fs');
 var geoip = require('./geoip.js');
+var master = require('./master.js');
 var c2c = require('./c2c.json');
-var https = require('https');
+var pickup_status = require('./pickup-status.js');
 
 var app = express();
 var servers = [];
@@ -11,31 +11,23 @@ var serverInfo = {};
 var time_to_update_server_list = true;
 
 var UPDATE_SERVER_INFO_THREADS_COUNT = 10;
+var UPDATE_SERVER_LIST_INTERVAL_SECONDS = 60*60;
 var MAX_SERVER_OUTPUT_COUNT = 100;
 
 setInterval(function() {
 	time_to_update_server_list = true;
-}, 60*1000*60);
+}, UPDATE_SERVER_LIST_INTERVAL_SECONDS*1000);
 
 var updateServerInfo = function(server_index) {
 	if (typeof server_index == 'undefined') {
 		if (time_to_update_server_list == true) {
-			console.log("Querying syncore's server list");
-			https.get('https://ql.syncore.org/api/servers', function(res) {
-				var data = "";
-				res.on('data', function(chunk) {
-					data += chunk;
-				});
-				res.on("end", function() {
-					data = JSON.parse(data);
-					servers = data.servers.map(function(item) {
-						return item.address;
-					});
-					time_to_update_server_list = false;
-					updateServerInfo();
-				});
-			
-			}).on('error', function(e) {
+			master.query(function(result) {
+				// on success
+				time_to_update_server_list = false;
+				servers = result;
+				updateServerInfo();
+			}, function(e) {
+				// on fail
 				console.error(e);
 				updateServerInfo();
 			});
@@ -90,10 +82,24 @@ var updateServerInfo = function(server_index) {
 				
 				geoip.lookup(host, function(data) {
 					state['geo'] = data;
-					serverInfo[server] = state;
-					console.log(server_index + "	: " + server);
+					// some servers return g_gametype
+					// some servers return g_gameType
+					// lowercasing value names in state.raw.rules
+					// not to have undefined errors
+					try {
+						for(key in state.raw.rules) {
+							if (key != key.toLowerCase()) {
+								state.raw.rules[key.toLowerCase()] = state.raw.rules[key];
+								delete state.raw.rules[key];
+							}
+						}
+						serverInfo[server] = state;
+						console.log(server_index + "	: " + server);
+					} catch (e) {
+						console.error(server_index + "	: " + server + " - error: " + e.message);
+					}
 				}, function(e) {
-					console.log(server_index + "	: " + server + " - geoip error: " + e.message);
+					console.error(server_index + "	: " + server + " - geoip error: " + e.message);
 				});
 			}
 			
@@ -115,21 +121,21 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 			case 'g_gametype':
 			case 'g_instagib':
 			case 'mapname':
-				return ( (server.gameinfo[key] == value) || (value == 'any') )
+				return +( (server.gameinfo[key] == value) || (value == 'any') );
 			
 			case 'min_players':
-				return server.gameinfo.players.length >= value
+				return +(server.gameinfo.players.length >= value);
 			
 			case 'region':
-				return c2c[server.location.country] == value
+				return +(c2c[server.location.country] == value);
 			
 			case 'country':
-				return server.location.country == value
+				return +(server.location.country == value);
 			
 			case 'private':
-				return server.password == value
+				return +(server.password == value);
 				
-			
+			// +(bool) -> int
 			default:
 				return -1;
 		}
@@ -140,7 +146,8 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 	}
 	
 	if (checking_key[0] == "!") {
-		switch(checkServerUsingFilterData(server, filter_data, checking_key.substring(1))) {
+		var r = checkServerUsingFilterData(server, filter_data, checking_key.substring(1));
+		switch(r) {
 			case 1:
 				return 0;
 			
@@ -196,29 +203,28 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 
 var serverList = function(filter_data) {
 	var result = [];
-	for (var server in serverInfo) {
-		if (!(serverInfo[server].raw)) // 87.249.207.170:27961
-			continue;
-		if (!(serverInfo[server].raw.rules)) // 87.249.207.170:27961
-			continue;
+	for (server in serverInfo) {
+		try {
 		result.push({
-			host_address: server,
-			host_name: serverInfo[server].name,
-			location: serverInfo[server].geo,
-			password: serverInfo[server].password,
-			gameinfo: {
-				bots: serverInfo[server].bot,
-				//g_customSettings: serverInfo[server].raw.rules.g_customSettings ? parseInt(serverInfo[server].raw.rules.g_customSettings) : 0,
-				g_gamestate: serverInfo[server].raw.rules.g_gameState,
-				g_gametype: parseInt(serverInfo[server].raw.rules.g_gametype),
-				g_instagib: serverInfo[server].raw.rules.g_instaGib ? parseInt(serverInfo[server].raw.rules.g_instaGib) : 0,
-				mapname: serverInfo[server].raw.rules.mapname.toLowerCase(),
-				players: serverInfo[server].players,
-				sv_maxclients: serverInfo[server].raw.rules.sv_maxclients ? parseInt(serverInfo[server].raw.rules.sv_maxclients): 32,
-				teamsize: parseInt(serverInfo[server].raw.rules.teamsize)
-			}
-		});
-	}
+				host_address: server,
+				host_name: serverInfo[server].name,
+				location: serverInfo[server].geo,
+				password: serverInfo[server].password,
+				gameinfo: {
+					bots: serverInfo[server].bot,
+					g_gamestate: serverInfo[server].raw.rules.g_gamestate,
+					g_gametype: parseInt(serverInfo[server].raw.rules.g_gametype),
+					g_instagib: serverInfo[server].raw.rules.g_instagib ? parseInt(serverInfo[server].raw.rules.g_instagib) : 0,
+					mapname: serverInfo[server].raw.rules.mapname.toLowerCase(),
+					players: serverInfo[server].players,
+					sv_maxclients: serverInfo[server].raw.rules.sv_maxclients ? parseInt(serverInfo[server].raw.rules.sv_maxclients): 32,
+					teamsize: parseInt(serverInfo[server].raw.rules.teamsize)
+				}
+			});
+		} catch(e) {
+			console.error("serverList	: " + server + " - error: " + e.message);
+		}
+	};
 	if (typeof filter_data != 'undefined') {
 		try {
 			filter_data = (new Buffer(filter_data, 'base64')).toString();
@@ -254,6 +260,11 @@ app.get('/rawserverlist', function (req, res) {
 app.get('/serverinfo/:endpoint', function (req, res) {
 	res.setHeader("Content-Type", "application/json");
 	res.send(serverInfo[req.params.endpoint]);
+});
+
+app.get('/pickup-status.json', function (req, res) {
+	res.setHeader("Content-Type", "application/json");
+	res.send(pickup_status.status);
 });
 
 app.use(express.static('public'));
