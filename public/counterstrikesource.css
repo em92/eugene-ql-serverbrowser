@@ -49,3 +49,10 @@ noscript {
 	margin-right: auto;
 	text-align: center;
 }
+
+#pickup-status {
+	background-color: white;
+	position: fixed;
+	bottom: 0px;
+	right: 0px;
+}
