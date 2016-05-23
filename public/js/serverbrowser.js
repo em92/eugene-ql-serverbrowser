@@ -100,7 +100,7 @@ var Server = React.createClass({
 				null,
 				React.createElement(
 					"a",
-					{ href: "steam://connect/" + this.props.server.host_address },
+					{ href: "steam://connect/" + this.props.server.host_address, className: "btn btn-primary btn-xs" },
 					"connect"
 				)
 			)

@@ -239,6 +239,13 @@ var serverList = function(filter_data) {
 	result = result.filter(function(server, i) {
 		return i < MAX_SERVER_OUTPUT_COUNT;
 	});
+	result.sort(function(server1, server2) {
+		if ( (server1.gameinfo.players.length > 0) && (server2.gameinfo.players.length == 0) )
+			return -1;
+		else if ( (server2.gameinfo.players.length > 0) && (server1.gameinfo.players.length == 0) )
+			return 1;
+		return 0;
+	});
 	return {servers: result};
 };
 
