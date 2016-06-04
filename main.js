@@ -3,7 +3,6 @@ var express = require('express');
 var geoip = require('./geoip.js');
 var master = require('./master.js');
 var c2c = require('./c2c.json');
-var pickup_status = require('./pickup-status.js');
 
 var app = express();
 var servers = [];
@@ -11,6 +10,7 @@ var serverInfo = {};
 var time_to_update_server_list = true;
 
 var UPDATE_SERVER_INFO_THREADS_COUNT = 10;
+var UPDATE_SERVER_INFO_PERIOD = 10;
 var UPDATE_SERVER_LIST_INTERVAL_SECONDS = 60*60;
 var MAX_SERVER_OUTPUT_COUNT = 100;
 
@@ -46,7 +46,7 @@ var updateServerInfo = function(server_index) {
 		console.log('--------');
 		console.log('thread #' + server_index%UPDATE_SERVER_INFO_THREADS_COUNT + ': fin');
 		console.log('--------');
-		setTimeout(updateServerInfo, 10000);
+		setTimeout(updateServerInfo, UPDATE_SERVER_INFO_PERIOD*1000);
 		return;
 	} else if (server_index > servers.length) {
 		console.log('--------');
@@ -66,11 +66,11 @@ var updateServerInfo = function(server_index) {
 				console.log(server_index + "	:" + state.error + " " + server)
 				if (typeof(serverInfo[server]) != "undefined") {
 					if (typeof(serverInfo[server].error_cnt) == "undefined") {
-						serverInfo[server].error_cnt = 0;
+						serverInfo[server].error_cnt = 1;
 					} else if (serverInfo[server].error_cnt == 5) {
 						delete serverInfo[server];
 					} else {
-						serverInfo[server].error_cnt = serverInfo[server].error_cnt + 1;
+						serverInfo[server].error_cnt += 1;
 					}
 				}
 			} else {
@@ -134,6 +134,9 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 			
 			case 'private':
 				return +(server.password == value);
+				
+			case 'ip':
+				return +(server.host_address.split(':')[0] == value);
 				
 			// +(bool) -> int
 			default:
@@ -267,11 +270,6 @@ app.get('/rawserverlist', function (req, res) {
 app.get('/serverinfo/:endpoint', function (req, res) {
 	res.setHeader("Content-Type", "application/json");
 	res.send(serverInfo[req.params.endpoint]);
-});
-
-app.get('/pickup-status.json', function (req, res) {
-	res.setHeader("Content-Type", "application/json");
-	res.send(pickup_status.status);
 });
 
 app.use(express.static('public'));
