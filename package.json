@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "express": "^4.13.4",
-    "game-server-query": "^1.0.8"
+    "game-server-query": "^1.0.8",
+    "request": "^2.72.0"
   }
 }
