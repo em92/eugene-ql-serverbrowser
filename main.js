@@ -106,7 +106,8 @@ var updateServerInfo = function(server_index) {
 			updateServerInfo(server_index + UPDATE_SERVER_INFO_THREADS_COUNT);
 		});
 	} catch (e) {
-		console.log(server_index + "	:" + state.error + " " + server)
+		console.error(server_index + "	: " + server + " - gsq error: " + e.message);
+		updateServerInfo(server_index + UPDATE_SERVER_INFO_THREADS_COUNT);
 	}
 };
 
@@ -205,6 +206,54 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 };
 
 var serverList = function(filter_data) {
+	var getGametypeByTags = function(tags) {
+		var gametypeString = tags.split(",")[0];
+		switch(gametypeString) {
+			case 'ffa':
+				return 0;
+			
+			case 'duel':
+				return 1;
+			
+			case 'race':
+				return 2;
+			
+			case 'tdm':
+				return 3;
+			
+			case 'clanarena':
+				return 4;
+			
+			case 'ctf':
+				return 5;
+			
+			case 'oneflag':
+				return 6;
+			
+			case 'har':
+			case 'harvester':
+				return 8;
+			
+			case 'freezetag':
+				return 9;
+			
+			case 'domination':
+				return 10;
+			
+			case 'a&d':
+				return 11;
+			
+			case 'redrover':
+			case 'rr':
+				return 12;
+			
+			default:
+				return 7;
+		};
+	};
+	var isInstagibByTags = function(tags) {
+		return tags.split(",").indexOf("instagib") == -1 ? 0 : 1;
+	};
 	var result = [];
 	for (server in serverInfo) {
 		try {
@@ -214,14 +263,14 @@ var serverList = function(filter_data) {
 				location: serverInfo[server].geo,
 				password: serverInfo[server].password,
 				gameinfo: {
-					bots: serverInfo[server].bot,
-					g_gamestate: serverInfo[server].raw.rules.g_gamestate,
-					g_gametype: parseInt(serverInfo[server].raw.rules.g_gametype),
-					g_instagib: serverInfo[server].raw.rules.g_instagib ? parseInt(serverInfo[server].raw.rules.g_instagib) : 0,
-					mapname: serverInfo[server].raw.rules.mapname.toLowerCase(),
+					bots: serverInfo[server].bots,
+					g_gamestate: serverInfo[server].raw.rules.g_gamestate ? serverInfo[server].raw.rules.g_gamestate : "n/a",
+					g_gametype: serverInfo[server].raw.rules.g_gametype ? parseInt(serverInfo[server].raw.rules.g_gametype) : getGametypeByTags(serverInfo[server].raw.tags),
+					g_instagib: serverInfo[server].raw.rules.g_instagib ? parseInt(serverInfo[server].raw.rules.g_instagib) : isInstagibByTags(serverInfo[server].raw.tags),
+					mapname: serverInfo[server].map.toLowerCase(),
 					players: serverInfo[server].players,
-					sv_maxclients: serverInfo[server].raw.rules.sv_maxclients ? parseInt(serverInfo[server].raw.rules.sv_maxclients): 32,
-					teamsize: parseInt(serverInfo[server].raw.rules.teamsize)
+					sv_maxclients: serverInfo[server].raw.rules.sv_maxclients ? parseInt(serverInfo[server].raw.rules.sv_maxclients): serverInfo[server].maxplayers,
+					teamsize: serverInfo[server].raw.rules.teamsize ? parseInt(serverInfo[server].raw.rules.teamsize) : 0
 				}
 			});
 		} catch(e) {
