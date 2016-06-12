@@ -264,13 +264,13 @@ var serverList = function(filter_data) {
 				password: serverInfo[server].password,
 				gameinfo: {
 					bots: serverInfo[server].bots,
-					g_gamestate: serverInfo[server].raw.rules.g_gamestate ? serverInfo[server].raw.rules.g_gamestate : "n/a",
-					g_gametype: serverInfo[server].raw.rules.g_gametype ? parseInt(serverInfo[server].raw.rules.g_gametype) : getGametypeByTags(serverInfo[server].raw.tags),
-					g_instagib: serverInfo[server].raw.rules.g_instagib ? parseInt(serverInfo[server].raw.rules.g_instagib) : isInstagibByTags(serverInfo[server].raw.tags),
+					g_gamestate: serverInfo[server].raw.rules ? serverInfo[server].raw.rules.g_gamestate : "n/a",
+					g_gametype: serverInfo[server].raw.rules ? parseInt(serverInfo[server].raw.rules.g_gametype) : getGametypeByTags(serverInfo[server].raw.tags),
+					g_instagib: serverInfo[server].raw.rules ? parseInt(serverInfo[server].raw.rules.g_instagib) : isInstagibByTags(serverInfo[server].raw.tags),
 					mapname: serverInfo[server].map.toLowerCase(),
 					players: serverInfo[server].players,
-					sv_maxclients: serverInfo[server].raw.rules.sv_maxclients ? parseInt(serverInfo[server].raw.rules.sv_maxclients): serverInfo[server].maxplayers,
-					teamsize: serverInfo[server].raw.rules.teamsize ? parseInt(serverInfo[server].raw.rules.teamsize) : 0
+					sv_maxclients: serverInfo[server].raw.rules ? parseInt(serverInfo[server].raw.rules.sv_maxclients): serverInfo[server].maxplayers,
+					teamsize: serverInfo[server].raw.rules ? parseInt(serverInfo[server].raw.rules.teamsize) : 0
 				}
 			});
 		} catch(e) {
