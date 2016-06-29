@@ -45,7 +45,7 @@ var updateServerInfo = function(server_index) {
 		console.log('--------');
 		console.log('thread #' + server_index%UPDATE_SERVER_INFO_THREADS_COUNT + ': fin');
 		console.log('--------');
-		setTimeout(updateServerInfo, UPDATE_SERVER_INFO_PERIOD*1000);
+		//setTimeout(updateServerInfo, UPDATE_SERVER_INFO_PERIOD*1000);
 		return;
 	} else if (server_index > servers.length) {
 		console.log('--------');
@@ -79,8 +79,8 @@ var updateServerInfo = function(server_index) {
 					return (player.time < 43200);
 				});
 				
-				geoip.lookup(host, function(data) {
-					state['geo'] = data;
+				try {
+					state['geo'] = geoip.lookup(host);
 					// some servers return g_gametype
 					// some servers return g_gameType
 					// lowercasing value names in state.raw.rules
@@ -97,9 +97,9 @@ var updateServerInfo = function(server_index) {
 					} catch (e) {
 						console.error(server_index + "	: " + server + " - error: " + e.message);
 					}
-				}, function(e) {
+				} catch (e) {
 					console.error(server_index + "	: " + server + " - geoip error: " + e.message);
-				});
+				};
 			}
 			
 			updateServerInfo(server_index + UPDATE_SERVER_INFO_THREADS_COUNT);
