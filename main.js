@@ -2,7 +2,6 @@ var gsq = require("game-server-query");
 var express = require('express');
 var geoip = require('./geoip.js');
 var master = require('./master.js');
-var c2c = require('./c2c.json');
 
 var app = express();
 var servers = [];
@@ -128,7 +127,7 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 				return +(server.gameinfo.players.length >= value);
 			
 			case 'region':
-				return +(c2c[server.location.country] == value);
+				return +(server.location.region == value.toUpperCase());
 			
 			case 'country':
 				return +(server.location.country == value);
