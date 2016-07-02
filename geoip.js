@@ -44,7 +44,21 @@ var lookup = function(ip) {
   } else {
     return extend( cache[ip], {region: c2c[cache[ip].country] } );
   }
-}
+};
+
+
+var ready = function() {
+  return new Promise( (resolve, reject) => {
+    
+    var callback = function() {
+      if (tasks.size == 0)
+        resolve();
+      else
+        setTimeout(callback, TIMEOUT);
+    };
+    callback();
+  });
+};
 
 
 try {
@@ -55,3 +69,4 @@ try {
 
 mainLoop();
 module.exports.lookup = lookup;
+module.exports.ready = ready;
