@@ -1,5 +1,7 @@
-var gsq = require("game-server-query");
 var express = require('express');
+var Q = require("q");
+
+var gsqw = require("./game-server-query-wrapper.js");
 var geoip = require('./geoip.js');
 var master = require('./master.js');
 
@@ -8,7 +10,6 @@ var servers = [];
 var serverInfo = {};
 var time_to_update_server_list = true;
 
-var UPDATE_SERVER_INFO_THREADS_COUNT = 10;
 var UPDATE_SERVER_INFO_PERIOD = 10;
 var UPDATE_SERVER_LIST_INTERVAL_SECONDS = 60*60;
 var MAX_SERVER_OUTPUT_COUNT = 100;
@@ -17,97 +18,76 @@ setInterval(function() {
 	time_to_update_server_list = true;
 }, UPDATE_SERVER_LIST_INTERVAL_SECONDS*1000);
 
-var updateServerInfo = function(server_index) {
-	if (typeof server_index == 'undefined') {
-		if (time_to_update_server_list == true) {
-			master.query(function(result) {
-				// on success
-				time_to_update_server_list = false;
-				servers = result;
-				updateServerInfo();
-			}, function(e) {
-				// on fail
-				console.error(e);
-				updateServerInfo();
-			});
-			return;
-		}
-	
-		console.log('-------------------------');
-		console.log('updateServerInfo -- start');
-		for(var i=0; i<UPDATE_SERVER_INFO_THREADS_COUNT; i++) {
-			updateServerInfo(i);
-		}
-		return;
-	}
-	
-	if (server_index == servers.length) {
-		console.log('--------');
-		console.log('thread #' + server_index%UPDATE_SERVER_INFO_THREADS_COUNT + ': fin');
-		console.log('--------');
-		//setTimeout(updateServerInfo, UPDATE_SERVER_INFO_PERIOD*1000);
-		return;
-	} else if (server_index > servers.length) {
-		console.log('--------');
-		console.log('thread #' + server_index%UPDATE_SERVER_INFO_THREADS_COUNT + ': fin');
-		console.log('--------');
-		return;
-	}
-	
-	var server = servers[server_index];
-	if (server == '')
-		return;
-	var host = server.split(':')[0];
-	var port = parseInt(server.split(':')[1]);
-	try {
-		gsq({ type: "synergy", host: host, port: port }, function(state) {
-			if (state.error) {
-				console.log(server_index + "	:" + state.error + " " + server)
-				if (typeof(serverInfo[server]) != "undefined") {
-					if (typeof(serverInfo[server].error_cnt) == "undefined") {
-						serverInfo[server].error_cnt = 1;
-					} else if (serverInfo[server].error_cnt == 5) {
-						delete serverInfo[server];
-					} else {
-						serverInfo[server].error_cnt += 1;
-					}
-				}
-			} else {
-				delete state.query;
-				
-				state.players = state.players.filter(function(player) {
-					return (player.time < 43200);
-				});
-				
-				try {
-					state['geo'] = geoip.lookup(host);
-					// some servers return g_gametype
-					// some servers return g_gameType
-					// lowercasing value names in state.raw.rules
-					// not to have undefined errors
-					try {
-						for(key in state.raw.rules) {
-							if (key != key.toLowerCase()) {
-								state.raw.rules[key.toLowerCase()] = state.raw.rules[key];
-								delete state.raw.rules[key];
-							}
-						}
-						serverInfo[server] = state;
-						console.log(server_index + "	: " + server);
-					} catch (e) {
-						console.error(server_index + "	: " + server + " - error: " + e.message);
-					}
-				} catch (e) {
-					console.error(server_index + "	: " + server + " - geoip error: " + e.message);
-				};
-			}
-			
-			updateServerInfo(server_index + UPDATE_SERVER_INFO_THREADS_COUNT);
-		});
-	} catch (e) {
-		console.error(server_index + "	: " + server + " - gsq error: " + e.message);
-		updateServerInfo(server_index + UPDATE_SERVER_INFO_THREADS_COUNT);
-	}
+var updateServerInfo = function() {
+  
+  if (time_to_update_server_list == true) {
+    Q(master.query())
+    .then( result => {
+      time_to_update_server_list = false;
+      servers = result;
+    })
+    .catch( error => {
+      console.error("master.query error");
+      console.error(error);
+    })
+    .finally( () => {
+      updateServerInfo();
+    });
+    return;
+  }
+  
+  var gsqw_callback = function( server, state ) {
+    if (state.error) {
+      if (typeof(serverInfo[server]) != "undefined") {
+        if (typeof(serverInfo[server].error_cnt) == "undefined") {
+          serverInfo[server].error_cnt = 1;
+        } else if (serverInfo[server].error_cnt == 5) {
+          delete serverInfo[server];
+        } else {
+          serverInfo[server].error_cnt += 1;
+        }
+      }
+    } else {
+      state.players = state.players.filter(function(player) {
+        return (player.time < 43200);
+      });
+      
+      try {
+        state['geo'] = geoip.lookup(state.query.host);
+        
+        // some servers return g_gametype
+        // some servers return g_gameType
+        // lowercasing value names in state.raw.rules
+        // not to have undefined errors
+        try {
+          for(key in state.raw.rules) {
+            if (key != key.toLowerCase()) {
+              state.raw.rules[key.toLowerCase()] = state.raw.rules[key];
+              delete state.raw.rules[key];
+            }
+          }
+          serverInfo[server] = state;
+        } catch (e) {
+          console.error(server + " - error: " + e.message);
+        }
+      } catch (e) {
+        console.error(server + " - geoip error: " + e.message);
+      };
+    }
+  };
+  
+  var execution_time;
+  Q( geoip.ready() )
+  .then( () => {
+    execution_time = new Date();
+    return gsqw(servers, gsqw_callback);
+  })
+  .then( () => {
+    var now = new Date();
+    execution_time = now - execution_time;
+    console.log("[" +  now.toLocaleDateString() + " " + now.toLocaleTimeString() + "]: " + servers.length + " servers scanned in " + ( execution_time / 1000 ) + " s.");
+    updateServerInfo();
+  });
 };
 
 var checkServerUsingFilterData = function(server, filter_data, checking_key) {
