@@ -86,7 +86,7 @@ var updateServerInfo = function() {
     var now = new Date();
     execution_time = now - execution_time;
     console.log("[" +  now.toLocaleDateString() + " " + now.toLocaleTimeString() + "]: " + servers.length + " servers scanned in " + ( execution_time / 1000 ) + " s.");
-    updateServerInfo();
+    setTimeout(updateServerInfo, 10000);
   });
 };
 

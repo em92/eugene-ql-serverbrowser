@@ -9,7 +9,6 @@ var TIMEOUT = 500; // 500 ms -> 120 request per minute
 
 var mainLoop = function() {
   if (tasks.size == 0) {
-    setTimeout(mainLoop, TIMEOUT);
     return;
   };
   
@@ -40,6 +39,8 @@ var mainLoop = function() {
 var lookup = function(ip) {
   if (typeof(cache[ip]) == 'undefined') {
     tasks.add(ip);
+    if (tasks.size == 1)
+      setTimeout(mainLoop, TIMEOUT);
     throw new Error("n/a");
   } else {
     return extend( cache[ip], {region: c2c[cache[ip].country] } );
