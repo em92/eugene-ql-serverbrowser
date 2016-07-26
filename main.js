@@ -25,6 +25,11 @@ var updateServerInfo = function() {
     .then( result => {
       time_to_update_server_list = false;
       servers = result;
+      Object.keys(serverInfo).forEach( server => {
+        if ( servers.indexOf( server ) == -1 ) {
+          delete serverInfo[server];
+        }
+      });
     })
     .catch( error => {
       console.error("master.query error");
