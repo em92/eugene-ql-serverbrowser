@@ -272,13 +272,22 @@ var serverList = function(filter_data) {
       return (checkServerUsingFilterData(server, filter_data) == 1);
     });
   }
+
+  var sort_priority = {"EU": 6, "NA": 5, "SA": 4, "OC": 3, "AS": 2, "AF": 1};
   result.sort(function(server1, server2) {
     if ( (server1.gameinfo.players.length > 0) && (server2.gameinfo.players.length == 0) )
       return -1;
     else if ( (server2.gameinfo.players.length > 0) && (server1.gameinfo.players.length == 0) )
       return 1;
+    else if ( server1.gameinfo.players.length == server2.gameinfo.players.length ) // equal 0
+      return 0;
+    else if ( sort_priority[server2.location.region] > sort_priority[server1.location.region] )
+      return 1;
+    else if ( sort_priority[server1.location.region] > sort_priority[server2.location.region] )
+      return -1;
     return 0;
   });
+
   result = result.filter(function(server, i) {
     return i < MAX_SERVER_OUTPUT_COUNT;
   });
