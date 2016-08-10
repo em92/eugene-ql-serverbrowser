@@ -106,7 +106,7 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
       case 'g_gametype':
       case 'g_instagib':
       case 'mapname':
-        return +( (server.gameinfo[key] == value) || (value == 'any') );
+        return +( (server.gameinfo[key] == value.toLowerCase()) || (value.toLowerCase() == 'any') );
 
       case 'min_players':
         return +(server.gameinfo.players.length >= value);
@@ -115,7 +115,7 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
         return +(server.location.region == value.toUpperCase());
 
       case 'country':
-        return +(server.location.country == value);
+        return +(server.location.country == value.toUpperCase());
 
       case 'private':
         return +(server.password == value);
