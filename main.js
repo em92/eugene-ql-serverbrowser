@@ -102,9 +102,11 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
   // -1 - ignore
   var check_key_value = function(key, value) {
     switch(key) {
-      case 'g_gamestate':
       case 'g_gametype':
       case 'g_instagib':
+        return +( (server.gameinfo[key] == value) || (value == 'any') );
+
+      case 'g_gamestate':
       case 'mapname':
         return +( (server.gameinfo[key] == value.toLowerCase()) || (value.toLowerCase() == 'any') );
 
