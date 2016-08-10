@@ -123,6 +123,37 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
       case 'ip':
         return +(server.host_address.split(':')[0] == value);
 
+      case 'tags':
+        return +(server.tags.reduce(function(sum, server_tag, server_tag_index) {
+          if (sum === true) return true;
+          if (sum === false) return false;
+
+          var good_tags = sum.filter(function( tag ) {
+            if (tag == "") return false;
+            if (tag[0] == "!") return false;
+            if (server_tag.trim().toLowerCase() == tag.trim().toLowerCase()) return false;
+            return true;
+          });
+
+          var bad_tags = sum.filter(function( tag ) {
+            if (tag == "") return false;
+            if (tag[0] == "!") return true;
+            return false;
+          });
+
+          if (good_tags.length == 0 && bad_tags.length == 0) return true;
+
+          var is_bad_server = bad_tags.some(function( bad_tag ) {
+            return ("!" + server_tag.trim().toLowerCase() ) == bad_tag.trim().toLowerCase();
+          });
+
+          if (is_bad_server) return false;
+
+          if (server_tag_index == server.tags.length - 1) return good_tags.length == 0;
+
+          return [].concat(good_tags, bad_tags);
+        }, value.split(',')));
+
       // +(bool) -> int
       default:
         return -1;
@@ -214,7 +245,6 @@ var serverList = function(filter_data) {
       case 'oneflag':
         return 6;
 
-      case 'har':
       case 'harvester':
         return 8;
 
@@ -228,7 +258,6 @@ var serverList = function(filter_data) {
         return 11;
 
       case 'redrover':
-      case 'rr':
         return 12;
 
       default:
@@ -246,6 +275,7 @@ var serverList = function(filter_data) {
         host_name: serverInfo[server].name,
         location: serverInfo[server].geo,
         password: serverInfo[server].password,
+        tags: serverInfo[server].raw.tags.split(","),
         gameinfo: {
           bots: serverInfo[server].bots,
           g_gamestate: serverInfo[server].raw.rules ? serverInfo[server].raw.rules.g_gamestate : "n/a",
