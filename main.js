@@ -113,10 +113,11 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
         );
 
       case 'g_gamestate':
+      case 'g_factory':
       case 'mapname':
         return +(
           (server.gameinfo[key].toUpperCase() == value) ||
-          (value.toUpperCase() == 'ANY')
+          (value == 'ANY')
         );
 
       case 'min_players':
@@ -291,6 +292,7 @@ var serverList = function(filter_data) {
           bots: serverInfo[server].bots,
           g_gamestate: serverInfo[server].raw.rules ? serverInfo[server].raw.rules.g_gamestate : "n/a",
           g_gametype: serverInfo[server].raw.rules ? parseInt(serverInfo[server].raw.rules.g_gametype) : getGametypeByTags(serverInfo[server].raw.tags),
+          g_factory: serverInfo[server].raw.rules ? serverInfo[server].raw.rules.g_factory : getGametypeByTags(serverInfo[server].raw.tags),
           g_instagib: serverInfo[server].raw.rules ? parseInt(serverInfo[server].raw.rules.g_instagib) : isInstagibByTags(serverInfo[server].raw.tags),
           mapname: serverInfo[server].map.toLowerCase(),
           players: serverInfo[server].players,
