@@ -101,23 +101,32 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
   // 0 - false
   // -1 - ignore
   var check_key_value = function(key, value) {
+    if (typeof(value) == "string")
+      value = value.toUpperCase();
+
     switch(key) {
       case 'g_gametype':
       case 'g_instagib':
-        return +( (server.gameinfo[key] == value) || (value == 'any') );
+        return +(
+          (server.gameinfo[key] == value) ||
+          (value == 'ANY')
+        );
 
       case 'g_gamestate':
       case 'mapname':
-        return +( (server.gameinfo[key] == value.toLowerCase()) || (value.toLowerCase() == 'any') );
+        return +(
+          (server.gameinfo[key].toUpperCase() == value) ||
+          (value.toUpperCase() == 'ANY')
+        );
 
       case 'min_players':
         return +(server.gameinfo.players.length >= value);
 
       case 'region':
-        return +(server.location.region == value.toUpperCase());
+        return +(server.location.region == value);
 
       case 'country':
-        return +(server.location.country == value.toUpperCase());
+        return +(server.location.country == value);
 
       case 'private':
         return +(server.password == value);
