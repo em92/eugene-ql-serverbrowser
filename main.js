@@ -101,24 +101,21 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
   // 0 - false
   // -1 - ignore
   var check_key_value = function(key, value) {
-    if (typeof(value) == "string")
+    if (typeof(value) == "string") {
       value = value.toUpperCase();
+      if (value == "ANY")
+        return 1;
+    }
 
     switch(key) {
       case 'g_gametype':
       case 'g_instagib':
-        return +(
-          (server.gameinfo[key] == value) ||
-          (value == 'ANY')
-        );
+        return +(server.gameinfo[key] == value);
 
       case 'g_gamestate':
       case 'g_factory':
       case 'mapname':
-        return +(
-          (server.gameinfo[key].toUpperCase() == value) ||
-          (value == 'ANY')
-        );
+        return +(server.gameinfo[key].toUpperCase() == value);
 
       case 'min_players':
         return +(server.gameinfo.players.length >= value);
