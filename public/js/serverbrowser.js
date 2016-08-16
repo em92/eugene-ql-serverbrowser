@@ -95,6 +95,9 @@ var Server = React.createClass({
 				this.props.server.gameinfo.mapname
 			),
 			React.createElement(PlayerCount, { server: this.props.server }),
+      React.createElement("td", null,
+        this.props.server.password ? React.createElement("img", {src: "/images/lock.png"}, null) : null
+      ),
 			React.createElement(
 				"td",
 				null,
@@ -229,6 +232,7 @@ var ServerList = React.createClass({
 			React.createElement("th", null, "Hostname"),
 			React.createElement("th", null, "Map"),
 			React.createElement("th", null, "Players"),
+      React.createElement("th", null, ""),
 			React.createElement("th", null, "Connect")
 		));
 		
