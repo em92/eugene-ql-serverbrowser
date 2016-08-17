@@ -279,7 +279,7 @@ var serverList = function(filter_data) {
   var result = [];
   for (server in serverInfo) {
     try {
-    result.push({
+      var item = {
         host_address: server,
         host_name: serverInfo[server].name,
         location: serverInfo[server].geo,
@@ -296,7 +296,12 @@ var serverList = function(filter_data) {
           sv_maxclients: serverInfo[server].raw.rules ? parseInt(serverInfo[server].raw.rules.sv_maxclients): serverInfo[server].maxplayers,
           teamsize: serverInfo[server].raw.rules ? parseInt(serverInfo[server].raw.rules.teamsize) : 0
         }
-      });
+      };
+      if (item.gameinfo.g_gametype == 2) { // Race
+        item.gameinfo.g_instagib = 0;
+      } else if (item.gameinfo.g_gametype != 7) { // 7 - not valid gametype
+        result.push(item);
+      }
     } catch(e) {
       console.error("serverList  : " + server + " - error: " + e.message);
     }
