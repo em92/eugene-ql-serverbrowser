@@ -1,3 +1,183 @@
+var GAMETYPES = {
+  0: 'FFA',
+  1: 'Duel',
+  2: 'Race',
+  3: 'TDM',
+  4: 'CA',
+  5: 'CTF',
+  6: '1FCTF',
+  8: 'HAR',
+  9: 'FT',
+  10: 'DOM',
+  11: 'A&D',
+  12: 'RR',
+  100: 'InstaFFA',
+  101: 'InstaDuel',
+  103: 'InstaTDM',
+  104: 'InstaCA',
+  105: 'InstaCTF',
+  106: 'Insta1FCTF',
+  108: 'InstaHAR',
+  109: 'InstaFT',
+  110: 'InstaDOM',
+  111: 'InstaA&D',
+  112: 'InstaRR',
+  "any": "any"
+}
+
+var MAPS = [
+  "aerowalk",
+  "almostlost",
+  "arcanecitadel",
+  "arkinholm",
+  "asylum",
+  "basesiege",
+  "battleforged",
+  "beyondreality",
+  "bitterembrace",
+  "blackcathedral",
+  "bloodlust",
+  "bloodrun",
+  "brimstoneabbey",
+  "campercrossings",
+  "campgrounds",
+  "cannedheat",
+  "castledeathstalker",
+  "chemicalreaction",
+  "citycrossings",
+  "cliffside",
+  "coldcathode",
+  "coldwar",
+  "concretepalace",
+  "corrosion",
+  "courtyard",
+  "cure",
+  "cursed",
+  "deadandgone",
+  "deathorglory",
+  "deepinside",
+  "delirium",
+  "demonkeep",
+  "devilish",
+  "diesirae",
+  "dismemberment",
+  "dividedcrossings",
+  "divineintermission",
+  "doubleimpact",
+  "dreadfulplace",
+  "dredwerkz",
+  "drunkenmummy",
+  "duelingkeeps",
+  "elder",
+  "electrichead",
+  "electrocution",
+  "eviscerated",
+  "evolution",
+  "eyetoeye",
+  "falloutbunker",
+  "fatalinstinct",
+  "finnegans",
+  "fluorescent",
+  "foolishlegacy",
+  "furiousheights",
+  "fuse",
+  "futurecrossings",
+  "gospelcrossings",
+  "gothicrage",
+  "grimdungeons",
+  "hearth",
+  "hektik",
+  "hellsgate",
+  "henhouse",
+  "heroskeep",
+  "hiddenfortress",
+  "houseofdecay",
+  "industrialrevolution",
+  "infinity",
+  "innersanctums",
+  "intervention",
+  "ironworks",
+  "japanesecastles",
+  "jumpwerkz",
+  "leftbehind",
+  "leviathan",
+  "limbus",
+  "longestyard",
+  "lostparadise",
+  "lostworld",
+  "mcsarges",
+  "midlifecrisis",
+  "monastery",
+  "namelessplace",
+  "newcerberon",
+  "overgrowth",
+  "overkill",
+  "overlord",
+  "phrantic",
+  "pillbox",
+  "provinggrounds",
+  "pulpfriction",
+  "purgatory",
+  "quarantine",
+  "qzpractice1",
+  "qzpractice2",
+  "qztraining",
+  "ragnarok",
+  "railyard",
+  "realmofsteelrats",
+  "rebound",
+  "refinery",
+  "reflux",
+  "repent",
+  "retribution",
+  "revolver",
+  "satanic",
+  "scornforge",
+  "seamsandbolts",
+  "servitude",
+  "shakennotstirred",
+  "shiningforces",
+  "siberia",
+  "silence",
+  "sinister",
+  "skyward",
+  "smash",
+  "solarium",
+  "solid",
+  "somewhatdamaged",
+  "sorrow",
+  "spacechamber",
+  "spacectf",
+  "spidercrossings",
+  "spillway",
+  "stonekeep",
+  "stronghold",
+  "terminalheights",
+  "terminatria",
+  "terminus",
+  "theatreofpain",
+  "thedukesgarden",
+  "theedge",
+  "theepicenter",
+  "theoldendomain",
+  "threestory",
+  "thunderstruck",
+  "tornado",
+  "toxicity",
+  "trinity",
+  "troubledwaters",
+  "useandabuse",
+  "verticalvengeance",
+  "vortexportal",
+  "warehouse",
+  "wargrounds",
+  "wicked",
+  "windowpain",
+  "windsongkeep",
+  "zen",
+  "any"
+];
+
 var Location = React.createClass({
   render: function() {
     return (
@@ -12,21 +192,7 @@ var Location = React.createClass({
 var GameType = React.createClass({
   render: function() {
     try {
-      var original_factory = [
-        [['FFA'], ['InstaFFA']],
-        [['Duel'], ['InstaDuel']],
-        [['Race'], ['Race']],
-        [['TDM'], ['InstaTDM']],
-        [['CA'], ['InstaCA']],
-        [['CTF'], ['InstaCTF']],
-        [['1FCTF'], ['Insta1FCTF']],
-        [['wut?'], ['the fuck?']],
-        [['HAR'], ['InstaHAR']],
-        [['FT'], ['InstaFT']],
-        [['DOM'], ['InstaDOM']],
-        [['A&D'], ['InstaA&D']],
-        [['RR'], ['InstaRR']]
-      ][this.props.server.gameinfo.g_gametype][this.props.server.gameinfo.g_instagib];
+      var original_factory = GAMETYPES[this.props.server.gameinfo.g_gametype + 100*this.props.server.gameinfo.g_instagib];
       return <td>{original_factory}</td>;
     } catch(e) {
       console.error(e);
@@ -74,6 +240,128 @@ var Server = React.createClass({
         <td><a href={"steam://connect/" + this.props.server.host_address} className="btn btn-primary btn-xs">connect</a></td>
       </tr>
     );
+  }
+});
+
+var FilterItemBlock = React.createClass({
+  COMBOBOX_ARG_NAMES: [
+    "g_instagib",
+    "g_gamestate",
+    "private",
+    "region"
+  ],
+  
+  getInitialState: function() {
+    var state = {
+      country: "any",
+      g_factory: "any",
+      gametype: [],
+      mapname: [],
+      min_players: 0,
+      tags: "any"
+    };
+
+    this.COMBOBOX_ARG_NAMES.forEach( arg_name => {
+      state[ arg_name ] = "any";
+    });
+    return state;
+  },
+
+  onAnythingChanged: function() {
+    var state = {};
+    var self = this;
+
+    this.COMBOBOX_ARG_NAMES.forEach( arg_name => {
+      state[ arg_name ] = self.refs[ arg_name ].value;
+
+      // is int?
+      var int_value = parseInt(state[arg_name]);
+      if (int_value == int_value && int_value.toString() == state[arg_name]) {
+        state[ arg_name ] = int_value;
+        return;
+      }
+
+      if (state[arg_name].toLowerCase() == "true") {
+        state[arg_name] = true;
+      } else if (state[arg_name].toLowerCase() == "false") {
+        state[arg_name] = false;
+      }
+    });
+
+    this.setState(state);
+  },
+
+  componentDidMount: function() {
+    var gametype_token_input_values = [];
+    Object.keys(GAMETYPES).forEach( gametype_id => {
+      gametype_token_input_values.push({id: gametype_id, name: GAMETYPES[gametype_id]});
+    });
+
+    var map_token_input_values = [];
+    MAPS.forEach( mapname => {
+      map_token_input_values.push({id: mapname, name: mapname});
+    });
+
+    var token_input_options = {
+      theme: "facebook",
+      hintText: "",
+      noResultsText: "",
+      preventDuplicates: true,
+      resultsLimit: 5,
+      searchingText: ""
+    };
+
+    $(this.refs.gametype).tokenInput(gametype_token_input_values,
+      $.extend({
+      }, token_input_options)
+    );
+
+    $(this.refs.mapname) .tokenInput(map_token_input_values,
+      $.extend({
+        allowFreeTagging: true
+      }, token_input_options)
+    );
+  },
+
+  render: function() {
+    return (<div><table><tbody>
+      <tr>
+        <td>Region</td>
+        <td><select ref="region" value={this.state.region} onChange={this.onAnythingChanged}>
+          <option value="any">Any</option>
+          <option value="eu">Europe</option>
+          <option value="na">North America</option>
+          <option value="sa">South America</option>
+          <option value="oc">Oceania</option>
+          <option value="as">Asia</option>
+          <option value="as">Africa</option>
+        </select></td>
+      </tr>
+      <tr>
+        <td>Gametype</td>
+        <td><input type="text" ref="gametype" /></td>
+      </tr>
+      <tr>
+        <td>Arenas</td>
+        <td><input type="text" ref="mapname" /></td>
+      </tr>
+      <tr>
+        <td>Gamestate</td>
+        <td><select ref="g_gamestate" value={this.state.g_gamestate} onChange={this.onAnythingChanged}>
+          <option value="any">Any</option>
+          <option value="PRE_GAME">Warmup</option>
+          <option value="IN_PROGRESS">In progress</option>
+        </select></td>
+      </tr>
+      <tr>
+        <td>Public or private</td>
+        <td><select ref="private" value={this.state.private} onChange={this.onAnythingChanged}>
+          <option value="any">Any</option>
+          <option value="false">Public only</option>
+          <option value="true">Private only</option>
+        </select></td>
+      </tr>
+    </tbody></table></div>)
   }
 });
 
@@ -194,7 +482,7 @@ var ServerList = React.createClass({
           <th>Location</th>
           <th>Gametype</th>
           <th>Hostname</th>
-          <th>Map</th>
+          <th>Arena</th>
           <th>Players</th>
           <th></th>
           <th></th>
@@ -205,4 +493,7 @@ var ServerList = React.createClass({
   }
 });
 
+/*
 ReactDOM.render(<ServerList />, document.getElementById('content'));
+// */
+ReactDOM.render(<FilterItemBlock />, document.getElementById('content'));
