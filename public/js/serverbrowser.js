@@ -306,6 +306,18 @@ var FilterItemBlock = React.createClass({
       theme: "facebook",
       hintText: "",
       noResultsText: "",
+      onAdd: function() {
+        var is_keyword_any_exists;
+        var are_other_keywords_exist;
+
+        [is_keyword_any_exists, are_other_keywords_exist] = this.tokenInput("get").reduce( (sum, item) => {
+          return [sum[0] || (item.id == "any"), sum[1] || (item.id != "any")];
+        }, [false, false]);
+
+        if (is_keyword_any_exists && are_other_keywords_exist) {
+          this.tokenInput("remove", {id: "any"});
+        }
+      },
       preventDuplicates: true,
       resultsLimit: 5,
       searchingText: ""
