@@ -245,7 +245,6 @@ var Server = React.createClass({
 
 var FilterItemBlock = React.createClass({
   COMBOBOX_ARG_NAMES: [
-    "g_instagib",
     "g_gamestate",
     "private",
     "region"
@@ -336,44 +335,50 @@ var FilterItemBlock = React.createClass({
   },
 
   render: function() {
-    return (<div><table><tbody>
-      <tr>
-        <td>Region</td>
-        <td><select ref="region" value={this.state.region} onChange={this.onAnythingChanged}>
-          <option value="any">Any</option>
-          <option value="eu">Europe</option>
-          <option value="na">North America</option>
-          <option value="sa">South America</option>
-          <option value="oc">Oceania</option>
-          <option value="as">Asia</option>
-          <option value="af">Africa</option>
-        </select></td>
-      </tr>
-      <tr>
-        <td>Gametype</td>
-        <td><input type="text" ref="gametype" /></td>
-      </tr>
-      <tr>
-        <td>Arenas</td>
-        <td><input type="text" ref="mapname" /></td>
-      </tr>
-      <tr>
-        <td>Gamestate</td>
-        <td><select ref="g_gamestate" value={this.state.g_gamestate} onChange={this.onAnythingChanged}>
-          <option value="any">Any</option>
-          <option value="PRE_GAME">Warmup</option>
-          <option value="IN_PROGRESS">In progress</option>
-        </select></td>
-      </tr>
-      <tr>
-        <td>Public or private</td>
-        <td><select ref="private" value={this.state.private} onChange={this.onAnythingChanged}>
-          <option value="any">Any</option>
-          <option value="false">Public only</option>
-          <option value="true">Private only</option>
-        </select></td>
-      </tr>
-    </tbody></table></div>)
+    return (
+      <div className="filter-block">
+        <div className="filter-block-column filter-block-left-column">
+          <div className="filter-block-cell">
+            Gametype:<br /><input type="text" ref="gametype" />
+          </div>
+          <div className="filter-block-cell">
+            Arenas: <br /><input type="text" ref="mapname" />
+          </div>
+        </div>
+        <div className="filter-block-column filter-block-center-column">
+          <div className="filter-block-cell">
+            Region:<br /><select ref="region" className="form-control input-sm" value={this.state.region} onChange={this.onAnythingChanged}>
+              <option value="any">Any</option>
+              <option value="eu">Europe</option>
+              <option value="na">North America</option>
+              <option value="sa">South America</option>
+              <option value="oc">Oceania</option>
+              <option value="as">Asia</option>
+              <option value="af">Africa</option>
+            </select>
+          </div>
+          <div className="filter-block-cell">
+            Country:<br /><input type="text" ref="country" />
+          </div>
+        </div>
+        <div className="filter-block-column filter-block-right-column">
+          <div className="filter-block-cell">
+            Gamestate:<br /><select ref="g_gamestate" className="form-control input-sm" value={this.state.g_gamestate} onChange={this.onAnythingChanged}>
+              <option value="any">Any</option>
+              <option value="PRE_GAME">Warmup</option>
+              <option value="IN_PROGRESS">In progress</option>
+            </select>
+          </div>
+          <div className="filter-block-cell">
+            Accessibility:<br /><select ref="private" className="form-control input-sm" value={this.state.private} onChange={this.onAnythingChanged}>
+              <option value="any">Any</option>
+              <option value="false">Public only</option>
+              <option value="true">Private only</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    );
   }
 });
 

@@ -52,3 +52,46 @@ noscript {
 	margin-right: auto;
 	text-align: center;
 }
+
+.filter-block {
+  background-color: #ccc;
+  width: 100%;
+  overflow:auto;
+}
+
+.filter-block-column {
+  padding: 10px;
+}
+
+.filter-block-left-column {
+  float: left;
+  width: 50%;
+}
+
+.filter-block-center-column {
+  display: inline-block;
+  width: 30%;
+}
+
+.filter-block-right-column {
+  float: right;
+  width: 20%;
+}
+
+.filter-block-column select{
+  border: 1px solid #8496ba;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.filter-block-cell {
+  min-height: 70px;
+  font-size: 13px;
+}
+
+.filter-block-cell .token-input-list-facebook {
+  width: 100%;
+  border-radius: 4px;
+}
