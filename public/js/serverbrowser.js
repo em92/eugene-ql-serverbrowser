@@ -346,7 +346,7 @@ var FilterItemBlock = React.createClass({
           <option value="sa">South America</option>
           <option value="oc">Oceania</option>
           <option value="as">Asia</option>
-          <option value="as">Africa</option>
+          <option value="af">Africa</option>
         </select></td>
       </tr>
       <tr>
