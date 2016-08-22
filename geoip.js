@@ -25,7 +25,7 @@ var mainLoop = function() {
   .then( data => {
     console.log("geoip: mainLoop data: " + ip + " => " + data.city.split(" (")[0]);
     cache[ip] = {country: data.countryCode, city: data.city.split(" (")[0]};
-    fs.writeFile("./geoip.json", JSON.stringify(cache));
+    fs.writeFile("./geoip.json", JSON.stringify(cache, null, '  '));
   })
   .catch( error => {
     console.error("geoip: mainLoop error: " + error.message);
@@ -43,7 +43,7 @@ var lookup = function(ip) {
       setTimeout(mainLoop, TIMEOUT);
     throw new Error("n/a");
   } else {
-    return extend( cache[ip], {region: c2c[cache[ip].country] } );
+    return extend( {region: c2c[cache[ip].country] }, cache[ip] );
   }
 };
 
@@ -65,8 +65,10 @@ var ready = function() {
 try {
   cache = JSON.parse( fs.readFileSync("./geoip.json", {options: "utf-8"}) );
 } catch(error) {
+  console.error("geoip: startup error: " + error.message);
   cache = {};
 }
+
 
 mainLoop();
 module.exports.lookup = lookup;
