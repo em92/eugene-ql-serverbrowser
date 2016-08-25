@@ -502,15 +502,23 @@ var FilterItemBlock = React.createClass({
     "private",
     "region"
   ],
-  
+
+  TOKENINPUT_ARG_NAMES: [
+    "country",
+    "gametype",
+    "g_factory",
+    "mapname",
+    "tags"
+  ],
+
   getInitialState: function() {
     var state = {
-      country: "any",
-      g_factory: "any",
-      gametype: [],
-      mapname: [],
+      country: ["any"],
+      g_factory: ["any"],
+      gametype: ["any"],
+      mapname: ["any"],
       min_players: 0,
-      tags: "any"
+      tags: ["any"]
     };
 
     this.COMBOBOX_ARG_NAMES.forEach( arg_name => {
@@ -519,8 +527,10 @@ var FilterItemBlock = React.createClass({
     return state;
   },
 
-  onAnythingChanged: function() {
-    var state = {};
+  onAnythingChanged: function(state) {
+    // forcing state to be Object
+    if (state.constructor.name == 'SyntheticEvent') state = {};
+
     var self = this;
 
     this.COMBOBOX_ARG_NAMES.forEach( arg_name => {
@@ -540,7 +550,30 @@ var FilterItemBlock = React.createClass({
       }
     });
 
+    this.TOKENINPUT_ARG_NAMES.forEach( arg_name => {
+      state[arg_name] = $(self.refs[ arg_name ]).tokenInput("get").map( obj => {
+        var int_value = parseInt(obj.id);
+        if (int_value == int_value && int_value.toString() == obj.id) {
+          return int_value;
+        } else {
+          return obj.id;
+        }
+      });
+    });
+
+    console.log(state);
     this.setState(state);
+  },
+
+  onMinimumPlayersCountChanged: function(event) {
+    console.log(event.constructor.name);
+    var result = 0;
+    if (event.target.value.trim() != '') {
+      result = parseInt(event.target.value);
+    }
+    if (result != result) result = 0; // NaN -> 0
+    if (result < 0) result *= -1;
+    this.onAnythingChanged({ min_players: result });
   },
 
   componentDidMount: function() {
@@ -559,6 +592,7 @@ var FilterItemBlock = React.createClass({
       country_token_input_values.push({id: country_code, name: country_code});
     });
 
+    var self = this;
     var token_input_options = {
       theme: "facebook",
       hintText: "",
@@ -574,21 +608,43 @@ var FilterItemBlock = React.createClass({
         if (is_keyword_any_exists && are_other_keywords_exist) {
           this.tokenInput("remove", {id: "any"});
         }
+
+        self.onAnythingChanged({});
       },
       preventDuplicates: true,
       resultsLimit: 5,
       searchingText: ""
     };
 
-    $(this.refs.country).tokenInput(country_token_input_values, token_input_options);
-
-    $(this.refs.gametype).tokenInput(gametype_token_input_values,
+    $(this.refs.country).tokenInput(country_token_input_values,
       $.extend({
+        prePopulate: this.state.country.map( item => ({id: item, name: item}) )
       }, token_input_options)
     );
 
-    $(this.refs.mapname) .tokenInput(map_token_input_values,
+    $(this.refs.g_factory).tokenInput([],
       $.extend({
+        prePopulate: this.state.g_factory.map( item => ({id: item, name: item}) ),  
+        allowFreeTagging: true
+      }, token_input_options)
+    );
+
+    $(this.refs.gametype).tokenInput(gametype_token_input_values,
+      $.extend({
+        prePopulate: this.state.gametype.map( item => ({id: item, name: GAMETYPES[item]}) )
+      }, token_input_options)
+    );
+
+    $(this.refs.mapname).tokenInput(map_token_input_values,
+      $.extend({
+        prePopulate: this.state.mapname.map( item => ({id: item, name: item}) ),
+        allowFreeTagging: true
+      }, token_input_options)
+    );
+
+    $(this.refs.tags).tokenInput([],
+      $.extend({
+        prePopulate: this.state.g_factory.map( item => ({id: item, name: item}) ),
         allowFreeTagging: true
       }, token_input_options)
     );
@@ -603,6 +659,9 @@ var FilterItemBlock = React.createClass({
           </div>
           <div className="filter-block-cell">
             Arenas: <br /><input type="text" ref="mapname" />
+          </div>
+          <div className="filter-block-cell">
+            Tags: <br /><input type="text" ref="tags" />
           </div>
         </div>
         <div className="filter-block-column filter-block-center-column">
@@ -620,6 +679,9 @@ var FilterItemBlock = React.createClass({
           <div className="filter-block-cell">
             Country:<br /><input type="text" ref="country" />
           </div>
+          <div className="filter-block-cell">
+            Factories: <br /><input type="text" ref="g_factory" />
+          </div>
         </div>
         <div className="filter-block-column filter-block-right-column">
           <div className="filter-block-cell">
@@ -635,6 +697,9 @@ var FilterItemBlock = React.createClass({
               <option value="false">Public only</option>
               <option value="true">Private only</option>
             </select>
+          </div>
+          <div className="filter-block-cell">
+            Minimum players count: <br /><input type="text" ref="min_players" className="simple_text" value={this.state.min_players} onChange={this.onMinimumPlayersCountChanged} />
           </div>
         </div>
       </div>
@@ -730,7 +795,7 @@ var ServerList = React.createClass({
     $.ajax({
       url: "serverlist" + this.filterData,
       dataType: 'json',
-      cache: false,
+      cache: true,
       success: (function (data) {
         this.setState(data);
       }).bind(this),
@@ -743,7 +808,7 @@ var ServerList = React.createClass({
   componentDidMount: function() {
     this.filterData = window.localStorage.filterData ? "/" + window.btoa(window.localStorage.filterData) : "";
     this.downloadServerList();
-    setInterval(this.downloadServerList, 60000);
+    setInterval(this.downloadServerList, 10000);
   },
 
   render: function() {
@@ -770,7 +835,7 @@ var ServerList = React.createClass({
   }
 });
 
-/*
+ReactDOM.render(<FilterItemBlock />, document.getElementById('content')); /*
 ReactDOM.render(<ServerList />, document.getElementById('content'));
 // */
-ReactDOM.render(<FilterItemBlock />, document.getElementById('content'));
+
