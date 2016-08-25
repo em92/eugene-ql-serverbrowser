@@ -57,6 +57,7 @@ noscript {
   background-color: #ccc;
   width: 100%;
   overflow:auto;
+  margin-top: 20px;
 }
 
 .filter-block-column {

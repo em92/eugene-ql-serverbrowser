@@ -521,9 +521,16 @@ var FilterItemBlock = React.createClass({
       tags: ["any"]
     };
 
+    Object.keys(state).forEach( arg_name => {
+      if (this.props.options[ arg_name ]) {
+        state[arg_name] = this.props.options[ arg_name ];
+      }
+    });
+
     this.COMBOBOX_ARG_NAMES.forEach( arg_name => {
       state[ arg_name ] = "any";
     });
+    console.log(state);
     return state;
   },
 
@@ -561,8 +568,8 @@ var FilterItemBlock = React.createClass({
       });
     });
 
-    console.log(state);
     this.setState(state);
+    this.props.parentCallback(this.props.id, state);
   },
 
   onMinimumPlayersCountChanged: function(event) {
@@ -577,6 +584,7 @@ var FilterItemBlock = React.createClass({
   },
 
   componentDidMount: function() {
+    this.props.parentCallback(this.props.id, this.state);
     var gametype_token_input_values = [];
     Object.keys(GAMETYPES).forEach( gametype_id => {
       gametype_token_input_values.push({id: gametype_id, name: GAMETYPES[gametype_id]});
@@ -709,6 +717,71 @@ var FilterItemBlock = React.createClass({
 
 var FilterOptions = React.createClass({
   getInitialState: function() {
+    var filterData = window.localStorage.getItem('filterData2');
+    filterData = filterData == null ? {} : JSON.parse(filterData);
+    console.log(filterData);
+    return { filterData: filterData };
+  },
+
+  onFilterItemBlockChange: function(id, state) {
+    /*
+    state = $.extend({}, state);
+    state["_"] = state.gametype.map( item => {
+      if (item == "any") return {g_gametype: "any"};
+      if (item >= 100) return {g_gametype: item-100, g_instagib: 1};
+      else if (item >= 100) return {g_gametype: item, g_instagib: 0};
+    });
+    delete state.gametype;
+    */
+    var filterData = this.state.filterData;
+    filterData[ id ] = state;
+    this.setState({filterData: filterData});
+    window.localStorage.setItem('filterData2', JSON.stringify(filterData));
+    console.log(filterData);
+  },
+
+  onAddFilterClick: function() {
+    var id = (new Date().getTime() + Math.random()).toString();
+    var filterData = this.state.filterData;
+    filterData[ id ] = {};
+    this.setState({filterData: filterData});
+  },
+
+  onRemoveFilterClickHandler: function(id) {
+    var self = this;
+    return function() {
+      var filterData = self.state.filterData;
+      delete filterData[ id ];
+      self.setState({filterData: filterData});
+      window.localStorage.setItem('filterData2', JSON.stringify(filterData));
+    }
+  },
+
+  render: function() {
+
+    var self = this;
+    var render_result = Object.keys(this.state.filterData).map( (filter_id, i) => {
+      return (<div key={i}>
+        <FilterItemBlock 
+          id={filter_id}
+          options={self.state.filterData[filter_id]}
+          parentCallback={self.onFilterItemBlockChange}
+        />
+        <br />
+        <a onClick={this.onRemoveFilterClickHandler(filter_id)} className="btn btn-primary btn-xs">Remove filter</a>
+      </div>)
+    });
+    return (<div>
+      {render_result}
+      <br />
+      <a onClick={this.onAddFilterClick} className="btn btn-primary btn-xs">Add filter</a>
+    </div>);
+  }
+});
+
+/*
+var FilterOptions = React.createClass({
+  getInitialState: function() {
     if (typeof(this.props.filterData) == "undefined") {
       return { jsonValid: true, filterData: "" };
     } else {
@@ -779,6 +852,7 @@ var FilterOptions = React.createClass({
     );
   }
 });
+// */
 
 var ServerList = React.createClass({
   getInitialState: function() {
@@ -835,7 +909,7 @@ var ServerList = React.createClass({
   }
 });
 
-ReactDOM.render(<FilterItemBlock />, document.getElementById('content')); /*
+ReactDOM.render(<FilterOptions />, document.getElementById('content')); /*
 ReactDOM.render(<ServerList />, document.getElementById('content'));
 // */
 
