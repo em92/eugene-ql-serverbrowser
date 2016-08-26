@@ -664,10 +664,10 @@ var FilterItemBlock = React.createClass({
             Gametype:<br /><input type="text" ref="gametype" />
           </div>
           <div className="filter-block-cell">
-            Arenas: <br /><input type="text" ref="mapname" />
+            Tags: <br /><input type="text" ref="tags" />
           </div>
           <div className="filter-block-cell">
-            Tags: <br /><input type="text" ref="tags" />
+            Arenas: <br /><input type="text" ref="mapname" />
           </div>
         </div>
         <div className="filter-block-column filter-block-center-column">
