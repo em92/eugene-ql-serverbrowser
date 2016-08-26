@@ -118,3 +118,15 @@ noscript {
   width: 100%;
   border-radius: 4px;
 }
+
+.no-filters {
+  background-color: #ccc;
+  width: 100%;
+  overflow:auto;
+  margin-top: 20px;
+  padding: 10px;
+}
+
+.filter-controls {
+  padding: 20px;
+}

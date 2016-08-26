@@ -717,7 +717,10 @@ var FilterOptions = React.createClass({
   getInitialState: function() {
     var filterData = window.localStorage.getItem('filterData2');
     filterData = filterData == null ? {} : JSON.parse(filterData);
-    return { filterData: filterData };
+    return {
+      filterData: filterData,
+      hidden: true
+    };
   },
 
   onFilterItemBlockChange: function(id, state) {
@@ -740,7 +743,7 @@ var FilterOptions = React.createClass({
     var id = (new Date().getTime() + Math.random()).toString();
     var filterData = this.state.filterData;
     filterData[ id ] = {};
-    this.setState({filterData: filterData});
+    this.setState({filterData: filterData, hidden: false});
   },
 
   onRemoveFilterClickHandler: function(id) {
@@ -753,11 +756,16 @@ var FilterOptions = React.createClass({
     }
   },
 
+  onShowHideOptionsClick: function() {
+    console.log(this.state.hidden);
+    this.setState({hidden: !this.state.hidden});
+  },
+
   render: function() {
 
     var self = this;
     var render_result = Object.keys(this.state.filterData).map( (filter_id, i) => {
-      return (<div className="filter-block-wrapper" key={i}>
+      return (<div className="filter-block-wrapper" key={i} style={{display: this.state.hidden ? "none" : "block"}}>
         <FilterItemBlock 
           id={filter_id}
           options={self.state.filterData[filter_id]}
@@ -766,88 +774,20 @@ var FilterOptions = React.createClass({
         <a onClick={this.onRemoveFilterClickHandler(filter_id)} className="close">&times;</a>
       </div>)
     });
-    return (<div>
-      {render_result}
-      <br />
+    if (render_result.length == 0) {
+      render_result = <div className="no-filters">No filters defined. Press &quot;Add filter&quot; to add one</div>;
+    }
+    var filter_controls = (<div className="filter-controls">
+      <a onClick={this.onShowHideOptionsClick} className="btn btn-primary btn-xs">{this.state.hidden ? "Show" : "Hide"} filters ({render_result.length})</a>
       <a onClick={this.onAddFilterClick} className="btn btn-primary btn-xs">Add filter</a>
+    </div>);
+    return (<div>
+      {filter_controls}
+      {render_result}
+      {this.state.hidden ? null : filter_controls}
     </div>);
   }
 });
-
-/*
-var FilterOptions = React.createClass({
-  getInitialState: function() {
-    if (typeof(this.props.filterData) == "undefined") {
-      return { jsonValid: true, filterData: "" };
-    } else {
-      try {
-        JSON.parse(this.props.filterData);
-        return { jsonValid: true, filterData: this.props.filterData};
-      } catch(e) {
-        return { jsonValid: false, filterData: this.props.filterData};
-      }
-    }
-  },
-  
-  onClick: function(event) {
-    this.examplePressed = false;
-    this.props.acceptFilterCallback(this.state.filterData);
-  },
-  
-  onChange: function(event) {
-    try {
-      JSON.parse(event.target.value);
-      this.setState({jsonValid: true, filterData: event.target.value })
-    } catch(e) {
-      this.setState({jsonValid: false, filterData: event.target.value })
-    }
-  },
-  
-  // I don't need it in this.state
-  // Will remove example someday
-  examplePressed: false,
-  onExample: function(event) {
-    
-    var example_filter = ' \
-{"region": "EU", "min_players": 1, "_": [ \n\
-{"g_gametype": 0, "g_instagib": 1}, \n\
-{"g_gametype": 1, "mapname": ["longestyard", "q3dm17"]}, \n\
-{"g_gametype": 5, "g_instagib": 1}, \n\
-{"g_gametype": 4, "country": ["RU", "UA"]} \n\
-]}';
-    try {
-      JSON.parse(example_filter);
-      this.examplePressed = true;
-      this.setState({jsonValid: true, filterData: example_filter })
-    } catch(e) {
-      this.setState({jsonValid: false, filterData: example_filter })
-    }
-  },
-  
-  render: function() {
-    return React.createElement(
-      "div", null,
-      React.createElement("textarea", {rows: 5, cols: 120, onChange: this.onChange, value: this.state.filterData}),
-      React.createElement("br", null),
-      React.createElement("button", {onClick: this.onClick, disabled: !this.state.jsonValid}, this.state.jsonValid ? "Submit" : "Invalid filter"),
-      React.createElement("button", {onClick: this.onExample}, "Example"),
-      this.examplePressed ? React.createElement("br", null): null,
-      this.examplePressed ? React.createElement("div", {style: {backgroundColor: "white", border: "1px solid blue", marginTop: "5px", marginBottom: "5px"} }, 
-        React.createElement("p", null, "This example filter. Meaning:"),
-        React.createElement("ul", null, 
-          React.createElement("li", null, "Server must be in Yurope, not empty and any cases of below"),
-          React.createElement("li", null, "Gametype - InstaFFA"),
-          React.createElement("li", null, "Gametype - Duel on Longest Yard (ql) or The Longest Yard (q3)"),
-          React.createElement("li", null, "Gametype - InstaCTF"),
-          React.createElement("li", null, "Gametype - Clanarena in Russia or Ukraine")
-        ),
-        React.createElement("p", null, "Now press submit button"),
-        React.createElement("p", null, "When I have good mood I will write user-friendly filter and/or documentation")
-      ) : null
-    );
-  }
-});
-// */
 
 var ServerList = React.createClass({
   getInitialState: function() {
