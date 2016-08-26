@@ -67,6 +67,18 @@ app.get('/serverinfo/:endpoint', function (req, res) {
   res.send(serverInfo[req.params.endpoint]);
 });
 
+if (process.env.npm_lifecycle_event == "start-dev") {
+  var fs = require("fs");
+  var index_file_data = fs.readFileSync(__dirname + '/public/index.html', {encoding: 'utf8'}).replace("<!-- dev", "");
+  app.get('/', function (req, res) {
+    res.setHeader("Content-Type", "text/html");
+    res.send(index_file_data);
+  });
+  app.get('/js/serverbrowser.js', function(req, res) {
+    res.sendStatus(403);
+  });
+}
+
 app.use(express.static('public'));
 
 app.listen(3000, function () {
