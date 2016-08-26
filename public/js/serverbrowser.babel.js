@@ -524,7 +524,6 @@ var FilterItemBlock = React.createClass({
       tags: ["any"]
     };
 
-    console.log(this.props.options["private"]);
     Object.keys(state).forEach( arg_name => {
       if (typeof(this.props.options[ arg_name ]) != "undefined") {
         state[arg_name] = this.props.options[ arg_name ];
@@ -758,14 +757,13 @@ var FilterOptions = React.createClass({
 
     var self = this;
     var render_result = Object.keys(this.state.filterData).map( (filter_id, i) => {
-      return (<div key={i}>
+      return (<div className="filter-block-wrapper" key={i}>
         <FilterItemBlock 
           id={filter_id}
           options={self.state.filterData[filter_id]}
           parentCallback={self.onFilterItemBlockChange}
         />
-        <br />
-        <a onClick={this.onRemoveFilterClickHandler(filter_id)} className="btn btn-primary btn-xs">Remove filter</a>
+        <a onClick={this.onRemoveFilterClickHandler(filter_id)} className="close">&times;</a>
       </div>)
     });
     return (<div>

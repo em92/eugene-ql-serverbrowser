@@ -53,6 +53,18 @@ noscript {
 	text-align: center;
 }
 
+.filter-block-wrapper {
+  position: relative;
+}
+
+.filter-block-wrapper a.close{
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+}
+
 .filter-block {
   background-color: #ccc;
   width: 100%;
