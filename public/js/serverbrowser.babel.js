@@ -514,23 +514,23 @@ var FilterItemBlock = React.createClass({
   getInitialState: function() {
     var state = {
       country: ["any"],
+      g_gamestate: "any",
       g_factory: ["any"],
       gametype: ["any"],
       mapname: ["any"],
       min_players: 0,
+      private: "any",
+      region: "any",
       tags: ["any"]
     };
 
+    console.log(this.props.options["private"]);
     Object.keys(state).forEach( arg_name => {
-      if (this.props.options[ arg_name ]) {
+      if (typeof(this.props.options[ arg_name ]) != "undefined") {
         state[arg_name] = this.props.options[ arg_name ];
       }
     });
 
-    this.COMBOBOX_ARG_NAMES.forEach( arg_name => {
-      state[ arg_name ] = "any";
-    });
-    console.log(state);
     return state;
   },
 
@@ -569,11 +569,10 @@ var FilterItemBlock = React.createClass({
     });
 
     this.setState(state);
-    this.props.parentCallback(this.props.id, state);
+    this.props.parentCallback(this.props.id, $.extend(this.state, state));
   },
 
   onMinimumPlayersCountChanged: function(event) {
-    console.log(event.constructor.name);
     var result = 0;
     if (event.target.value.trim() != '') {
       result = parseInt(event.target.value);
@@ -719,7 +718,6 @@ var FilterOptions = React.createClass({
   getInitialState: function() {
     var filterData = window.localStorage.getItem('filterData2');
     filterData = filterData == null ? {} : JSON.parse(filterData);
-    console.log(filterData);
     return { filterData: filterData };
   },
 
@@ -737,7 +735,6 @@ var FilterOptions = React.createClass({
     filterData[ id ] = state;
     this.setState({filterData: filterData});
     window.localStorage.setItem('filterData2', JSON.stringify(filterData));
-    console.log(filterData);
   },
 
   onAddFilterClick: function() {
@@ -909,7 +906,4 @@ var ServerList = React.createClass({
   }
 });
 
-ReactDOM.render(<FilterOptions />, document.getElementById('content')); /*
 ReactDOM.render(<ServerList />, document.getElementById('content'));
-// */
-
