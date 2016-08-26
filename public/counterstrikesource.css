@@ -65,11 +65,14 @@ noscript {
   height: 20px;
 }
 
+.filter-block-wrapper:not(:first-child) {
+  margin-top: 20px;
+}
+
 .filter-block {
   background-color: #ccc;
   width: 100%;
   overflow:auto;
-  margin-top: 20px;
 }
 
 .filter-block-column {
@@ -123,10 +126,13 @@ noscript {
   background-color: #ccc;
   width: 100%;
   overflow:auto;
-  margin-top: 20px;
   padding: 10px;
 }
 
 .filter-controls {
   padding: 20px;
+}
+
+.filter-controls a{
+  margin-right: 5px;
 }

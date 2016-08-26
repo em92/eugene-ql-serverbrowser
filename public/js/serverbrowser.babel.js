@@ -724,19 +724,9 @@ var FilterOptions = React.createClass({
   },
 
   onFilterItemBlockChange: function(id, state) {
-    /*
-    state = $.extend({}, state);
-    state["_"] = state.gametype.map( item => {
-      if (item == "any") return {g_gametype: "any"};
-      if (item >= 100) return {g_gametype: item-100, g_instagib: 1};
-      else if (item >= 100) return {g_gametype: item, g_instagib: 0};
-    });
-    delete state.gametype;
-    */
     var filterData = this.state.filterData;
     filterData[ id ] = state;
-    this.setState({filterData: filterData});
-    window.localStorage.setItem('filterData2', JSON.stringify(filterData));
+    this.setFilterData( filterData );
   },
 
   onAddFilterClick: function() {
@@ -751,13 +741,31 @@ var FilterOptions = React.createClass({
     return function() {
       var filterData = self.state.filterData;
       delete filterData[ id ];
-      self.setState({filterData: filterData});
-      window.localStorage.setItem('filterData2', JSON.stringify(filterData));
+      self.setFilterData( filterData );
     }
   },
 
+  setFilterData: function( filterData ) {
+    if (filterData.constructor.name != 'Object') {
+      filterData = this.state.filterData;
+    } else {
+      this.setState({filterData: filterData});
+    }
+    window.localStorage.setItem('filterData2', JSON.stringify(filterData));
+    var filterDataRaw = Object.keys( filterData ).map( i => {
+      var state = $.extend({}, filterData[i]);
+      state["_"] = state.gametype.map( item => {
+        if (item == "any") return {g_gametype: "any"};
+        if (item >= 100) return {g_gametype: item-100, g_instagib: 1};
+        else return {g_gametype: item, g_instagib: 0};
+      });
+      delete state.gametype;
+      return state;
+    });
+    this.props.acceptFilterCallback( {"_": filterDataRaw } );
+  },
+
   onShowHideOptionsClick: function() {
-    console.log(this.state.hidden);
     this.setState({hidden: !this.state.hidden});
   },
 
@@ -774,17 +782,19 @@ var FilterOptions = React.createClass({
         <a onClick={this.onRemoveFilterClickHandler(filter_id)} className="close">&times;</a>
       </div>)
     });
+    var filter_cnt = render_result.length;
     if (render_result.length == 0) {
       render_result = <div className="no-filters">No filters defined. Press &quot;Add filter&quot; to add one</div>;
     }
     var filter_controls = (<div className="filter-controls">
-      <a onClick={this.onShowHideOptionsClick} className="btn btn-primary btn-xs">{this.state.hidden ? "Show" : "Hide"} filters ({render_result.length})</a>
+      <a onClick={this.onShowHideOptionsClick} className="btn btn-primary btn-xs">{this.state.hidden ? "Show" : "Hide"} filters ({filter_cnt})</a>
       <a onClick={this.onAddFilterClick} className="btn btn-primary btn-xs">Add filter</a>
+      <a onClick={this.setFilterData} className="btn btn-primary btn-xs">Apply</a>
     </div>);
     return (<div>
       {filter_controls}
-      {render_result}
-      {this.state.hidden ? null : filter_controls}
+      <div>{render_result}</div>
+      {this.state.hidden || filter_cnt == 0 ? null : filter_controls}
     </div>);
   }
 });
@@ -795,6 +805,7 @@ var ServerList = React.createClass({
   },
 
   acceptFilter: function(filterDataIn) {
+    filterDataIn = JSON.stringify(filterDataIn);
     window.localStorage.setItem('filterData', filterDataIn);
     this.filterData = "/" + window.btoa(filterDataIn);
     this.downloadServerList();
@@ -827,7 +838,7 @@ var ServerList = React.createClass({
     });
 
     return (<div>
-      <FilterOptions acceptFilterCallback={this.acceptFilter} filterData={window.localStorage.filterData} />
+      <FilterOptions acceptFilterCallback={this.acceptFilter} />
       <table>
         <thead><tr>
           <th>Location</th>
