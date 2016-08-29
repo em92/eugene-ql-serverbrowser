@@ -1,7 +1,9 @@
 var rp = require('request-promise');
 
+var servers = [];
+
 var query = function() {
-  console.log("Querying syncore's server list");
+  //console.log("Querying syncore's server list");
   
   var options = {
     uri: 'https://ql.syncore.org/api/servers',
@@ -11,11 +13,13 @@ var query = function() {
   
   return rp(options)
   .then( data => {
-    console.log("recved " + data.servers.length + " servers");
-    return data.servers.map(function(item) {
+    servers = data.servers.map(function(item) {
       return item.address;
     });
   });
 };
 
 module.exports.query = query;
+Object.defineProperty(module.exports, "servers", {
+  get: function() { return servers; }
+});
