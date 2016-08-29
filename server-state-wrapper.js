@@ -1,8 +1,9 @@
 var geoip = require('./geoip.js');
 var gsqw = require("./game-server-query-wrapper.js");
 var master = require('./master.js');
+var Q = require('q');
+var skillrating = require('./skillrating.js');
 
-var servers = [];
 var serverInfo = {};
 
 var time_to_update_server_list = true;
@@ -234,24 +235,22 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
   }
 };
 
-var updateServerInfo = function() {
+var updateServerInfo = function( update_server_list ) {
+  if (typeof(update_server_list) == "undefined") update_server_list = true;
 
-  if (time_to_update_server_list == true) {
-    master.query().then( result => {
-      time_to_update_server_list = false;
-      servers = result;
+  if (update_server_list == true) {
+    Q.all( [ master.query(), skillrating.query() ] ).then( () => {
       Object.keys(serverInfo).forEach( server => {
-        if ( servers.indexOf( server ) == -1 ) {
+        if ( master.servers.indexOf( server ) == -1 ) {
           delete serverInfo[server];
         }
       });
+      updateServerInfo(false);
     })
     .catch( error => {
-      console.error("master.query error");
+      console.error("updateServerInfo error");
       console.error(error);
-    })
-    .finally( () => {
-      updateServerInfo();
+      updateServerInfo(true);
     });
     return;
   }
@@ -273,7 +272,7 @@ var updateServerInfo = function() {
       });
 
       try {
-        state['geo'] = geoip.lookup(state.query.host);
+        state['geo'] = geoip.lookup(state.query.host, skillrating.server_ips[ state.query.host ]);
 
         // some servers return g_gametype
         // some servers return g_gameType
@@ -304,12 +303,12 @@ var updateServerInfo = function() {
   var execution_time;
   geoip.ready().then( () => {
     execution_time = new Date();
-    return gsqw(servers, gsqw_callback);
+    return gsqw(master.servers, gsqw_callback);
   })
   .then( () => {
     var now = new Date();
     execution_time = now - execution_time;
-    console.log("[" +  now.toLocaleDateString() + " " + now.toLocaleTimeString() + "]: " + servers.length + " servers scanned in " + ( execution_time / 1000 ) + " s.");
+    console.log("[" +  now.toLocaleDateString() + " " + now.toLocaleTimeString() + "]: " + master.servers.length + " servers scanned in " + ( execution_time / 1000 ) + " s.");
     setTimeout(updateServerInfo, 10000);
   });
 };
