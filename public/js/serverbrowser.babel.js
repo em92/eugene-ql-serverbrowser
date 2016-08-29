@@ -582,7 +582,6 @@ var FilterItemBlock = React.createClass({
   },
 
   componentDidMount: function() {
-    this.props.parentCallback(this.props.id, this.state);
     var gametype_token_input_values = [];
     Object.keys(GAMETYPES).forEach( gametype_id => {
       gametype_token_input_values.push({id: gametype_id, name: GAMETYPES[gametype_id]});
@@ -615,6 +614,12 @@ var FilterItemBlock = React.createClass({
           this.tokenInput("remove", {id: "any"});
         }
 
+        self.onAnythingChanged({});
+      },
+      onDelete: function() {
+        if (this.tokenInput("get").length == 0) {
+          this.tokenInput("add", {id: "any", name: "any"});
+        }
         self.onAnythingChanged({});
       },
       preventDuplicates: true,
@@ -801,7 +806,7 @@ var FilterOptions = React.createClass({
 
 var ServerList = React.createClass({
   getInitialState: function() {
-    return { servers: [] };
+    return { servers: [], error: false };
   },
 
   acceptFilter: function(filterDataIn) {
@@ -817,9 +822,10 @@ var ServerList = React.createClass({
       dataType: 'json',
       cache: true,
       success: (function (data) {
-        this.setState(data);
+        this.setState( {servers: data.servers, loading: false, error: false } );
       }).bind(this),
       error: (function (xhr, status, err) {
+        this.setState( {loading: false, error: "Failed to load server list" } );
         console.error(this.props.url, status, err.toString());
       }).bind(this)
     });
@@ -837,9 +843,10 @@ var ServerList = React.createClass({
       return <Server server={server} key={i} />;
     });
 
-    return (<div>
-      <FilterOptions acceptFilterCallback={this.acceptFilter} />
-      <table>
+    if (this.state.error)
+      result = (<div className="error">{this.state.error}</div>);
+    else if (result.length != 0)
+      result = (<table>
         <thead><tr>
           <th>Location</th>
           <th>Gametype</th>
@@ -850,7 +857,13 @@ var ServerList = React.createClass({
           <th></th>
         </tr></thead>
         <tbody>{result}</tbody>
-      </table>
+      </table>);
+    else
+      result = (<div className="no-servers">No results</div>);
+
+    return (<div>
+      <FilterOptions acceptFilterCallback={this.acceptFilter} />
+      {result}
     </div>);
   }
 });

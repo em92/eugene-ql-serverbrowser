@@ -122,11 +122,12 @@ noscript {
   border-radius: 4px;
 }
 
-.no-filters {
+.no-filters, .no-servers, .loading {
   background-color: #ccc;
   width: 100%;
   overflow:auto;
   padding: 10px;
+  text-align: center;
 }
 
 .filter-controls {
@@ -135,4 +136,12 @@ noscript {
 
 .filter-controls a{
   margin-right: 5px;
+}
+
+.error {
+  background-color: red;
+  width: 100%;
+  overflow:auto;
+  padding: 10px;
+  text-align: center;
 }
