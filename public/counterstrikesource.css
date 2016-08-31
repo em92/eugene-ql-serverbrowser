@@ -52,3 +52,96 @@ noscript {
 	margin-right: auto;
 	text-align: center;
 }
+
+.filter-block-wrapper {
+  position: relative;
+}
+
+.filter-block-wrapper a.close{
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.filter-block-wrapper:not(:first-child) {
+  margin-top: 20px;
+}
+
+.filter-block {
+  background-color: #ccc;
+  width: 100%;
+  overflow:auto;
+}
+
+.filter-block-column {
+  padding: 10px;
+}
+
+.filter-block-left-column {
+  float: left;
+  width: 50%;
+}
+
+.filter-block-center-column {
+  display: inline-block;
+  width: 30%;
+}
+
+.filter-block-right-column {
+  float: right;
+  width: 20%;
+}
+
+.filter-block-column select{
+  border: 1px solid #8496ba;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  height: 29px;
+}
+
+.filter-block-cell {
+  min-height: 70px;
+  font-size: 13px;
+}
+
+.filter-block-cell .simple_text{
+  border: 1px solid #8496ba;
+  padding-left: 4px;
+  padding-right: 4px;
+  font-size: 12px;
+  height: 29px;
+  border-radius: 4px;
+}
+
+.filter-block-cell .token-input-list-facebook {
+  width: 100%;
+  border-radius: 4px;
+}
+
+.no-filters, .no-servers, .loading {
+  background-color: #ccc;
+  width: 100%;
+  overflow:auto;
+  padding: 10px;
+  text-align: center;
+}
+
+.filter-controls {
+  padding: 20px;
+}
+
+.filter-controls a{
+  margin-right: 5px;
+}
+
+.error {
+  background-color: red;
+  width: 100%;
+  overflow:auto;
+  padding: 10px;
+  text-align: center;
+}

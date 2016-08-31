@@ -1,10 +1,4 @@
-snapshots/*
 node_modules/*
-public/pickup-status.json
-npm-debug.log
-Копия geoip.json
-1.txt
-1.html
-test.js
-discord.conf.json
 geoip.json
+public/js/serverbrowser.js
+npm-debug.log
