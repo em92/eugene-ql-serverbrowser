@@ -554,16 +554,18 @@ var FilterItemGametype = React.createClass({
 var FilterBlock = React.createClass({
 
   filter_items: [],
+  id: null,
 
   getInitialState: function() {
     return {}
   },
 
-  createFilterItem: function(filter_name) {
+  createFilterItem: function(filter_name, filter_value) {
     if (typeof(filter_name) == "string") {
       // pass
     } else if (typeof(filter_name) == "object") {
       filter_name = filter_name.target.value;
+      filter_value = [];
     } else {
       console.error("createFilterItem", filter_name, typeof(filter_name));
     }
@@ -571,12 +573,13 @@ var FilterBlock = React.createClass({
       case 'gametype':
         this.filter_items.push({
           name: "gametype",
-          body: <FilterItemGametype setFilterValue={this.setFilterValue}/>
+          body: <FilterItemGametype setFilterValue={this.setFilterValue} value={filter_value} />
         });
-        this.setState({gametype: []});
+        this.setState({gametype: filter_value});
       break;
 
       default:
+        console.error("createFilterItem", filter_name, filter_value);
         return;
     }
   },
@@ -594,8 +597,20 @@ var FilterBlock = React.createClass({
     this.setState( result );
   },
 
+  componentWillUpdate: function(nextProps, nextState) {
+    window.localStorage.setItem('filterData_' + this.id, JSON.stringify(nextState));
+  },
+
   componentWillMount: function() {
-    this.createFilterItem("gametype");
+    var id = this.props.id;
+    if (typeof(id) == "undefined") return;
+
+    this.id = id;
+    var filter_data = JSON.parse(window.localStorage.getItem('filterData_' + id));
+    var self = this;
+    Object.keys( filterData ).forEach( filter_name => {
+      self.createFilterItem( filter_name, filter_data[ filter_name ] );
+    });
   },
 
   render: function() {
@@ -853,8 +868,18 @@ var FilterItemBlock = React.createClass({
 
 var FilterOptions = React.createClass({
   getInitialState: function() {
-    var filterData = window.localStorage.getItem('filterData2');
-    filterData = filterData == null ? {} : JSON.parse(filterData);
+    var filterData = {};
+    for (var i=0; i<window.localStorage.length; i++) {
+      var key = window.localStorage.key(i);
+      var id = key.substr(11);
+      if ( key.substr(0, 11) == 'filterData_' && id != "" ) {
+        try {
+          filterData[ id ] = JSON.parse( window.localStorage.getItem( key ) );
+        } catch(e) {
+          console.error(key, e);
+        }
+      }
+    }
     return {
       filterData: filterData,
       hidden: true
