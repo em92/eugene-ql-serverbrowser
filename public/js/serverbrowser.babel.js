@@ -553,77 +553,76 @@ var FilterItemGametype = React.createClass({
 
 var FilterBlock = React.createClass({
 
-  filter_items: [],
-  id: null,
-
   getInitialState: function() {
-    return {}
-  },
+    var id = this.props.id ? this.props.id : null;
+    if (id == null) return {
+      id: null,
+      filter_data: {}
+    };
 
-  createFilterItem: function(filter_name, filter_value) {
-    if (typeof(filter_name) == "string") {
-      // pass
-    } else if (typeof(filter_name) == "object") {
-      filter_name = filter_name.target.value;
-      filter_value = [];
-    } else {
-      console.error("createFilterItem", filter_name, typeof(filter_name));
-    }
-    switch(filter_name) {
-      case 'gametype':
-        this.filter_items.push({
-          name: "gametype",
-          body: <FilterItemGametype setFilterValue={this.setFilterValue} value={filter_value} />
-        });
-        this.setState({gametype: filter_value});
-      break;
-
-      default:
-        console.error("createFilterItem", filter_name, filter_value);
-        return;
+    try {
+      var filter_data = JSON.parse(window.localStorage.getItem('filterData_' + id));
+      if (filter_data == null) filter_data = {};
+      return {
+        id: id,
+        filter_data: filter_data
+      };
+    } catch(e) {
+      return {
+        id: id,
+        filter_data: {}
+      };
     }
   },
 
   setFilterValue: function(filter_name, filter_value) {
-    var result = {}
+    var result = this.state.filter_data;
     result[ filter_name ] = filter_value;
-    this.setState( result );
+    this.setState( { filter_data: result } );
   },
 
   removeFilterItem: function(filter_name) {
-    var result = this.state;
+    var result = this.state.filter_data;
     delete result[ filter_name ];
-    this.filter_items = this.filter_items.filter( item => item.name != filter_name );
-    this.setState( result );
+    this.setState( { filter_data: result } );
   },
 
-  componentWillUpdate: function(nextProps, nextState) {
-    window.localStorage.setItem('filterData_' + this.id, JSON.stringify(nextState));
+  createFilterItem: function(event) {
+    this.setFilterValue( event.target.value, [] );
   },
 
-  componentWillMount: function() {
-    var id = this.props.id;
-    if (typeof(id) == "undefined") return;
-
-    this.id = id;
-    var filter_data = JSON.parse(window.localStorage.getItem('filterData_' + id));
-    var self = this;
-    Object.keys( filterData ).forEach( filter_name => {
-      self.createFilterItem( filter_name, filter_data[ filter_name ] );
-    });
+  componentDidUpdate: function() {
+    window.localStorage.setItem('filterData_' + this.state.id, JSON.stringify(this.state.filter_data));
+    this.props.parentCallback(this.state.id, this.state.filter_data);
   },
 
   render: function() {
-    var filter_options = [];
     var self = this;
+
+    var filter_options = [];
     Object.keys(FILTERS).forEach( (filter_name, i) => {
-      if (typeof(self.state[ filter_name ]) == "undefined") {
+      if (typeof(self.state.filter_data[ filter_name ]) == "undefined") {
         filter_options.push(<option key={i+1} value={filter_name}>{FILTERS[filter_name]}</option>);
       }
     });
 
+    var filter_items = Object.keys(this.state.filter_data).map( filter_name => {
+      switch( filter_name ) {
+
+        case "gametype":
+          return {
+            name: "gametype",
+            body: <FilterItemGametype value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        default:
+          console.error(filter_name);
+          return null
+      }
+    });
+
     return (<div className="filter-block">
-      {this.filter_items.map( (filter_item, i) => (
+      {filter_items.map( (filter_item, i) => (
         <div className="filter-item-wrapper" key={i}>
           <div>{filter_item.body}</div>
           <a onClick={() => {this.removeFilterItem(filter_item.name)}} className="close">&times;</a>
@@ -912,17 +911,18 @@ var FilterOptions = React.createClass({
     if (filterData.constructor.name != 'Object') {
       filterData = this.state.filterData;
     } else {
-      this.setState({filterData: filterData});
+      //this.setState({filterData: filterData});
     }
-    window.localStorage.setItem('filterData2', JSON.stringify(filterData));
     var filterDataRaw = Object.keys( filterData ).map( i => {
       var state = $.extend({}, filterData[i]);
-      state["_"] = state.gametype.map( item => {
-        if (item == "any") return {g_gametype: "any"};
-        if (item >= 100) return {g_gametype: item-100, g_instagib: 1};
-        else return {g_gametype: item, g_instagib: 0};
-      });
-      delete state.gametype;
+      if (state.gametype) {
+        state["_"] = state.gametype.map( item => {
+          if (item == "any") return {g_gametype: "any"};
+          if (item >= 100) return {g_gametype: item-100, g_instagib: 1};
+          else return {g_gametype: item, g_instagib: 0};
+        });
+        delete state.gametype;
+      }
       return state;
     });
     this.props.acceptFilterCallback( {"_": filterDataRaw } );
@@ -937,9 +937,8 @@ var FilterOptions = React.createClass({
     var self = this;
     var render_result = Object.keys(this.state.filterData).map( (filter_id, i) => {
       return (<div className="filter-block-wrapper" key={i} style={{display: this.state.hidden ? "none" : "block"}}>
-        <FilterItemBlock 
+        <FilterBlock
           id={filter_id}
-          options={self.state.filterData[filter_id]}
           parentCallback={self.onFilterItemBlockChange}
         />
         <a onClick={this.onRemoveFilterClickHandler(filter_id)} className="close">&times;</a>
@@ -1026,6 +1025,6 @@ var ServerList = React.createClass({
   }
 });
 
-ReactDOM.render(<FilterBlock />, document.getElementById('content')); /*
+ReactDOM.render(<FilterOptions acceptFilterCallback={console.log} />, document.getElementById('content')); /*
 ReactDOM.render(<ServerList />, document.getElementById('content'));
 // */
