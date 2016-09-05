@@ -905,6 +905,7 @@ var FilterOptions = React.createClass({
       delete filterData[ id ];
       window.localStorage.removeItem("filterData_" + id);
       self.setFilterData( filterData );
+      self.setState({});
     }
   },
 
