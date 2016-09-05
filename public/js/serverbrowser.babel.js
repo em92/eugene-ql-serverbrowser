@@ -429,6 +429,10 @@ var COUNTRY_CODE_LIST = [
 ];
 
 var FILTERS = {
+  "country":  "Country",
+  "g_factory": "Factory",
+  "mapname":  "Map",
+  "tags":     "Tags",
   "gametype": "Gametype"
 };
 
@@ -521,9 +525,10 @@ var FilterItemTokenInputMixin = {
       onAdd: this.onAnythingChanged,
       onDelete: this.onAnythingChanged,
       allowFreeTagging: this.allowFreeTagging,
-      prePopulate: this.tokens.filter( token => {
-        return self.state.value.indexOf(token.id) > -1
-      }),
+      prePopulate: ( this.allowFreeTagging ?
+        this.state.value.map( item => ({id: item, name: item}) ) :
+        this.tokens.filter( token => {return self.state.value.indexOf(token.id) > -1})
+      ),
       preventDuplicates: true,
       resultsLimit: 5,
       searchingText: ""
@@ -548,6 +553,45 @@ var FilterItemGametype = React.createClass({
   prompt: FILTERS["gametype"],
   tokens: Object.keys(GAMETYPES).map( gametype_id => ({id: parseInt(gametype_id), name: GAMETYPES[gametype_id]}) ),
   name: "gametype"
+
+});
+
+var FilterItemMapname = React.createClass({
+
+  allowFreeTagging: true,
+  mixins: [FilterItemTokenInputMixin],
+  prompt: FILTERS["mapname"],
+  tokens: MAPS.map( mapname => ({id: mapname, name: mapname}) ),
+  name: "mapname"
+
+});
+
+var FilterItemCountry = React.createClass({
+
+  mixins: [FilterItemTokenInputMixin],
+  prompt: FILTERS["country"],
+  tokens: COUNTRY_CODE_LIST.map( item => ({id: item, name: item}) ),
+  name: "country"
+
+});
+
+var FilterItemTags = React.createClass({
+
+  allowFreeTagging: true,
+  mixins: [FilterItemTokenInputMixin],
+  prompt: FILTERS["tags"],
+  tokens: [],
+  name: "tags"
+
+});
+
+var FilterItemFactory = React.createClass({
+
+  allowFreeTagging: true,
+  mixins: [FilterItemTokenInputMixin],
+  prompt: FILTERS["g_factory"],
+  tokens: [],
+  name: "g_factory"
 
 });
 
@@ -609,10 +653,34 @@ var FilterBlock = React.createClass({
     var filter_items = Object.keys(this.state.filter_data).map( filter_name => {
       switch( filter_name ) {
 
+        case "country":
+          return {
+            name: "country",
+            body: <FilterItemCountry value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "g_factory":
+          return {
+            name: "g_factory",
+            body: <FilterItemFactory value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
         case "gametype":
           return {
             name: "gametype",
             body: <FilterItemGametype value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "mapname":
+          return {
+            name: "mapname",
+            body: <FilterItemMapname value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "tags":
+          return {
+            name: "tags",
+            body: <FilterItemTags value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
           }
 
         default:
