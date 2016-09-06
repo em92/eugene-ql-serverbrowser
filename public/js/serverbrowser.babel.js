@@ -622,22 +622,23 @@ var FilterBlock = React.createClass({
   setFilterValue: function(filter_name, filter_value) {
     var result = this.state.filter_data;
     result[ filter_name ] = filter_value;
-    this.setState( { filter_data: result } );
+    this.acceptFilterData( result );
   },
 
   removeFilterItem: function(filter_name) {
     var result = this.state.filter_data;
     delete result[ filter_name ];
+    this.acceptFilterData( result );
+  },
+
+  acceptFilterData: function( result ) {
+    window.localStorage.setItem('filterData_' + this.state.id, JSON.stringify(this.state.filter_data));
     this.setState( { filter_data: result } );
+    this.props.parentCallback(this.state.id, result);
   },
 
   createFilterItem: function(event) {
     this.setFilterValue( event.target.value, [] );
-  },
-
-  componentDidUpdate: function() {
-    window.localStorage.setItem('filterData_' + this.state.id, JSON.stringify(this.state.filter_data));
-    this.props.parentCallback(this.state.id, this.state.filter_data);
   },
 
   render: function() {
@@ -1095,6 +1096,4 @@ var ServerList = React.createClass({
   }
 });
 
-ReactDOM.render(<FilterOptions acceptFilterCallback={console.log} />, document.getElementById('content')); /*
 ReactDOM.render(<ServerList />, document.getElementById('content'));
-// */
