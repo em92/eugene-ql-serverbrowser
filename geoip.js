@@ -6,17 +6,19 @@ var c2c = {"BD": "AS", "BE": "EU", "BF": "AF", "BG": "EU", "BA": "EU", "BB": "NA
 var cache = {};
 var temp_cache = {};
 var tasks = new Set();
+var is_first_run = true;
 
 var FLAG_PERMANENT = "+";
 var TIMEOUT = 500; // 500 ms -> 120 request per minute
 
 var mainLoop = function() {
   if (tasks.size == 0) {
+    is_first_run = false;
     return;
   };
   
   var ip = tasks.values().next().value;
-  var is_permanent = ip.indexOf(FLAG_PERMANENT) > -1;
+  var is_permanent = ip.indexOf(FLAG_PERMANENT) > -1 || is_first_run;
   tasks.delete(ip);
   if (is_permanent) {
     ip = ip.split(FLAG_PERMANENT)[0];
@@ -85,7 +87,5 @@ try {
   cache = {};
 }
 
-
-mainLoop();
 module.exports.lookup = lookup;
 module.exports.ready = ready;
