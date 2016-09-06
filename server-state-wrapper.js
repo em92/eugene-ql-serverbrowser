@@ -58,6 +58,42 @@ var getGametypeByTags = function(tags) {
   };
 };
 
+var getFactoryByTags = function(tags) {
+  var gametypeString = tags.split(",")[0];
+  switch(gametypeString) {
+    case 'ffa':
+    case 'duel':
+    case 'race':
+    case 'tdm':
+    case 'ctf':
+      return gametypeString;
+
+    case 'clanarena':
+      return 'ca';
+
+    case 'a&d':
+      return 'ad';
+
+    case 'harvester':
+      return 'har';
+
+    case 'oneflag':
+      return '1fctf';
+
+    case 'freezetag':
+      return 'ft';
+
+    case 'domination':
+      return 'dom';
+
+    case 'redrover':
+      return 'rr';
+
+    default:
+      return gametypeString;
+  };
+};
+
 var isInstagibByTags = function(tags) {
   return tags.split(",").indexOf("instagib") == -1 ? 0 : 1;
 };
@@ -74,7 +110,7 @@ var format = function(address, state) {
         bots: state.bots,
         g_gamestate: state.raw.rules ? state.raw.rules.g_gamestate : "n/a",
         g_gametype: state.raw.rules ? parseInt(state.raw.rules.g_gametype) : getGametypeByTags(state.raw.tags),
-        g_factory: state.raw.rules ? state.raw.rules.g_factory : getGametypeByTags(state.raw.tags),
+        g_factory: state.raw.rules ? state.raw.rules.g_factory : getFactoryByTags(state.raw.tags),
         g_instagib: state.raw.rules ? parseInt(state.raw.rules.g_instagib) : isInstagibByTags(state.raw.tags),
         mapname: state.map.toLowerCase(),
         players: state.players,
@@ -107,6 +143,21 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
       value = value.toUpperCase();
       if (value == "ANY")
         return 1;
+      else if (value == "")
+        return 0;
+      else if (value[0] == "!" && key != "tags") {
+        var r = check_key_value(key, value.substr(1));
+        switch(r) {
+          case 1:
+            return 0;
+
+          case 0:
+            return 1;
+
+          default:
+            return -1;
+        }
+      }
     }
 
     switch(key) {
