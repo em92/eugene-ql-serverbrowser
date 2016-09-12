@@ -431,9 +431,12 @@ var COUNTRY_CODE_LIST = [
 var FILTERS = {
   "country":      "Country",
   "g_factory":    "Factory",
+  "g_gamestate":  "Gamestate",
   "gametype":     "Gametype",
   "mapname":      "Map",
   "min_players":  "Min. players count",
+  "private":      "Accessibility",
+  "region":       "Region",
   "tags":         "Tags"
 };
 
@@ -635,6 +638,93 @@ var FilterItemMinPlayersCount = React.createClass({
 
 });
 
+var FilterItemComboBoxMixin = {
+
+  getInitialState: function() {
+    if (typeof(this.props.value) == "undefined")
+      return {value: "none"};
+    else if (typeof(this.props.value) != "string")
+      return {value: this.props.value.toString()};
+    else
+      return {value: this.props.value};
+  },
+
+  onAnythingChanged: function(event) {
+    var value = event.target.value;
+
+    var int_value = parseInt(value);
+    if (int_value == int_value && int_value.toString() == value) {
+      this.props.setFilterValue(this.name, int_value);
+    } else if ( value.toLowerCase() == "true" ) {
+      this.props.setFilterValue(this.name, true);
+    } else if ( value.toLowerCase() == "false" ) {
+      this.props.setFilterValue(this.name, false);
+    } else {
+      this.props.setFilterValue(this.name, value);
+    }
+
+    this.setState({value: value});
+  },
+
+  render: function() {
+    var self = this;
+    var option_blocks = Object.keys(this.options).map( (name, i) => {
+      return <option value={name} key={i+1}>{self.options[ name ]}</option>
+    });
+
+    return (<div className="filter-item">
+      <div className="filter-item-left">{this.prompt}</div>
+      <div className="filter-item-right">
+        <select className="form-control input-sm" value={this.state.value} onChange={this.onAnythingChanged}>
+          <option value="none" disabled="true" key={0}></option>
+          {option_blocks}
+        </select>
+      </div>
+    </div>);
+  }
+
+};
+
+var FilterItemRegion = React.createClass({
+
+  prompt: FILTERS["region"],
+  mixins: [FilterItemComboBoxMixin],
+  options: {
+    "eu": "Europe",
+    "na": "North America",
+    "sa": "South America",
+    "oc": "Oceania",
+    "as": "Asia",
+    "af": "Africa"
+  },
+  name: "region"
+
+});
+
+var FilterItemGamestate = React.createClass({
+
+  prompt: FILTERS["g_gamestate"],
+  mixins: [FilterItemComboBoxMixin],
+  options: {
+    "PRE_GAME": "Warmup",
+    "IN_PROGRESS": "In progress"
+  },
+  name: "g_gamestate"
+
+});
+
+var FilterItemPrivate = React.createClass({
+
+  prompt: FILTERS["private"],
+  mixins: [FilterItemComboBoxMixin],
+  options: {
+    "false": "Public",
+    "true": "Private"
+  },
+  name: "private"
+
+});
+
 var FilterBlock = React.createClass({
 
   getInitialState: function() {
@@ -706,6 +796,12 @@ var FilterBlock = React.createClass({
             body: <FilterItemFactory value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
           }
 
+        case "g_gamestate":
+          return {
+            name: "g_gamestate",
+            body: <FilterItemGamestate value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
         case "gametype":
           return {
             name: "gametype",
@@ -722,6 +818,18 @@ var FilterBlock = React.createClass({
           return {
             name: "min_players",
             body: <FilterItemMinPlayersCount value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "private":
+          return {
+            name: "private",
+            body: <FilterItemPrivate value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "region":
+          return {
+            name: "region",
+            body: <FilterItemRegion value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
           }
 
         case "tags":

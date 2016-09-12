@@ -94,11 +94,8 @@ noscript {
   width: 20%;
 }
 
-.filter-block-column select{
+.filter-block .filter-item .filter-item-right select{
   border: 1px solid #8496ba;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
   cursor: pointer;
   height: 29px;
 }
