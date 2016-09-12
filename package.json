@@ -10,8 +10,6 @@
     "babel": "^5.8.38",
     "express": "^4.13.4",
     "game-server-query": "^1.0.8",
-    "ip-port-regex": "^1.0.0",
-    "lodash": "^4.15.0",
     "q": "^1.4.1",
     "uglify-js": "^2.7.3",
     "request-promise": "^3.0.0"
