@@ -108,13 +108,12 @@ noscript {
   font-size: 13px;
 }
 
-.filter-block-cell .simple_text{
+.filter-item-right .simple_text{
   border: 1px solid #8496ba;
   padding-left: 4px;
   padding-right: 4px;
   font-size: 12px;
   height: 29px;
-  border-radius: 4px;
 }
 
 .filter-block-cell .token-input-list-facebook {

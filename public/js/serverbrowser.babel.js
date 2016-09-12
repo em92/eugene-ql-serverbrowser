@@ -429,11 +429,12 @@ var COUNTRY_CODE_LIST = [
 ];
 
 var FILTERS = {
-  "country":  "Country",
-  "g_factory": "Factory",
-  "mapname":  "Map",
-  "tags":     "Tags",
-  "gametype": "Gametype"
+  "country":      "Country",
+  "g_factory":    "Factory",
+  "gametype":     "Gametype",
+  "mapname":      "Map",
+  "min_players":  "Min. players count",
+  "tags":         "Tags"
 };
 
 var Location = React.createClass({
@@ -595,6 +596,45 @@ var FilterItemFactory = React.createClass({
 
 });
 
+var FilterItemIntegerInputMixin = {
+
+  getInitialState: function() {
+    if (typeof(this.props.value) == "undefined")
+      return {value: 0};
+    else
+      return {value: this.props.value};
+  },
+
+  onAnythingChanged: function(event) {
+    var result = 0;
+    if (event.target.value.trim() != '') {
+      result = parseInt(event.target.value);
+    }
+    if (result != result) result = 0; // NaN -> 0
+    if (result < 0) result *= -1;
+    this.setState({value: result});
+    this.props.setFilterValue(this.name, result);
+  },
+
+  render: function() {
+    return (<div className="filter-item">
+      <div className="filter-item-left">{this.prompt}</div>
+      <div className="filter-item-right">
+        <input type="text" ref="input" className="simple_text" value={this.state.value} onChange={this.onAnythingChanged} />
+      </div>
+    </div>);
+  }
+
+};
+
+var FilterItemMinPlayersCount = React.createClass({
+
+  prompt: FILTERS["min_players"],
+  mixins: [FilterItemIntegerInputMixin],
+  name: "min_players"
+
+});
+
 var FilterBlock = React.createClass({
 
   getInitialState: function() {
@@ -676,6 +716,12 @@ var FilterBlock = React.createClass({
           return {
             name: "mapname",
             body: <FilterItemMapname value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "min_players":
+          return {
+            name: "min_players",
+            body: <FilterItemMinPlayersCount value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
           }
 
         case "tags":
