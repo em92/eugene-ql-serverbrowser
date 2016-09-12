@@ -100,7 +100,7 @@ var format = function(address, state) {
       host_name: state.name,
       location: state.geo,
       password: state.password,
-      tags: state.raw.tags.split(","),
+      tags: state.raw.tags.split(",").map( tag => tag.trim().toLowerCase() ),
       gameinfo: {
         bots: state.bots,
         g_gamestate: state.raw.rules ? state.raw.rules.g_gamestate : "n/a",
@@ -192,7 +192,7 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
           var good_tags = sum.filter(function( tag ) {
             if (tag == "") return false;
             if (tag[0] == "!") return false;
-            if (server_tag.trim().toLowerCase() == tag.trim().toLowerCase()) return false;
+            if (server_tag == tag) return false;
             return true;
           });
 
@@ -205,7 +205,7 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
           if (good_tags.length == 0 && bad_tags.length == 0) return true;
 
           var is_bad_server = bad_tags.some(function( bad_tag ) {
-            return ("!" + server_tag.trim().toLowerCase() ) == bad_tag.trim().toLowerCase();
+            return ("!" + server_tag ) == bad_tag;
           });
 
           if (is_bad_server) return false;
@@ -213,7 +213,7 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
           if (server_tag_index == server.tags.length - 1) return good_tags.length == 0;
 
           return [].concat(good_tags, bad_tags);
-        }, value.split(',')));
+        }, value.split(',').map( tag => tag.trim().toLowerCase() ) ) );
 
       // +(bool) -> int
       default:
