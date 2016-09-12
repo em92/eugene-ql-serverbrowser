@@ -11,9 +11,10 @@ var is_first_run = true;
 var FLAG_PERMANENT = "+";
 var TIMEOUT = 500; // 500 ms -> 120 request per minute
 
+setTimeout( () => { is_first_run = false }, 1000*60*2);
+
 var mainLoop = function() {
   if (tasks.size == 0) {
-    is_first_run = false;
     return;
   };
   
