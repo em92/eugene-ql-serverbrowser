@@ -6,13 +6,8 @@ var skillrating = require('./skillrating.js');
 
 var serverInfo = {};
 
-var time_to_update_server_list = true;
 var UPDATE_SERVER_INFO_PERIOD = 10;
 var UPDATE_SERVER_LIST_INTERVAL_SECONDS = 60*60;
-
-setInterval(function() {
-  time_to_update_server_list = true;
-}, UPDATE_SERVER_LIST_INTERVAL_SECONDS*1000);
 
 var getGametypeByTags = function(tags) {
   var gametypeString = tags.split(",")[0];
@@ -123,6 +118,10 @@ var format = function(address, state) {
       item.gameinfo.g_instagib = 0;
     } else if (item.gameinfo.g_gametype == 7) { // 7 - not valid gametype
       throw new Error("invalid gametype: 7");
+    }
+
+    if (item.gameinfo.g_gamestate == "COUNT_DOWN") {
+      item.gameinfo.g_gamestate = "IN_PROGRESS";
     }
 
     return item;
