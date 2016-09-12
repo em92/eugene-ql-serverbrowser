@@ -13,6 +13,7 @@ var query = function() {
   
   return rp(options)
   .then( data => {
+    if (data.servers.length == 0) return;
     servers = data.servers.map(function(item) {
       return item.address;
     });
