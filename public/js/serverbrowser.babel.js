@@ -915,7 +915,11 @@ var FilterOptions = React.createClass({
       //this.setState({filterData: filterData});
     }
     var filterDataRaw = Object.keys( filterData ).map( i => {
-      return filterData[i];
+      var state = $.extend({}, filterData[i]);
+      if (state.tags) {
+        state.tags = state.tags.join();
+      }
+      return state;
     });
     this.props.acceptFilterCallback( {"_": filterDataRaw } );
   },
