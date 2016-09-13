@@ -156,3 +156,7 @@ noscript {
   padding: 10px;
   text-align: center;
 }
+
+textarea {
+  width: 100%;
+}

@@ -919,6 +919,9 @@ var FilterOptions = React.createClass({
     }
     return {
       filterData: filterData,
+      filterDataB: JSON.stringify(filterData, null, 2), // B = Beautified
+      filterDataBisValid: true,
+      showingRawFilterData: false,
       hidden: true
     };
   },
@@ -967,9 +970,35 @@ var FilterOptions = React.createClass({
     this.setState({hidden: !this.state.hidden});
   },
 
+  importFilterData: function() {
+    this.setState({showingRawFilterData: false});
+  },
+
+  showCommonFilter: function() {
+    this.setState({showingRawFilterData: false});
+  },
+
+  exportFilterData: function() {
+    this.setState({
+      filterDataB: JSON.stringify(this.state.filterData, null, 2),
+      showingRawFilterData: true
+    });
+  },
+
   render: function() {
 
     var self = this;
+    if (this.state.showingRawFilterData) {
+
+      return (<div>
+        <div className="filter-controls">
+          <a onClick={this.importFilterData} className="btn btn-primary btn-xs">Import</a>
+          <a onClick={this.showCommonFilter} className="btn btn-primary btn-xs">Done</a>
+        </div>
+        <div><textarea value={this.state.filterDataB} rows={this.state.filterDataB.split("\n").length-1}/></div>
+      </div>);
+    }
+    
     var render_result = Object.keys(this.state.filterData).map( (filter_id, i) => {
       return (<div className="filter-block-wrapper" key={i} style={{display: this.state.hidden ? "none" : "block"}}>
         <FilterBlock
@@ -986,7 +1015,7 @@ var FilterOptions = React.createClass({
     var filter_controls = (<div className="filter-controls">
       <a onClick={this.onShowHideOptionsClick} className="btn btn-primary btn-xs">{this.state.hidden ? "Show" : "Hide"} filters ({filter_cnt})</a>
       <a onClick={this.onAddFilterClick} className="btn btn-primary btn-xs">Add filter</a>
-      <a onClick={this.setFilterData} className="btn btn-primary btn-xs">Apply</a>
+      <a onClick={this.exportFilterData} className="btn btn-primary btn-xs">Export</a>
     </div>);
     return (<div>
       {filter_controls}
