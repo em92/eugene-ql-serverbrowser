@@ -160,6 +160,9 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
     }
 
     switch(key) {
+      case 'gametype':
+        return +(server.gameinfo['g_gametype'] + 100*server.gameinfo['g_instagib'] == value);
+
       case 'g_gametype':
       case 'g_instagib':
         return +(server.gameinfo[key] == value);
