@@ -218,6 +218,12 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
           return [].concat(good_tags, bad_tags);
         }, value.split(',').map( tag => tag.trim().toLowerCase() ) ) );
 
+      case 'vampiric':
+        return +(server.tags.some( tag => tag == 'vampiric' ) == value);
+
+      case 'turbo':
+        return +(server.tags.some( tag => tag == 'pql' ) == value);
+
       // +(bool) -> int
       default:
         return -1;

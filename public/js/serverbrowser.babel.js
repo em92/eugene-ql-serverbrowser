@@ -437,6 +437,8 @@ var FILTERS = {
   "min_players":  "Min. players count",
   "private":      "Accessibility",
   "region":       "Region",
+  "turbo":        "Aircontrol",
+  "vampiric":     "Vampiric damage",
   "tags":         "Tags"
 };
 
@@ -725,6 +727,31 @@ var FilterItemPrivate = React.createClass({
 
 });
 
+var FilterItemVampiric = React.createClass({
+
+  prompt: FILTERS["vampiric"],
+  mixins: [FilterItemComboBoxMixin],
+  options: {
+    "false": "No",
+    "true": "Yes"
+  },
+  name: "vampiric"
+
+});
+
+var FilterItemTurbo = React.createClass({
+
+  prompt: FILTERS["turbo"],
+  mixins: [FilterItemComboBoxMixin],
+  options: {
+    "false": "No",
+    "true": "Yes"
+  },
+  name: "turbo"
+
+});
+
+
 var FilterBlock = React.createClass({
 
   getInitialState: function() {
@@ -836,6 +863,18 @@ var FilterBlock = React.createClass({
           return {
             name: "tags",
             body: <FilterItemTags value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "turbo":
+          return {
+            name: "turbo",
+            body: <FilterItemTurbo value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "vampiric":
+          return {
+            name: "vampiric",
+            body: <FilterItemVampiric value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
           }
 
         default:
