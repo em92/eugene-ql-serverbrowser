@@ -75,34 +75,11 @@ noscript {
   overflow:auto;
 }
 
-.filter-block-column {
-  padding: 10px;
-}
-
-.filter-block-left-column {
-  float: left;
-  width: 50%;
-}
-
-.filter-block-center-column {
-  display: inline-block;
-  width: 30%;
-}
-
-.filter-block-right-column {
-  float: right;
-  width: 20%;
-}
-
 .filter-block .filter-item .filter-item-right select{
   border: 1px solid #8496ba;
   cursor: pointer;
   height: 29px;
-}
-
-.filter-block-cell {
-  min-height: 70px;
-  font-size: 13px;
+  width: auto;
 }
 
 .filter-item-right .simple_text{
@@ -111,11 +88,6 @@ noscript {
   padding-right: 4px;
   font-size: 12px;
   height: 29px;
-}
-
-.filter-block-cell .token-input-list-facebook {
-  width: 100%;
-  border-radius: 4px;
 }
 
 .no-filters, .no-servers, .loading {
