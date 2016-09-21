@@ -57,12 +57,14 @@ noscript {
   position: relative;
 }
 
-.filter-block-wrapper > button.close{
+.filter-block-wrapper .filter-block-close{
+  background-image: url("/images/close.png");
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 12px;
-  height: 12px;
+  top: -10px;
+  right: -10px;
+  width: 20px;
+  height: 19px;
+  cursor: pointer;
 }
 
 .filter-block-wrapper:not(:first-child) {
@@ -113,11 +115,28 @@ noscript {
   float: right;
 }
 
-.filter-item-wrapper > .close {
+.filter-item-wrapper .filter-item-close {
+  background-image: url("/images/close.png");
+  display: block;
+  float: left;
+  height: 19px;
+  left: 6px;
   position: relative;
-  top: 5px;
+  top: 9px;
   width: 20px;
-  height: 20px;
+  cursor: pointer;
+}
+
+.filter-block-close:hover,
+.filter-item-close:hover {
+  background-position: 0px 19px;
+}
+
+/* chrome only */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  .filter-item-wrapper .filter-item-close {
+    top: 7px;
+  }
 }
 
 .filter-item-left {

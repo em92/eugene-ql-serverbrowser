@@ -887,7 +887,7 @@ var FilterBlock = React.createClass({
       {filter_items.map( (filter_item, i) => (
         <div className="filter-item-wrapper" key={i}>
           <div>{filter_item.body}</div>
-          <button onClick={() => {this.removeFilterItem(filter_item.name)}} className="close">&times;</button>
+          <div onClick={() => {this.removeFilterItem(filter_item.name)}} className="filter-item-close"></div>
         </div>
       ))}
       {filter_options.length == 0 ? null :
@@ -1005,7 +1005,7 @@ var FilterOptions = React.createClass({
           id={filter_id}
           parentCallback={self.onFilterItemBlockChange}
         />
-        <button onClick={this.onRemoveFilterClickHandler(filter_id)} className="close">&times;</button>
+        <div onClick={this.onRemoveFilterClickHandler(filter_id)} className="filter-block-close"></div>
       </div>)
     });
     var filter_cnt = render_result.length;
