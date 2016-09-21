@@ -6,13 +6,8 @@ var skillrating = require('./skillrating.js');
 
 var serverInfo = {};
 
-var time_to_update_server_list = true;
 var UPDATE_SERVER_INFO_PERIOD = 10;
 var UPDATE_SERVER_LIST_INTERVAL_SECONDS = 60*60;
-
-setInterval(function() {
-  time_to_update_server_list = true;
-}, UPDATE_SERVER_LIST_INTERVAL_SECONDS*1000);
 
 var getGametypeByTags = function(tags) {
   var gametypeString = tags.split(",")[0];
@@ -58,6 +53,42 @@ var getGametypeByTags = function(tags) {
   };
 };
 
+var getFactoryByTags = function(tags) {
+  var gametypeString = tags.split(",")[0];
+  switch(gametypeString) {
+    case 'ffa':
+    case 'duel':
+    case 'race':
+    case 'tdm':
+    case 'ctf':
+      return gametypeString;
+
+    case 'clanarena':
+      return 'ca';
+
+    case 'a&d':
+      return 'ad';
+
+    case 'harvester':
+      return 'har';
+
+    case 'oneflag':
+      return '1fctf';
+
+    case 'freezetag':
+      return 'ft';
+
+    case 'domination':
+      return 'dom';
+
+    case 'redrover':
+      return 'rr';
+
+    default:
+      return gametypeString;
+  };
+};
+
 var isInstagibByTags = function(tags) {
   return tags.split(",").indexOf("instagib") == -1 ? 0 : 1;
 };
@@ -69,12 +100,12 @@ var format = function(address, state) {
       host_name: state.name,
       location: state.geo,
       password: state.password,
-      tags: state.raw.tags.split(","),
+      tags: state.raw.tags.split(",").map( tag => tag.trim().toLowerCase() ),
       gameinfo: {
         bots: state.bots,
         g_gamestate: state.raw.rules ? state.raw.rules.g_gamestate : "n/a",
         g_gametype: state.raw.rules ? parseInt(state.raw.rules.g_gametype) : getGametypeByTags(state.raw.tags),
-        g_factory: state.raw.rules ? state.raw.rules.g_factory : getGametypeByTags(state.raw.tags),
+        g_factory: state.raw.rules ? state.raw.rules.g_factory : getFactoryByTags(state.raw.tags),
         g_instagib: state.raw.rules ? parseInt(state.raw.rules.g_instagib) : isInstagibByTags(state.raw.tags),
         mapname: state.map.toLowerCase(),
         players: state.players,
@@ -87,6 +118,10 @@ var format = function(address, state) {
       item.gameinfo.g_instagib = 0;
     } else if (item.gameinfo.g_gametype == 7) { // 7 - not valid gametype
       throw new Error("invalid gametype: 7");
+    }
+
+    if (item.gameinfo.g_gamestate == "COUNT_DOWN") {
+      item.gameinfo.g_gamestate = "IN_PROGRESS";
     }
 
     return item;
@@ -107,9 +142,27 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
       value = value.toUpperCase();
       if (value == "ANY")
         return 1;
+      else if (value == "")
+        return 0;
+      else if (value[0] == "!" && key != "tags") {
+        var r = check_key_value(key, value.substr(1));
+        switch(r) {
+          case 1:
+            return 0;
+
+          case 0:
+            return 1;
+
+          default:
+            return -1;
+        }
+      }
     }
 
     switch(key) {
+      case 'gametype':
+        return +(server.gameinfo['g_gametype'] + 100*server.gameinfo['g_instagib'] == value);
+
       case 'g_gametype':
       case 'g_instagib':
         return +(server.gameinfo[key] == value);
@@ -142,7 +195,7 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
           var good_tags = sum.filter(function( tag ) {
             if (tag == "") return false;
             if (tag[0] == "!") return false;
-            if (server_tag.trim().toLowerCase() == tag.trim().toLowerCase()) return false;
+            if (server_tag == tag) return false;
             return true;
           });
 
@@ -155,7 +208,7 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
           if (good_tags.length == 0 && bad_tags.length == 0) return true;
 
           var is_bad_server = bad_tags.some(function( bad_tag ) {
-            return ("!" + server_tag.trim().toLowerCase() ) == bad_tag.trim().toLowerCase();
+            return ("!" + server_tag ) == bad_tag;
           });
 
           if (is_bad_server) return false;
@@ -163,7 +216,13 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
           if (server_tag_index == server.tags.length - 1) return good_tags.length == 0;
 
           return [].concat(good_tags, bad_tags);
-        }, value.split(',')));
+        }, value.split(',').map( tag => tag.trim().toLowerCase() ) ) );
+
+      case 'vampiric':
+        return +(server.tags.some( tag => tag == 'vampiric' ) == value);
+
+      case 'turbo':
+        return +(server.tags.some( tag => tag == 'pql' ) == value);
 
       // +(bool) -> int
       default:

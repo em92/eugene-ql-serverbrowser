@@ -2,3 +2,4 @@ node_modules/*
 geoip.json
 public/js/serverbrowser.js
 npm-debug.log
+servers.txt

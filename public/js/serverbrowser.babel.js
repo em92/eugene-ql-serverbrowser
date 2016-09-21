@@ -21,8 +21,7 @@ var GAMETYPES = {
   109: 'InstaFT',
   110: 'InstaDOM',
   111: 'InstaA&D',
-  112: 'InstaRR',
-  "any": "any"
+  112: 'InstaRR'
 }
 
 var MAPS = [
@@ -174,8 +173,7 @@ var MAPS = [
   "wicked",
   "windowpain",
   "windsongkeep",
-  "zen",
-  "any"
+  "zen"
 ];
 
 var COUNTRY_CODE_LIST = [
@@ -427,9 +425,22 @@ var COUNTRY_CODE_LIST = [
   "YT",
   "ZA",
   "ZM",
-  "ZW",
-  "any"
+  "ZW"
 ];
+
+var FILTERS = {
+  "country":      "Country",
+  "g_factory":    "Factory",
+  "g_gamestate":  "Gamestate",
+  "gametype":     "Gametype",
+  "mapname":      "Map",
+  "min_players":  "Min. players count",
+  "private":      "Accessibility",
+  "region":       "Region",
+  "turbo":        "Aircontrol",
+  "vampiric":     "Vampiric damage",
+  "tags":         "Tags"
+};
 
 var Location = React.createClass({
   render: function() {
@@ -496,234 +507,421 @@ var Server = React.createClass({
   }
 });
 
-var FilterItemBlock = React.createClass({
-  COMBOBOX_ARG_NAMES: [
-    "g_gamestate",
-    "private",
-    "region"
-  ],
-
-  TOKENINPUT_ARG_NAMES: [
-    "country",
-    "gametype",
-    "g_factory",
-    "mapname",
-    "tags"
-  ],
+var FilterItemTokenInputMixin = {
 
   getInitialState: function() {
-    var state = {
-      country: ["any"],
-      g_gamestate: "any",
-      g_factory: ["any"],
-      gametype: ["any"],
-      mapname: ["any"],
-      min_players: 0,
-      private: "any",
-      region: "any",
-      tags: ["any"]
+    if (typeof(this.props.value) == "undefined")
+      return {value: []};
+    else
+      return {value: this.props.value};
+  },
+
+  onAnythingChanged: function() {
+    var value = $(this.refs.input).tokenInput("get").map( item => item.id );
+    this.setState({value: value});
+    this.props.setFilterValue(this.name, value);
+  },
+
+  componentDidMount: function() {
+    var self = this;
+    var token_input_options = {
+      theme: "facebook",
+      hintText: "",
+      noResultsText: "",
+      onAdd: this.onAnythingChanged,
+      onDelete: this.onAnythingChanged,
+      allowFreeTagging: this.allowFreeTagging,
+      prePopulate: ( this.allowFreeTagging ?
+        this.state.value.map( item => ({id: item, name: item}) ) :
+        this.tokens.filter( token => {return self.state.value.indexOf(token.id) > -1})
+      ),
+      preventDuplicates: true,
+      resultsLimit: 5,
+      searchingText: ""
     };
 
-    Object.keys(state).forEach( arg_name => {
-      if (typeof(this.props.options[ arg_name ]) != "undefined") {
-        state[arg_name] = this.props.options[ arg_name ];
-      }
-    });
-
-    return state;
+    $(this.refs.input).tokenInput(this.tokens, token_input_options);
   },
 
-  onAnythingChanged: function(state) {
-    // forcing state to be Object
-    if (state.constructor.name == 'SyntheticEvent') state = {};
+  render: function() {
+    return (<div className="filter-item">
+      <div className="filter-item-left">{this.prompt}</div>
+      <div className="filter-item-right">
+        <input type="text" ref="input" />
+      </div>
+    </div>);
+  }
+};
 
-    var self = this;
+var FilterItemGametype = React.createClass({
 
-    this.COMBOBOX_ARG_NAMES.forEach( arg_name => {
-      state[ arg_name ] = self.refs[ arg_name ].value;
+  mixins: [FilterItemTokenInputMixin],
+  prompt: FILTERS["gametype"],
+  tokens: Object.keys(GAMETYPES).map( gametype_id => ({id: parseInt(gametype_id), name: GAMETYPES[gametype_id]}) ),
+  name: "gametype"
 
-      // is int?
-      var int_value = parseInt(state[arg_name]);
-      if (int_value == int_value && int_value.toString() == state[arg_name]) {
-        state[ arg_name ] = int_value;
-        return;
-      }
+});
 
-      if (state[arg_name].toLowerCase() == "true") {
-        state[arg_name] = true;
-      } else if (state[arg_name].toLowerCase() == "false") {
-        state[arg_name] = false;
-      }
-    });
+var FilterItemMapname = React.createClass({
 
-    this.TOKENINPUT_ARG_NAMES.forEach( arg_name => {
-      state[arg_name] = $(self.refs[ arg_name ]).tokenInput("get").map( obj => {
-        var int_value = parseInt(obj.id);
-        if (int_value == int_value && int_value.toString() == obj.id) {
-          return int_value;
-        } else {
-          return obj.id;
-        }
-      });
-    });
+  allowFreeTagging: true,
+  mixins: [FilterItemTokenInputMixin],
+  prompt: FILTERS["mapname"],
+  tokens: MAPS.map( mapname => ({id: mapname, name: mapname}) ),
+  name: "mapname"
 
-    this.setState(state);
-    this.props.parentCallback(this.props.id, $.extend(this.state, state));
+});
+
+var FilterItemCountry = React.createClass({
+
+  mixins: [FilterItemTokenInputMixin],
+  prompt: FILTERS["country"],
+  tokens: COUNTRY_CODE_LIST.map( item => ({id: item, name: item}) ),
+  name: "country"
+
+});
+
+var FilterItemTags = React.createClass({
+
+  allowFreeTagging: true,
+  mixins: [FilterItemTokenInputMixin],
+  prompt: FILTERS["tags"],
+  tokens: [],
+  name: "tags"
+
+});
+
+var FilterItemFactory = React.createClass({
+
+  allowFreeTagging: true,
+  mixins: [FilterItemTokenInputMixin],
+  prompt: FILTERS["g_factory"],
+  tokens: [],
+  name: "g_factory"
+
+});
+
+var FilterItemIntegerInputMixin = {
+
+  getInitialState: function() {
+    if (typeof(this.props.value) == "undefined")
+      return {value: 0};
+    else
+      return {value: this.props.value};
   },
 
-  onMinimumPlayersCountChanged: function(event) {
+  onAnythingChanged: function(event) {
     var result = 0;
     if (event.target.value.trim() != '') {
       result = parseInt(event.target.value);
     }
     if (result != result) result = 0; // NaN -> 0
     if (result < 0) result *= -1;
-    this.onAnythingChanged({ min_players: result });
-  },
-
-  componentDidMount: function() {
-    var gametype_token_input_values = [];
-    Object.keys(GAMETYPES).forEach( gametype_id => {
-      gametype_token_input_values.push({id: gametype_id, name: GAMETYPES[gametype_id]});
-    });
-
-    var map_token_input_values = [];
-    MAPS.forEach( mapname => {
-      map_token_input_values.push({id: mapname, name: mapname});
-    });
-
-    var country_token_input_values = [];
-    COUNTRY_CODE_LIST.forEach( country_code => {
-      country_token_input_values.push({id: country_code, name: country_code});
-    });
-
-    var self = this;
-    var token_input_options = {
-      theme: "facebook",
-      hintText: "",
-      noResultsText: "",
-      onAdd: function() {
-        var is_keyword_any_exists;
-        var are_other_keywords_exist;
-
-        [is_keyword_any_exists, are_other_keywords_exist] = this.tokenInput("get").reduce( (sum, item) => {
-          return [sum[0] || (item.id == "any"), sum[1] || (item.id != "any")];
-        }, [false, false]);
-
-        if (is_keyword_any_exists && are_other_keywords_exist) {
-          this.tokenInput("remove", {id: "any"});
-        }
-
-        self.onAnythingChanged({});
-      },
-      onDelete: function() {
-        if (this.tokenInput("get").length == 0) {
-          this.tokenInput("add", {id: "any", name: "any"});
-        }
-        self.onAnythingChanged({});
-      },
-      preventDuplicates: true,
-      resultsLimit: 5,
-      searchingText: ""
-    };
-
-    $(this.refs.country).tokenInput(country_token_input_values,
-      $.extend({
-        prePopulate: this.state.country.map( item => ({id: item, name: item}) )
-      }, token_input_options)
-    );
-
-    $(this.refs.g_factory).tokenInput([],
-      $.extend({
-        prePopulate: this.state.g_factory.map( item => ({id: item, name: item}) ),  
-        allowFreeTagging: true
-      }, token_input_options)
-    );
-
-    $(this.refs.gametype).tokenInput(gametype_token_input_values,
-      $.extend({
-        prePopulate: this.state.gametype.map( item => ({id: item, name: GAMETYPES[item]}) )
-      }, token_input_options)
-    );
-
-    $(this.refs.mapname).tokenInput(map_token_input_values,
-      $.extend({
-        prePopulate: this.state.mapname.map( item => ({id: item, name: item}) ),
-        allowFreeTagging: true
-      }, token_input_options)
-    );
-
-    $(this.refs.tags).tokenInput([],
-      $.extend({
-        prePopulate: this.state.g_factory.map( item => ({id: item, name: item}) ),
-        allowFreeTagging: true
-      }, token_input_options)
-    );
+    this.setState({value: result});
+    this.props.setFilterValue(this.name, result);
   },
 
   render: function() {
-    return (
-      <div className="filter-block">
-        <div className="filter-block-column filter-block-left-column">
-          <div className="filter-block-cell">
-            Gametype:<br /><input type="text" ref="gametype" />
-          </div>
-          <div className="filter-block-cell">
-            Tags: <br /><input type="text" ref="tags" />
-          </div>
-          <div className="filter-block-cell">
-            Arenas: <br /><input type="text" ref="mapname" />
-          </div>
-        </div>
-        <div className="filter-block-column filter-block-center-column">
-          <div className="filter-block-cell">
-            Region:<br /><select ref="region" className="form-control input-sm" value={this.state.region} onChange={this.onAnythingChanged}>
-              <option value="any">Any</option>
-              <option value="eu">Europe</option>
-              <option value="na">North America</option>
-              <option value="sa">South America</option>
-              <option value="oc">Oceania</option>
-              <option value="as">Asia</option>
-              <option value="af">Africa</option>
-            </select>
-          </div>
-          <div className="filter-block-cell">
-            Country:<br /><input type="text" ref="country" />
-          </div>
-          <div className="filter-block-cell">
-            Factories: <br /><input type="text" ref="g_factory" />
-          </div>
-        </div>
-        <div className="filter-block-column filter-block-right-column">
-          <div className="filter-block-cell">
-            Gamestate:<br /><select ref="g_gamestate" className="form-control input-sm" value={this.state.g_gamestate} onChange={this.onAnythingChanged}>
-              <option value="any">Any</option>
-              <option value="PRE_GAME">Warmup</option>
-              <option value="IN_PROGRESS">In progress</option>
-            </select>
-          </div>
-          <div className="filter-block-cell">
-            Accessibility:<br /><select ref="private" className="form-control input-sm" value={this.state.private} onChange={this.onAnythingChanged}>
-              <option value="any">Any</option>
-              <option value="false">Public only</option>
-              <option value="true">Private only</option>
-            </select>
-          </div>
-          <div className="filter-block-cell">
-            Minimum players count: <br /><input type="text" ref="min_players" className="simple_text" value={this.state.min_players} onChange={this.onMinimumPlayersCountChanged} />
-          </div>
-        </div>
+    return (<div className="filter-item">
+      <div className="filter-item-left">{this.prompt}</div>
+      <div className="filter-item-right">
+        <input type="text" ref="input" className="simple_text" value={this.state.value} onChange={this.onAnythingChanged} />
       </div>
-    );
+    </div>);
+  }
+
+};
+
+var FilterItemMinPlayersCount = React.createClass({
+
+  prompt: FILTERS["min_players"],
+  mixins: [FilterItemIntegerInputMixin],
+  name: "min_players"
+
+});
+
+var FilterItemComboBoxMixin = {
+
+  getInitialState: function() {
+    if (typeof(this.props.value) == "undefined")
+      return {value: "none"};
+    else if (typeof(this.props.value) != "string")
+      return {value: this.props.value.toString()};
+    else
+      return {value: this.props.value};
+  },
+
+  onAnythingChanged: function(event) {
+    var value = event.target.value;
+
+    var int_value = parseInt(value);
+    if (int_value == int_value && int_value.toString() == value) {
+      this.props.setFilterValue(this.name, int_value);
+    } else if ( value.toLowerCase() == "true" ) {
+      this.props.setFilterValue(this.name, true);
+    } else if ( value.toLowerCase() == "false" ) {
+      this.props.setFilterValue(this.name, false);
+    } else {
+      this.props.setFilterValue(this.name, value);
+    }
+
+    this.setState({value: value});
+  },
+
+  render: function() {
+    var self = this;
+    var option_blocks = Object.keys(this.options).map( (name, i) => {
+      return <option value={name} key={i+1}>{self.options[ name ]}</option>
+    });
+
+    return (<div className="filter-item">
+      <div className="filter-item-left">{this.prompt}</div>
+      <div className="filter-item-right">
+        <select className="form-control input-sm" value={this.state.value} onChange={this.onAnythingChanged}>
+          <option value="none" disabled="true" key={0}></option>
+          {option_blocks}
+        </select>
+      </div>
+    </div>);
+  }
+
+};
+
+var FilterItemRegion = React.createClass({
+
+  prompt: FILTERS["region"],
+  mixins: [FilterItemComboBoxMixin],
+  options: {
+    "eu": "Europe",
+    "na": "North America",
+    "sa": "South America",
+    "oc": "Oceania",
+    "as": "Asia",
+    "af": "Africa"
+  },
+  name: "region"
+
+});
+
+var FilterItemGamestate = React.createClass({
+
+  prompt: FILTERS["g_gamestate"],
+  mixins: [FilterItemComboBoxMixin],
+  options: {
+    "PRE_GAME": "Warmup",
+    "IN_PROGRESS": "In progress"
+  },
+  name: "g_gamestate"
+
+});
+
+var FilterItemPrivate = React.createClass({
+
+  prompt: FILTERS["private"],
+  mixins: [FilterItemComboBoxMixin],
+  options: {
+    "false": "Public",
+    "true": "Private"
+  },
+  name: "private"
+
+});
+
+var FilterItemVampiric = React.createClass({
+
+  prompt: FILTERS["vampiric"],
+  mixins: [FilterItemComboBoxMixin],
+  options: {
+    "false": "No",
+    "true": "Yes"
+  },
+  name: "vampiric"
+
+});
+
+var FilterItemTurbo = React.createClass({
+
+  prompt: FILTERS["turbo"],
+  mixins: [FilterItemComboBoxMixin],
+  options: {
+    "false": "No",
+    "true": "Yes"
+  },
+  name: "turbo"
+
+});
+
+
+var FilterBlock = React.createClass({
+
+  getInitialState: function() {
+    var id = this.props.id ? this.props.id : null;
+    if (id == null) return {
+      id: null,
+      filter_data: {}
+    };
+
+    try {
+      var filter_data = JSON.parse(window.localStorage.getItem('filterData_' + id));
+      if (filter_data == null) filter_data = {};
+      return {
+        id: id,
+        filter_data: filter_data
+      };
+    } catch(e) {
+      return {
+        id: id,
+        filter_data: {}
+      };
+    }
+  },
+
+  setFilterValue: function(filter_name, filter_value) {
+    var result = this.state.filter_data;
+    result[ filter_name ] = filter_value;
+    this.acceptFilterData( result );
+  },
+
+  removeFilterItem: function(filter_name) {
+    var result = this.state.filter_data;
+    delete result[ filter_name ];
+    this.acceptFilterData( result );
+  },
+
+  acceptFilterData: function( result ) {
+    window.localStorage.setItem('filterData_' + this.state.id, JSON.stringify(this.state.filter_data));
+    this.setState( { filter_data: result } );
+    this.props.parentCallback(this.state.id, result);
+  },
+
+  createFilterItem: function(event) {
+    this.setFilterValue( event.target.value, [] );
+  },
+
+  render: function() {
+    var self = this;
+
+    var filter_options = [];
+    Object.keys(FILTERS).forEach( (filter_name, i) => {
+      if (typeof(self.state.filter_data[ filter_name ]) == "undefined") {
+        filter_options.push(<option key={i+1} value={filter_name}>{FILTERS[filter_name]}</option>);
+      }
+    });
+
+    var filter_items = Object.keys(this.state.filter_data).map( filter_name => {
+      switch( filter_name ) {
+
+        case "country":
+          return {
+            name: "country",
+            body: <FilterItemCountry value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "g_factory":
+          return {
+            name: "g_factory",
+            body: <FilterItemFactory value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "g_gamestate":
+          return {
+            name: "g_gamestate",
+            body: <FilterItemGamestate value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "gametype":
+          return {
+            name: "gametype",
+            body: <FilterItemGametype value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "mapname":
+          return {
+            name: "mapname",
+            body: <FilterItemMapname value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "min_players":
+          return {
+            name: "min_players",
+            body: <FilterItemMinPlayersCount value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "private":
+          return {
+            name: "private",
+            body: <FilterItemPrivate value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "region":
+          return {
+            name: "region",
+            body: <FilterItemRegion value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "tags":
+          return {
+            name: "tags",
+            body: <FilterItemTags value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "turbo":
+          return {
+            name: "turbo",
+            body: <FilterItemTurbo value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "vampiric":
+          return {
+            name: "vampiric",
+            body: <FilterItemVampiric value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        default:
+          console.error(filter_name);
+          return null
+      }
+    });
+
+    return (<div className="filter-block">
+      {filter_items.map( (filter_item, i) => (
+        <div className="filter-item-wrapper" key={i}>
+          <div>{filter_item.body}</div>
+          <div onClick={() => {this.removeFilterItem(filter_item.name)}} className="filter-item-close"></div>
+        </div>
+      ))}
+      {filter_options.length == 0 ? null :
+      <div className="filter-item">
+        <div className="filter-item-left">Add filter:</div>
+        <div className="filter-item-right"><select value="none" onChange={this.createFilterItem}>
+          <option value="none" key={0} disabled={true}></option>
+          {filter_options}
+        </select></div>
+      </div>
+      }
+    </div>);
   }
 });
 
 var FilterOptions = React.createClass({
   getInitialState: function() {
-    var filterData = window.localStorage.getItem('filterData2');
-    filterData = filterData == null ? {} : JSON.parse(filterData);
+    var filterData = {};
+    for (var i=0; i<window.localStorage.length; i++) {
+      var key = window.localStorage.key(i);
+      var id = key.substr(11);
+      if ( key.substr(0, 11) == 'filterData_' && id != "" ) {
+        try {
+          filterData[ id ] = JSON.parse( window.localStorage.getItem( key ) );
+        } catch(e) {
+          console.error(key, e);
+        }
+      }
+    }
     return {
       filterData: filterData,
+      filterDataB: JSON.stringify(filterData, null, 2), // B = Beautified
+      filterDataBisValid: true,
+      showingRawFilterData: false,
       hidden: true
     };
   },
@@ -746,25 +944,18 @@ var FilterOptions = React.createClass({
     return function() {
       var filterData = self.state.filterData;
       delete filterData[ id ];
+      window.localStorage.removeItem("filterData_" + id);
       self.setFilterData( filterData );
+      self.setState({});
     }
   },
 
   setFilterData: function( filterData ) {
-    if (filterData.constructor.name != 'Object') {
-      filterData = this.state.filterData;
-    } else {
-      this.setState({filterData: filterData});
-    }
-    window.localStorage.setItem('filterData2', JSON.stringify(filterData));
     var filterDataRaw = Object.keys( filterData ).map( i => {
       var state = $.extend({}, filterData[i]);
-      state["_"] = state.gametype.map( item => {
-        if (item == "any") return {g_gametype: "any"};
-        if (item >= 100) return {g_gametype: item-100, g_instagib: 1};
-        else return {g_gametype: item, g_instagib: 0};
-      });
-      delete state.gametype;
+      if (state.tags) {
+        state.tags = state.tags.join();
+      }
       return state;
     });
     this.props.acceptFilterCallback( {"_": filterDataRaw } );
@@ -774,17 +965,44 @@ var FilterOptions = React.createClass({
     this.setState({hidden: !this.state.hidden});
   },
 
+  importFilterData: function() {
+    this.setState({showingRawFilterData: false});
+  },
+
+  showCommonFilter: function() {
+    this.setState({showingRawFilterData: false});
+  },
+
+  exportFilterData: function() {
+    this.setState({
+      filterDataB: JSON.stringify(this.state.filterData, null, 2),
+      showingRawFilterData: true
+    });
+  },
+
   render: function() {
 
     var self = this;
-    var render_result = Object.keys(this.state.filterData).map( (filter_id, i) => {
-      return (<div className="filter-block-wrapper" key={i} style={{display: this.state.hidden ? "none" : "block"}}>
-        <FilterItemBlock 
+    if (this.state.showingRawFilterData) {
+
+      return (<div>
+        <div className="filter-controls">
+          <a onClick={this.importFilterData} className="btn btn-primary btn-xs">Import</a>
+          <a onClick={this.showCommonFilter} className="btn btn-primary btn-xs">Done</a>
+        </div>
+        <div><textarea value={this.state.filterDataB} rows={this.state.filterDataB.split("\n").length-1}/></div>
+      </div>);
+    }
+    
+    var filter_ids = Object.keys(this.state.filterData);
+    filter_ids.sort();
+    var render_result = filter_ids.map( filter_id => {
+      return (<div className="filter-block-wrapper" key={filter_id} style={{display: this.state.hidden ? "none" : "block"}}>
+        <FilterBlock
           id={filter_id}
-          options={self.state.filterData[filter_id]}
           parentCallback={self.onFilterItemBlockChange}
         />
-        <a onClick={this.onRemoveFilterClickHandler(filter_id)} className="close">&times;</a>
+        <div onClick={this.onRemoveFilterClickHandler(filter_id)} className="filter-block-close"></div>
       </div>)
     });
     var filter_cnt = render_result.length;
@@ -794,7 +1012,7 @@ var FilterOptions = React.createClass({
     var filter_controls = (<div className="filter-controls">
       <a onClick={this.onShowHideOptionsClick} className="btn btn-primary btn-xs">{this.state.hidden ? "Show" : "Hide"} filters ({filter_cnt})</a>
       <a onClick={this.onAddFilterClick} className="btn btn-primary btn-xs">Add filter</a>
-      <a onClick={this.setFilterData} className="btn btn-primary btn-xs">Apply</a>
+      <a onClick={this.exportFilterData} className="btn btn-primary btn-xs">Export</a>
     </div>);
     return (<div>
       {filter_controls}
