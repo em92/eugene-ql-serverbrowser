@@ -436,6 +436,8 @@ var FILTERS = {
   "mapname":      "Map",
   "min_players":  "Min. players count",
   "private":      "Accessibility",
+  "rating_min":   "Rating (min)",
+  "rating_max":   "Rating (max)",
   "region":       "Region",
   "turbo":        "Aircontrol",
   "vampiric":     "Vampiric damage",
@@ -617,6 +619,7 @@ var FilterItemIntegerInputMixin = {
     }
     if (result != result) result = 0; // NaN -> 0
     if (result < 0) result *= -1;
+    if (result > 9999) result = 9999;
     this.setState({value: result});
     this.props.setFilterValue(this.name, result);
   },
@@ -637,6 +640,22 @@ var FilterItemMinPlayersCount = React.createClass({
   prompt: FILTERS["min_players"],
   mixins: [FilterItemIntegerInputMixin],
   name: "min_players"
+
+});
+
+var FilterItemRatingMin = React.createClass({
+
+  prompt: FILTERS["rating_min"],
+  mixins: [FilterItemIntegerInputMixin],
+  name: "rating_min"
+
+});
+
+var FilterItemRatingMax = React.createClass({
+
+  prompt: FILTERS["rating_max"],
+  mixins: [FilterItemIntegerInputMixin],
+  name: "rating_max"
 
 });
 
@@ -853,6 +872,18 @@ var FilterBlock = React.createClass({
             body: <FilterItemPrivate value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
           }
 
+        case "rating_min":
+          return {
+            name: "rating_min",
+            body: <FilterItemRatingMin value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "rating_max":
+          return {
+            name: "rating_max",
+            body: <FilterItemRatingMax value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
         case "region":
           return {
             name: "region",
@@ -966,16 +997,43 @@ var FilterOptions = React.createClass({
   },
 
   importFilterData: function() {
-    this.setState({showingRawFilterData: false});
+    for (var i=0; i<window.localStorage.length; i++) {
+      var key = window.localStorage.key(i);
+      if ( key.substr(0, 11) == 'filterData_' ) {
+        window.localStorage.removeItem( key );
+      }
+    }
+    var filterDataNew = JSON.parse( this.state.filterDataB );
+    console.log(filterDataNew);
+    Object.keys( filterDataNew ).forEach( filter_id => {
+      window.localStorage.setItem("filterData_" + filter_id, JSON.stringify( filterDataNew[ filter_id ] ));
+    });
+    this.setState( this.getInitialState() );
   },
 
   showCommonFilter: function() {
     this.setState({showingRawFilterData: false});
   },
 
+  onTextFilterChange: function( event ) {
+    var filterDataBisValid = true;
+    try {
+      var temp = JSON.parse(event.target.value);
+      filterDataBisValid = Object.keys(temp).every( item => typeof(temp[item]) == "object" && ( Array.isArray(temp[item]) == false ) );
+    } catch(e) {
+      console.error(e);
+      filterDataBisValid = false;
+    }
+    this.setState({
+      filterDataB:        event.target.value,
+      filterDataBisValid: filterDataBisValid
+    });
+  },
+
   exportFilterData: function() {
     this.setState({
       filterDataB: JSON.stringify(this.state.filterData, null, 2),
+      filterDataBisValid: true,
       showingRawFilterData: true
     });
   },
@@ -987,10 +1045,10 @@ var FilterOptions = React.createClass({
 
       return (<div>
         <div className="filter-controls">
-          <a onClick={this.importFilterData} className="btn btn-primary btn-xs">Import</a>
+          {this.state.filterDataBisValid ? <a onClick={this.importFilterData} className="btn btn-primary btn-xs">Import</a> : <a className="btn btn-danger btn-xs">Bad filter</a> }
           <a onClick={this.showCommonFilter} className="btn btn-primary btn-xs">Done</a>
         </div>
-        <div><textarea value={this.state.filterDataB} rows={this.state.filterDataB.split("\n").length-1}/></div>
+        <div><textarea value={this.state.filterDataB} rows={this.state.filterDataB.split("\n").length-1} onChange={this.onTextFilterChange} /></div>
       </div>);
     }
     

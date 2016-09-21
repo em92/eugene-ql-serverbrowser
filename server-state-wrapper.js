@@ -108,6 +108,8 @@ var format = function(address, state) {
         g_factory: state.raw.rules ? state.raw.rules.g_factory : getFactoryByTags(state.raw.tags),
         g_instagib: state.raw.rules ? parseInt(state.raw.rules.g_instagib) : isInstagibByTags(state.raw.tags),
         mapname: state.map.toLowerCase(),
+        rating_min: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].min : 0,
+        rating_max: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].max : 9999,
         players: state.players,
         sv_maxclients: state.raw.rules ? parseInt(state.raw.rules.sv_maxclients): state.maxplayers,
         teamsize: state.raw.rules ? parseInt(state.raw.rules.teamsize) : 0
@@ -223,6 +225,12 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
 
       case 'turbo':
         return +(server.tags.some( tag => tag == 'pql' ) == value);
+
+      case 'rating_min':
+        return +(server.gameinfo.rating_min >= value);
+
+      case 'rating_max':
+        return +(server.gameinfo.rating_max <= value);
 
       // +(bool) -> int
       default:
