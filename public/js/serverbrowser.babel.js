@@ -436,6 +436,8 @@ var FILTERS = {
   "mapname":      "Map",
   "min_players":  "Min. players count",
   "private":      "Accessibility",
+  "rating_min":   "Rating (min)",
+  "rating_max":   "Rating (max)",
   "region":       "Region",
   "turbo":        "Aircontrol",
   "vampiric":     "Vampiric damage",
@@ -617,6 +619,7 @@ var FilterItemIntegerInputMixin = {
     }
     if (result != result) result = 0; // NaN -> 0
     if (result < 0) result *= -1;
+    if (result > 9999) result = 9999;
     this.setState({value: result});
     this.props.setFilterValue(this.name, result);
   },
@@ -637,6 +640,22 @@ var FilterItemMinPlayersCount = React.createClass({
   prompt: FILTERS["min_players"],
   mixins: [FilterItemIntegerInputMixin],
   name: "min_players"
+
+});
+
+var FilterItemRatingMin = React.createClass({
+
+  prompt: FILTERS["rating_min"],
+  mixins: [FilterItemIntegerInputMixin],
+  name: "rating_min"
+
+});
+
+var FilterItemRatingMax = React.createClass({
+
+  prompt: FILTERS["rating_max"],
+  mixins: [FilterItemIntegerInputMixin],
+  name: "rating_max"
 
 });
 
@@ -851,6 +870,18 @@ var FilterBlock = React.createClass({
           return {
             name: "private",
             body: <FilterItemPrivate value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "rating_min":
+          return {
+            name: "rating_min",
+            body: <FilterItemRatingMin value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
+          }
+
+        case "rating_max":
+          return {
+            name: "rating_max",
+            body: <FilterItemRatingMax value={self.state.filter_data[ filter_name ]} setFilterValue={this.setFilterValue} />
           }
 
         case "region":
