@@ -951,11 +951,6 @@ var FilterOptions = React.createClass({
   },
 
   setFilterData: function( filterData ) {
-    if (filterData.constructor.name != 'Object') {
-      filterData = this.state.filterData;
-    } else {
-      //this.setState({filterData: filterData});
-    }
     var filterDataRaw = Object.keys( filterData ).map( i => {
       var state = $.extend({}, filterData[i]);
       if (state.tags) {
@@ -999,8 +994,10 @@ var FilterOptions = React.createClass({
       </div>);
     }
     
-    var render_result = Object.keys(this.state.filterData).map( (filter_id, i) => {
-      return (<div className="filter-block-wrapper" key={i} style={{display: this.state.hidden ? "none" : "block"}}>
+    var filter_ids = Object.keys(this.state.filterData);
+    filter_ids.sort();
+    var render_result = filter_ids.map( filter_id => {
+      return (<div className="filter-block-wrapper" key={filter_id} style={{display: this.state.hidden ? "none" : "block"}}>
         <FilterBlock
           id={filter_id}
           parentCallback={self.onFilterItemBlockChange}
