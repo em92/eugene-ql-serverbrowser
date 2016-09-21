@@ -966,16 +966,43 @@ var FilterOptions = React.createClass({
   },
 
   importFilterData: function() {
-    this.setState({showingRawFilterData: false});
+    for (var i=0; i<window.localStorage.length; i++) {
+      var key = window.localStorage.key(i);
+      if ( key.substr(0, 11) == 'filterData_' ) {
+        window.localStorage.removeItem( key );
+      }
+    }
+    var filterDataNew = JSON.parse( this.state.filterDataB );
+    console.log(filterDataNew);
+    Object.keys( filterDataNew ).forEach( filter_id => {
+      window.localStorage.setItem("filterData_" + filter_id, JSON.stringify( filterDataNew[ filter_id ] ));
+    });
+    this.setState( this.getInitialState() );
   },
 
   showCommonFilter: function() {
     this.setState({showingRawFilterData: false});
   },
 
+  onTextFilterChange: function( event ) {
+    var filterDataBisValid = true;
+    try {
+      var temp = JSON.parse(event.target.value);
+      filterDataBisValid = Object.keys(temp).every( item => typeof(temp[item]) == "object" && ( Array.isArray(temp[item]) == false ) );
+    } catch(e) {
+      console.error(e);
+      filterDataBisValid = false;
+    }
+    this.setState({
+      filterDataB:        event.target.value,
+      filterDataBisValid: filterDataBisValid
+    });
+  },
+
   exportFilterData: function() {
     this.setState({
       filterDataB: JSON.stringify(this.state.filterData, null, 2),
+      filterDataBisValid: true,
       showingRawFilterData: true
     });
   },
@@ -987,10 +1014,10 @@ var FilterOptions = React.createClass({
 
       return (<div>
         <div className="filter-controls">
-          <a onClick={this.importFilterData} className="btn btn-primary btn-xs">Import</a>
+          {this.state.filterDataBisValid ? <a onClick={this.importFilterData} className="btn btn-primary btn-xs">Import</a> : <a className="btn btn-danger btn-xs">Bad filter</a> }
           <a onClick={this.showCommonFilter} className="btn btn-primary btn-xs">Done</a>
         </div>
-        <div><textarea value={this.state.filterDataB} rows={this.state.filterDataB.split("\n").length-1}/></div>
+        <div><textarea value={this.state.filterDataB} rows={this.state.filterDataB.split("\n").length-1} onChange={this.onTextFilterChange} /></div>
       </div>);
     }
     
