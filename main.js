@@ -6,8 +6,8 @@ var serverInfo = ssw.serverInfo;
 var checkServerUsingFilterData = ssw.checkServerUsingFilterData;
 var app = express();
 
-var HTTP_PORT = parseInt(process.env.HTTP_PORT);
-if (HTTP_PORT != HTTP_PORT || HTTP_PORT.toString() != process.env.HTTP_PORT) {
+var HTTP_PORT = parseInt(process.env.PORT);
+if (HTTP_PORT != HTTP_PORT || HTTP_PORT.toString() != process.env.PORT) {
   HTTP_PORT = 3000;
 }
 var MAX_SERVER_OUTPUT_COUNT = 100;
