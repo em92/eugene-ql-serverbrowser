@@ -1008,6 +1008,7 @@ var FilterOptions = React.createClass({
     Object.keys( filterDataNew ).forEach( filter_id => {
       window.localStorage.setItem("filterData_" + filter_id, JSON.stringify( filterDataNew[ filter_id ] ));
     });
+    this.setFilterData( filterDataNew );
     this.setState( this.getInitialState() );
   },
 
