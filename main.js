@@ -73,13 +73,13 @@ app.get('/serverinfo/:endpoint', function (req, res) {
 
 if (process.env.npm_lifecycle_event == "start-dev") {
   var fs = require("fs");
-  var index_file_data = fs.readFileSync(__dirname + '/public/index.html', {encoding: 'utf8'}).replace("<!-- dev", "");
+  var index_file_data = fs.readFileSync(__dirname + '/public/index.html', {encoding: 'utf8'}).replace(
+    '<script type="text/javascript" src="/js/serverbrowser.js"></script>',
+    '<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script><script type="text/babel" src="/js/serverbrowser.babel.js"></script>'
+  );
   app.get('/', function (req, res) {
     res.setHeader("Content-Type", "text/html");
     res.send(index_file_data);
-  });
-  app.get('/js/serverbrowser.js', function(req, res) {
-    res.sendStatus(403);
   });
 }
 
