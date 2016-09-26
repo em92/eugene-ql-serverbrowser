@@ -71,6 +71,13 @@ app.get('/serverinfo/:endpoint', function (req, res) {
   res.send(serverInfo[req.params.endpoint]);
 });
 
+app.get('/qlstats/:endpoint', function (req, res) {
+  ssw.queryQLStatsServerInfo( req.params.endpoint, function( data ) {
+    res.setHeader("Content-Type", "application/json");
+    res.send( data );
+  });
+});
+
 if (process.env.npm_lifecycle_event == "start-dev") {
   var fs = require("fs");
   var index_file_data = fs.readFileSync(__dirname + '/public/index.html', {encoding: 'utf8'}).replace(

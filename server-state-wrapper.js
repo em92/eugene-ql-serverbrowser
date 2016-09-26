@@ -127,6 +127,16 @@ var format = function(address, state) {
       item.gameinfo.g_gamestate = "IN_PROGRESS";
     }
 
+    if (
+      item.dedicated == false ||
+      typeof(skillrating.skill_rating[ address ]) == "undefined"
+    ) {
+      item.qlstats = {
+        msg: "Server is not being tracked (cached)",
+        ok: false
+      };
+    }
+
     if (process.env.npm_lifecycle_event == "start-dev") {
       item.raw = state;
     }
@@ -307,6 +317,27 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
   }
 };
 
+var queryQLStatsServerInfo = function( endpoint, callback ) {
+
+  if (typeof(serverInfo[endpoint]) == "undefined") {
+    return callback({ok: false, msg: "no such endpoint"});
+  }
+
+  if (typeof(serverInfo[endpoint].qlstats) != "undefined") {
+    return callback(serverInfo[endpoint].qlstats);
+  }
+
+  Q(skillrating.query_server_players( endpoint ))
+  .then( data => {
+    serverInfo[endpoint].qlstats = data;
+    callback(data);
+  })
+  .catch( error => {
+    console.trace(error);
+    callback({ok: false, msg: error.message });
+  });
+};
+
 var updateServerInfo = function( update_server_list ) {
   if (typeof(update_server_list) == "undefined") update_server_list = true;
 
@@ -389,3 +420,4 @@ updateServerInfo();
 
 module.exports.serverInfo = serverInfo;
 module.exports.checkServerUsingFilterData = checkServerUsingFilterData;
+module.exports.queryQLStatsServerInfo = queryQLStatsServerInfo;

@@ -21,7 +21,19 @@ var query = function() {
   });
 };
 
+var query_server_players = function( address ) {
+  var options = {
+    uri: 'http://api.qlstats.net/api/server/' + address + '/players',
+    timeout: 5000,
+    json: true
+  };
+
+  return rp(options);
+};
+
+
 module.exports.query = query;
+module.exports.query_server_players = query_server_players;
 Object.defineProperty(module.exports, "skill_rating", {
   get: function() { return skill_rating; }
 });
