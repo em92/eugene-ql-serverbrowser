@@ -1090,11 +1090,39 @@ var ServerInfo = React.createClass({
   },
 
   show: function( server ) {
-    this.setState({server: server});
+    if (server.qlstats) {
+      this.setState({server: server, loading: false});
+    } else {
+      this.setState({server: server, loading: true});
+      this.downloadQLStatsData( server );
+    }
   },
 
   hide: function() {
     this.setState({server: null});
+  },
+
+  downloadQLStatsData: function( server ) {
+    if (server == null) return;
+    $.ajax({
+      url: "/qlstats/" + server.host_address,
+      dataType: 'json',
+      cache: true,
+      success: (function (data) {
+        var server_updated = $.extend( {qlstats: data}, server );
+        this.props.updateServerDetails( server_updated );
+        this.setState({
+          server: server_updated,
+          loading: false
+        });
+      }).bind(this),
+      error: (function (xhr, status, err) {
+        this.setState({
+          loading: false
+        });
+        console.error(this.props.url, status, err.toString());
+      }).bind(this)
+    });
   },
 
   getServer: function() {
@@ -1106,7 +1134,7 @@ var ServerInfo = React.createClass({
     return (<div className="serverinfo">
       <button onClick={this.hide}>Hide</button>
       <pre>
-        {JSON.stringify(this.state.server.qlstats, null, 2)}
+        {this.state.loading ? "Loading" : JSON.stringify(this.state.server.qlstats, null, 2)}
       </pre>
     </div>);
   }
@@ -1124,32 +1152,22 @@ var ServerList = React.createClass({
     this.downloadServerList();
   },
 
-  downloadQLStatsData: function( server ) {
-    if (server == null) return;
-    $.ajax({
-      url: "/qlstats/" + server.host_address,
-      dataType: 'json',
-      cache: true,
-      success: (function (data) {
-        this.refs.serverinfo.show( $.extend( {qlstats: data}, server ) );
-      }).bind(this),
-      error: (function (xhr, status, err) {
-        this.refs.serverinfo.show( $.extend( {qlstats: {ok: false, msg: "Failed to download qlstats data"}}, server ) );
-        console.error(this.props.url, status, err.toString());
-      }).bind(this)
-    });
-  },
-
   showServerDetails: function( server ) {
-    if (server.qlstats) {
-      this.refs.serverinfo.show( server );
-    } else {
-      this.downloadQLStatsData( server );
-    }
+    this.refs.serverinfo.show( server );
   },
 
   hideServerDetails: function() {
     this.refs.serverinfo.hide();
+  },
+
+  updateServerDetails: function( server_updated ) {
+    this.setState({servers: this.state.servers.map( server => {
+      if (server.host_address == server_updated.host_address) {
+        return server_updated;
+      } else {
+        return server;
+      }
+    })});
   },
 
   downloadServerList: function() {
@@ -1215,7 +1233,7 @@ var ServerList = React.createClass({
     return (<div>
       <FilterOptions acceptFilterCallback={this.acceptFilter} />
       {result}
-      <ServerInfo ref="serverinfo" />
+      <ServerInfo ref="serverinfo" updateServerDetails={this.updateServerDetails} />
     </div>);
   }
 });
