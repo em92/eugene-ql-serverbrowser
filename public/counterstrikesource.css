@@ -179,3 +179,12 @@ noscript {
 textarea {
   width: 100%;
 }
+
+.serverinfo {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  left: 0;
+  top: 0;
+  background-color: white;
+}

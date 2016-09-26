@@ -495,6 +495,7 @@ var PlayerCount = React.createClass({
 
 var Server = React.createClass({
   render: function() {
+    var self = this;
     return (
       <tr>
         <Location geo={this.props.server.location} />
@@ -504,6 +505,7 @@ var Server = React.createClass({
         <PlayerCount server={this.props.server} />
         <td>{this.props.server.password ? <img src="/images/lock.png" /> : null}</td>
         <td>{this.props.server.dedicated ? null : <img src="/images/home.png" />}</td>
+        <td><a onClick={() => {self.props.showServerInfo(self.props.server)}} className="btn btn-primary btn-xs">details</a></td>
         <td><a href={"steam://connect/" + this.props.server.host_address} className="btn btn-primary btn-xs">connect</a></td>
       </tr>
     );
@@ -1082,6 +1084,34 @@ var FilterOptions = React.createClass({
   }
 });
 
+var ServerInfo = React.createClass({
+  getInitialState: function() {
+    return { server: null };
+  },
+
+  show: function( server ) {
+    this.setState({server: server});
+  },
+
+  hide: function() {
+    this.setState({server: null});
+  },
+
+  getServer: function() {
+    return this.state.server;
+  },
+
+  render: function() {
+    if (this.state.server == null) return null;
+    return (<div className="serverinfo">
+      <button onClick={this.hide}>Hide</button>
+      <pre>
+        {JSON.stringify(this.state.server.qlstats, null, 2)}
+      </pre>
+    </div>);
+  }
+});
+
 var ServerList = React.createClass({
   getInitialState: function() {
     return { servers: [], error: false };
@@ -1094,6 +1124,34 @@ var ServerList = React.createClass({
     this.downloadServerList();
   },
 
+  downloadQLStatsData: function( server ) {
+    if (server == null) return;
+    $.ajax({
+      url: "/qlstats/" + server.host_address,
+      dataType: 'json',
+      cache: true,
+      success: (function (data) {
+        this.refs.serverinfo.show( $.extend( {qlstats: data}, server ) );
+      }).bind(this),
+      error: (function (xhr, status, err) {
+        this.refs.serverinfo.show( $.extend( {qlstats: {ok: false, msg: "Failed to download qlstats data"}}, server ) );
+        console.error(this.props.url, status, err.toString());
+      }).bind(this)
+    });
+  },
+
+  showServerDetails: function( server ) {
+    if (server.qlstats) {
+      this.refs.serverinfo.show( server );
+    } else {
+      this.downloadQLStatsData( server );
+    }
+  },
+
+  hideServerDetails: function() {
+    this.refs.serverinfo.hide();
+  },
+
   downloadServerList: function() {
     $.ajax({
       url: "serverlist" + this.filterData,
@@ -1101,6 +1159,18 @@ var ServerList = React.createClass({
       cache: true,
       success: (function (data) {
         this.setState( {servers: data.servers, loading: false, error: false } );
+
+        var selected_server = this.refs.serverinfo.getServer();
+        if (selected_server == null) return;
+
+        var is_server_in_list = data.servers.some( server => {
+          if (server.host_address == selected_server.host_address) {
+            this.showServerDetails( server );
+            return true;
+          }
+          return false;
+        });
+        if (is_server_in_list == false) this.hideServerDetails();
       }).bind(this),
       error: (function (xhr, status, err) {
         this.setState( {loading: false, error: "Failed to load server list" } );
@@ -1116,9 +1186,10 @@ var ServerList = React.createClass({
   },
 
   render: function() {
+    var self = this;
     var state = this.state;
     var result = state.servers.map(function (server, i) {
-      return <Server server={server} key={i} />;
+      return <Server server={server} key={i} showServerInfo={self.showServerDetails} />;
     });
 
     if (this.state.error)
@@ -1134,6 +1205,7 @@ var ServerList = React.createClass({
           <th></th>
           <th></th>
           <th></th>
+          <th></th>
         </tr></thead>
         <tbody>{result}</tbody>
       </table>);
@@ -1143,6 +1215,7 @@ var ServerList = React.createClass({
     return (<div>
       <FilterOptions acceptFilterCallback={this.acceptFilter} />
       {result}
+      <ServerInfo ref="serverinfo" />
     </div>);
   }
 });
