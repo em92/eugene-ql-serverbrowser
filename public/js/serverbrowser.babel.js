@@ -503,6 +503,7 @@ var Server = React.createClass({
         <td>{this.props.server.gameinfo.mapname}</td>
         <PlayerCount server={this.props.server} />
         <td>{this.props.server.password ? <img src="/images/lock.png" /> : null}</td>
+        <td>{this.props.server.dedicated ? null : <img src="/images/home.png" />}</td>
         <td><a href={"steam://connect/" + this.props.server.host_address} className="btn btn-primary btn-xs">connect</a></td>
       </tr>
     );
@@ -1130,6 +1131,7 @@ var ServerList = React.createClass({
           <th>Hostname</th>
           <th>Arena</th>
           <th>Players</th>
+          <th></th>
           <th></th>
           <th></th>
         </tr></thead>

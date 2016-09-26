@@ -101,6 +101,7 @@ var format = function(address, state) {
       location: state.geo,
       password: state.password,
       tags: state.raw.tags.split(",").map( tag => tag.trim().toLowerCase() ),
+      dedicated: state.raw.listentype == "d",
       gameinfo: {
         bots: state.bots,
         g_gamestate: state.raw.rules ? state.raw.rules.g_gamestate : "n/a",
@@ -124,6 +125,10 @@ var format = function(address, state) {
 
     if (item.gameinfo.g_gamestate == "COUNT_DOWN") {
       item.gameinfo.g_gamestate = "IN_PROGRESS";
+    }
+
+    if (process.env.npm_lifecycle_event == "start-dev") {
+      item.raw = state;
     }
 
     return item;
@@ -339,7 +344,7 @@ var updateServerInfo = function( update_server_list ) {
       });
 
       try {
-        state['geo'] = geoip.lookup(state.query.host, skillrating.server_ips[ state.query.host ]);
+        state['geo'] = geoip.lookup(state.query.host, state.raw.listentype == "d");
 
         // some servers return g_gametype
         // some servers return g_gameType
