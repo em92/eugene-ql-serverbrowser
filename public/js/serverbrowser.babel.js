@@ -1205,7 +1205,16 @@ var ServerInfo = React.createClass({
   render: function() {
     if (this.state.server == null) return null;
     return (<div className="serverinfo">
-      <div className="closeblock" onClick={this.hide}></div>
+      <ul>
+        <li>Gametype: {GAMETYPES[this.state.server.gameinfo.g_gametype + 100*this.state.server.gameinfo.g_instagib]}</li>
+        <li>Gamestate: {{'PRE_GAME': 'Warmup', 'IN_PROGRESS': 'In progress'}[this.state.server.gameinfo.g_gamestate]}</li>
+        <li>Map: {this.state.server.gameinfo.mapname}</li>
+      </ul>
+      <div style={{"width": "100%", "text-align": "center"}}>
+        <a href={"steam://connect/" + this.state.server.host_address} className="btn btn-primary btn-xs">connect</a>
+        &nbsp;
+        <a onClick={this.hide} className="btn btn-primary btn-xs">close</a>
+      </div>
       {this.state.loading ? <img src="/images/loading.gif" /> : this.renderData()}
     </div>);
   }

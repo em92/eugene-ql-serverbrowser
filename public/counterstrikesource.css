@@ -250,8 +250,13 @@ textarea {
 
 .serverinfo a {
   color: white;
+  text-align: center;
 }
 
 .serverinfo a:hover {
   text-decoration: none;
+}
+
+.serverinfo ul {
+  padding-right: 40px;
 }
