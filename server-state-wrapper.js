@@ -101,6 +101,7 @@ var format = function(address, state) {
       location: state.geo,
       password: state.password,
       tags: state.raw.tags.split(",").map( tag => tag.trim().toLowerCase() ),
+      dedicated: state.raw.listentype == "d",
       gameinfo: {
         bots: state.bots,
         g_gamestate: state.raw.rules ? state.raw.rules.g_gamestate : "n/a",
@@ -124,6 +125,20 @@ var format = function(address, state) {
 
     if (item.gameinfo.g_gamestate == "COUNT_DOWN") {
       item.gameinfo.g_gamestate = "IN_PROGRESS";
+    }
+
+    if (
+      item.dedicated == false ||
+      typeof(skillrating.skill_rating[ address ]) == "undefined"
+    ) {
+      item.qlstats = {
+        msg: "Server is not being tracked (cached)",
+        ok: false
+      };
+    }
+
+    if (process.env.npm_lifecycle_event == "start-dev") {
+      item.raw = state;
     }
 
     return item;
@@ -302,6 +317,27 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
   }
 };
 
+var queryQLStatsServerInfo = function( endpoint, callback ) {
+
+  if (typeof(serverInfo[endpoint]) == "undefined") {
+    return callback({ok: false, msg: "no such endpoint"});
+  }
+
+  if (typeof(serverInfo[endpoint].qlstats) != "undefined") {
+    return callback(serverInfo[endpoint].qlstats);
+  }
+
+  Q(skillrating.query_server_players( endpoint ))
+  .then( data => {
+    serverInfo[endpoint].qlstats = data;
+    callback(data);
+  })
+  .catch( error => {
+    console.trace(error);
+    callback({ok: false, msg: error.message });
+  });
+};
+
 var updateServerInfo = function( update_server_list ) {
   if (typeof(update_server_list) == "undefined") update_server_list = true;
 
@@ -339,7 +375,7 @@ var updateServerInfo = function( update_server_list ) {
       });
 
       try {
-        state['geo'] = geoip.lookup(state.query.host, skillrating.server_ips[ state.query.host ]);
+        state['geo'] = geoip.lookup(state.query.host, state.raw.listentype == "d");
 
         // some servers return g_gametype
         // some servers return g_gameType
@@ -384,3 +420,4 @@ updateServerInfo();
 
 module.exports.serverInfo = serverInfo;
 module.exports.checkServerUsingFilterData = checkServerUsingFilterData;
+module.exports.queryQLStatsServerInfo = queryQLStatsServerInfo;

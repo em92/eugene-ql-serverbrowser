@@ -495,6 +495,7 @@ var PlayerCount = React.createClass({
 
 var Server = React.createClass({
   render: function() {
+    var self = this;
     return (
       <tr>
         <Location geo={this.props.server.location} />
@@ -503,6 +504,8 @@ var Server = React.createClass({
         <td>{this.props.server.gameinfo.mapname}</td>
         <PlayerCount server={this.props.server} />
         <td>{this.props.server.password ? <img src="/images/lock.png" /> : null}</td>
+        <td>{this.props.server.dedicated ? null : <img src="/images/home.png" />}</td>
+        <td><a onClick={() => {self.props.showServerInfo(self.props.server)}} className="btn btn-primary btn-xs">details</a></td>
         <td><a href={"steam://connect/" + this.props.server.host_address} className="btn btn-primary btn-xs">connect</a></td>
       </tr>
     );
@@ -1081,6 +1084,142 @@ var FilterOptions = React.createClass({
   }
 });
 
+var ServerInfo = React.createClass({
+  getInitialState: function() {
+    return { server: null };
+  },
+
+  show: function( server ) {
+    if (server.qlstats) {
+      this.setState({server: server, loading: false});
+    } else {
+      this.setState({server: server, loading: true});
+      this.downloadQLStatsData( server );
+    }
+  },
+
+  hide: function() {
+    this.setState({server: null});
+  },
+
+  downloadQLStatsData: function( server ) {
+    if (server == null) return;
+
+    if (server.gameinfo.players.length == 0) {
+      var server_updated = $.extend( {qlstats: {ok: true, players: []}}, server );
+      this.setState({
+        server: server_updated,
+        loading: false
+      });
+      return;
+    };
+
+    $.ajax({
+      url: "/qlstats/" + server.host_address,
+      dataType: 'json',
+      cache: true,
+      success: (function (data) {
+        var server_updated = $.extend( {qlstats: data}, server );
+        this.props.updateServerDetails( server_updated );
+        this.setState({
+          server: server_updated,
+          loading: false
+        });
+      }).bind(this),
+      error: (function (xhr, status, err) {
+        this.setState({
+          loading: false
+        });
+        console.error(this.props.url, status, err.toString());
+      }).bind(this)
+    });
+  },
+
+  getServer: function() {
+    return this.state.server;
+  },
+
+  renderQLNickname: function(nickname) {
+    nickname = ['0', '1', '2', '3', '4', '5', '6', '7'].reduce(function(sum, current) {
+      return sum.split("^" + current).join('</span><span class="qc' + current + '">');
+    }, nickname);
+    return '<span class="qc7">' + nickname + '</span>';
+  },
+
+  renderCommonData: function( ) {
+    var players = this.state.server.gameinfo.players;
+    players.sort( function(a, b) {
+      if (b.score > a.score) return 1;
+      if (b.score < a.score) return -1;
+    });
+
+    var render_data = players.map( player => {
+      return (<tr>
+        <td dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></td>
+        <td>{player.score}</td>
+      </tr>);
+    });
+    return (<table>
+      <thead><tr>
+        <th>Nick</th>
+        <th style={{width: "50px"}}>Score</th>
+      </tr></thead>
+      <tbody>{render_data}</tbody>
+    </table>);
+  },
+
+  renderQLStatsData: function( ) {
+    var teams = ["Play", "Red", "Blue", "Spec"];
+    var team_class = ['qc2', 'qc1', 'qc4', 'qc7'];
+    var players = this.state.server.qlstats.players;
+    players.sort( function(a, b) {
+      if (b.team > a.team) return -1;
+      if (b.team < a.team) return 1;
+      if (b.rating > a.rating) return 1;
+      if (b.rating < a.rating) return -1;
+      return 0;
+    });
+
+    var render_data = players.map( player => {
+      return (<tr>
+        <td><span className={team_class[player.team]}>{teams[player.team]}</span></td>
+        <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}><span dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></span></a></td>
+        <td>{player.rating}</td>
+      </tr>);
+    });
+    return (<table>
+      <thead><tr>
+        <th style={{width: "55px"}}>Team</th>
+        <th>Nick</th>
+        <th style={{width: "50px"}}>Glicko</th>
+      </tr></thead>
+      <tbody>{render_data}</tbody>
+    </table>);
+  },
+
+  renderData: function() {
+    if (this.state.server.gameinfo.players.length == 0) return (<div className="emptyserver">empty server</div>);
+    return this.state.server.qlstats.ok ? this.renderQLStatsData() : this.renderCommonData();
+  },
+
+  render: function() {
+    if (this.state.server == null) return null;
+    return (<div className="serverinfo">
+      <ul>
+        <li>Gametype: {GAMETYPES[this.state.server.gameinfo.g_gametype + 100*this.state.server.gameinfo.g_instagib]}</li>
+        <li>Gamestate: {{'PRE_GAME': 'Warmup', 'IN_PROGRESS': 'In progress'}[this.state.server.gameinfo.g_gamestate]}</li>
+        <li>Map: {this.state.server.gameinfo.mapname}</li>
+      </ul>
+      <div style={{"width": "100%", "text-align": "center"}}>
+        <a href={"steam://connect/" + this.state.server.host_address} className="btn btn-primary btn-xs">connect</a>
+        &nbsp;
+        <a onClick={this.hide} className="btn btn-primary btn-xs">close</a>
+      </div>
+      {this.state.loading ? <img src="/images/loading.gif" /> : this.renderData()}
+    </div>);
+  }
+});
+
 var ServerList = React.createClass({
   getInitialState: function() {
     return { servers: [], error: false };
@@ -1093,6 +1232,24 @@ var ServerList = React.createClass({
     this.downloadServerList();
   },
 
+  showServerDetails: function( server ) {
+    this.refs.serverinfo.show( server );
+  },
+
+  hideServerDetails: function() {
+    this.refs.serverinfo.hide();
+  },
+
+  updateServerDetails: function( server_updated ) {
+    this.setState({servers: this.state.servers.map( server => {
+      if (server.host_address == server_updated.host_address) {
+        return server_updated;
+      } else {
+        return server;
+      }
+    })});
+  },
+
   downloadServerList: function() {
     $.ajax({
       url: "serverlist" + this.filterData,
@@ -1100,6 +1257,18 @@ var ServerList = React.createClass({
       cache: true,
       success: (function (data) {
         this.setState( {servers: data.servers, loading: false, error: false } );
+
+        var selected_server = this.refs.serverinfo.getServer();
+        if (selected_server == null) return;
+
+        var is_server_in_list = data.servers.some( server => {
+          if (server.host_address == selected_server.host_address) {
+            this.showServerDetails( server );
+            return true;
+          }
+          return false;
+        });
+        if (is_server_in_list == false) this.hideServerDetails();
       }).bind(this),
       error: (function (xhr, status, err) {
         this.setState( {loading: false, error: "Failed to load server list" } );
@@ -1115,9 +1284,10 @@ var ServerList = React.createClass({
   },
 
   render: function() {
+    var self = this;
     var state = this.state;
     var result = state.servers.map(function (server, i) {
-      return <Server server={server} key={i} />;
+      return <Server server={server} key={i} showServerInfo={self.showServerDetails} />;
     });
 
     if (this.state.error)
@@ -1132,6 +1302,8 @@ var ServerList = React.createClass({
           <th>Players</th>
           <th></th>
           <th></th>
+          <th></th>
+          <th></th>
         </tr></thead>
         <tbody>{result}</tbody>
       </table>);
@@ -1141,6 +1313,7 @@ var ServerList = React.createClass({
     return (<div>
       <FilterOptions acceptFilterCallback={this.acceptFilter} />
       {result}
+      <ServerInfo ref="serverinfo" updateServerDetails={this.updateServerDetails} />
     </div>);
   }
 });
