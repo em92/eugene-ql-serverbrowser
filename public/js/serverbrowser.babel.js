@@ -1183,8 +1183,8 @@ var ServerInfo = React.createClass({
     var render_data = players.map( player => {
       return (<tr>
         <td><span className={team_class[player.team]}>{teams[player.team]}</span></td>
-        <td dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></td>
-        <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}>{player.rating}</a></td>
+        <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}><span dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></span></a></td>
+        <td>{player.rating}</td>
       </tr>);
     });
     return (<table>
