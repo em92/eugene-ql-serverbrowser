@@ -181,10 +181,11 @@ textarea {
 }
 
 .serverinfo {
+  padding: 2px;
   position: fixed;
-  width: 600px;
-  height: 600px;
+  width: 300px;
   left: 0;
   top: 0;
   background-color: white;
+  border: 1px solid black;
 }

@@ -1104,6 +1104,16 @@ var ServerInfo = React.createClass({
 
   downloadQLStatsData: function( server ) {
     if (server == null) return;
+
+    if (server.gameinfo.players.length == 0) {
+      var server_updated = $.extend( {qlstats: {ok: true, players: []}}, server );
+      this.setState({
+        server: server_updated,
+        loading: false
+      });
+      return;
+    };
+
     $.ajax({
       url: "/qlstats/" + server.host_address,
       dataType: 'json',
@@ -1129,13 +1139,67 @@ var ServerInfo = React.createClass({
     return this.state.server;
   },
 
+  renderCommonData: function( ) {
+    var players = this.state.server.gameinfo.players;
+    players.sort( function(a, b) {
+      if (b.score > a.score) return 1;
+      if (b.score < a.score) return -1;
+    });
+
+    var render_data = players.map( player => {
+      return (<tr>
+        <td>{player.name}</td>
+        <td>{player.score}</td>
+      </tr>);
+    });
+    return (<table>
+      <thead><tr>
+        <th>Nick</th>
+        <th style={{width: "50px"}}>Score</th>
+      </tr></thead>
+      <tbody>{render_data}</tbody>
+    </table>);
+  },
+
+  renderQLStatsData: function( ) {
+    var teams = ["Play", "Red", "Blue", "Spec"];
+    var players = this.state.server.qlstats.players;
+    players.sort( function(a, b) {
+      if (b.team > a.team) return -1;
+      if (b.team < a.team) return 1;
+      if (b.rating > a.rating) return 1;
+      if (b.rating < a.rating) return -1;
+      return 0;
+    });
+
+    var render_data = players.map( player => {
+      return (<tr>
+        <td>{teams[player.team]}</td>
+        <td>{player.name}</td>
+        <td>{player.rating}</td>
+      </tr>);
+    });
+    return (<table>
+      <thead><tr>
+        <th style={{width: "55px"}}>Team</th>
+        <th>Nick</th>
+        <th style={{width: "50px"}}>Glicko</th>
+      </tr></thead>
+      <tbody>{render_data}</tbody>
+    </table>);
+  },
+
+  renderData: function() {
+    if (this.state.length == 0) return (<div>empty server</div>);
+    return this.state.server.qlstats.ok ? this.renderQLStatsData() : this.renderCommonData();
+  },
+
   render: function() {
     if (this.state.server == null) return null;
     return (<div className="serverinfo">
       <button onClick={this.hide}>Hide</button>
-      <pre>
-        {this.state.loading ? "Loading" : JSON.stringify(this.state.server.qlstats, null, 2)}
-      </pre>
+      <br />
+      {this.state.loading ? <img src="/images/loading.gif" /> : this.renderData()}
     </div>);
   }
 });
