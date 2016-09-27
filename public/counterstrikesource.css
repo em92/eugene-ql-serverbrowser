@@ -127,6 +127,7 @@ noscript {
   cursor: pointer;
 }
 
+.serverinfo .closeblock:hover,
 .filter-block-close:hover,
 .filter-item-close:hover {
   background-position: 0px 19px;
@@ -183,9 +184,74 @@ textarea {
 .serverinfo {
   padding: 2px;
   position: fixed;
-  width: 300px;
   left: 0;
   top: 0;
   background-color: white;
   border: 1px solid black;
+}
+
+.serverinfo .emptyserver {
+  text-align: center;
+}
+
+.serverinfo .closeblock {
+  background-image: url("/images/close.png");
+  position: absolute;
+  bottom: -10px;
+  right: -10px;
+  width: 20px;
+  height: 19px;
+  cursor: pointer;
+}
+
+.serverinfo tr {background: #000}
+.serverinfo tr:hover {background: #222}
+
+.serverinfo th {
+  background-color: white;
+  color: black;
+}
+
+.serverinfo td {
+  color: white;
+}
+
+.qc0 {
+  color: rgb(128, 128, 128);
+}
+
+.qc1 {
+  color: rgb(255, 0, 0);
+}
+
+.qc2 {
+  color: rgb(0, 255, 0);
+}
+
+.qc3 {
+  color: rgb(255, 255, 0);
+}
+
+.qc4 {
+  color: rgb(51, 102, 255);
+}
+
+.qc5 {
+  color: rgb(51, 255, 255);
+}
+
+.qc6 {
+  color: rgb(197, 0, 255);
+}
+
+.qc7 {
+  color: rgb(204, 204, 204);
+}
+
+.serverinfo a {
+  color: white;
+}
+
+.serverinfo a:hover {
+  text-decoration: none;
 }

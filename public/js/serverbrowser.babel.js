@@ -1139,6 +1139,13 @@ var ServerInfo = React.createClass({
     return this.state.server;
   },
 
+  renderQLNickname: function(nickname) {
+    nickname = ['0', '1', '2', '3', '4', '5', '6', '7'].reduce(function(sum, current) {
+      return sum.split("^" + current).join('</span><span class="qc' + current + '">');
+    }, nickname);
+    return '<span class="qc7">' + nickname + '</span>';
+  },
+
   renderCommonData: function( ) {
     var players = this.state.server.gameinfo.players;
     players.sort( function(a, b) {
@@ -1148,7 +1155,7 @@ var ServerInfo = React.createClass({
 
     var render_data = players.map( player => {
       return (<tr>
-        <td>{player.name}</td>
+        <td dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></td>
         <td>{player.score}</td>
       </tr>);
     });
@@ -1163,6 +1170,7 @@ var ServerInfo = React.createClass({
 
   renderQLStatsData: function( ) {
     var teams = ["Play", "Red", "Blue", "Spec"];
+    var team_class = ['qc2', 'qc1', 'qc4', 'qc7'];
     var players = this.state.server.qlstats.players;
     players.sort( function(a, b) {
       if (b.team > a.team) return -1;
@@ -1174,9 +1182,9 @@ var ServerInfo = React.createClass({
 
     var render_data = players.map( player => {
       return (<tr>
-        <td>{teams[player.team]}</td>
-        <td>{player.name}</td>
-        <td>{player.rating}</td>
+        <td><span className={team_class[player.team]}>{teams[player.team]}</span></td>
+        <td dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></td>
+        <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}>{player.rating}</a></td>
       </tr>);
     });
     return (<table>
@@ -1190,15 +1198,14 @@ var ServerInfo = React.createClass({
   },
 
   renderData: function() {
-    if (this.state.length == 0) return (<div>empty server</div>);
+    if (this.state.server.gameinfo.players.length == 0) return (<div className="emptyserver">empty server</div>);
     return this.state.server.qlstats.ok ? this.renderQLStatsData() : this.renderCommonData();
   },
 
   render: function() {
     if (this.state.server == null) return null;
     return (<div className="serverinfo">
-      <button onClick={this.hide}>Hide</button>
-      <br />
+      <div className="closeblock" onClick={this.hide}></div>
       {this.state.loading ? <img src="/images/loading.gif" /> : this.renderData()}
     </div>);
   }
