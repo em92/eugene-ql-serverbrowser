@@ -327,8 +327,20 @@ var queryQLStatsServerInfo = function( endpoint, callback ) {
     return callback(serverInfo[endpoint].qlstats);
   }
 
+  var getScoreByPlayerName = function( name ) {
+    return serverInfo[endpoint].gameinfo.players.reduce( function(score, player) {
+      if (score != null) return score;
+      else if (player.name == name || player.name + "^7" == name) return player.score;
+      return null;
+    }, null);
+  };
+
   Q(skillrating.query_server_players( endpoint ))
   .then( data => {
+    data.players = data.players.map( player => {
+      player.score = getScoreByPlayerName( player.name );
+      return player;
+    });
     serverInfo[endpoint].qlstats = data;
     callback(data);
   })

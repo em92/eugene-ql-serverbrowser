@@ -1175,8 +1175,8 @@ var ServerInfo = React.createClass({
     players.sort( function(a, b) {
       if (b.team > a.team) return -1;
       if (b.team < a.team) return 1;
-      if (b.rating > a.rating) return 1;
-      if (b.rating < a.rating) return -1;
+      if (b.score > a.score) return 1;
+      if (b.score < a.score) return -1;
       return 0;
     });
 
@@ -1184,6 +1184,7 @@ var ServerInfo = React.createClass({
       return (<tr>
         <td><span className={team_class[player.team]}>{teams[player.team]}</span></td>
         <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}><span dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></span></a></td>
+        <td>{player.team != 3 ? player.score : null}</td>
         <td>{player.rating}</td>
       </tr>);
     });
@@ -1191,6 +1192,7 @@ var ServerInfo = React.createClass({
       <thead><tr>
         <th style={{width: "55px"}}>Team</th>
         <th>Nick</th>
+        <th style={{width: "20px"}}>Score</th>
         <th style={{width: "50px"}}>Glicko</th>
       </tr></thead>
       <tbody>{render_data}</tbody>
