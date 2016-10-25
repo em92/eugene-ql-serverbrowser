@@ -1004,10 +1004,10 @@ var FilterOptions = React.createClass({
       var key = window.localStorage.key(i);
       if ( key.substr(0, 11) == 'filterData_' ) {
         window.localStorage.removeItem( key );
+        i--;
       }
     }
     var filterDataNew = JSON.parse( this.state.filterDataB );
-    console.log(filterDataNew);
     Object.keys( filterDataNew ).forEach( filter_id => {
       window.localStorage.setItem("filterData_" + filter_id, JSON.stringify( filterDataNew[ filter_id ] ));
     });
@@ -1146,6 +1146,22 @@ var ServerInfo = React.createClass({
     return '<span class="qc7">' + nickname + '</span>';
   },
 
+  renderRaceData: function( ) {
+    var players = this.state.server.gameinfo.players;
+
+    var render_data = players.map( player => {
+      return (<tr>
+        <td dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></td>
+      </tr>);
+    });
+    return (<table>
+      <thead><tr>
+        <th>Nick</th>
+      </tr></thead>
+      <tbody>{render_data}</tbody>
+    </table>);
+  },
+
   renderCommonData: function( ) {
     var players = this.state.server.gameinfo.players;
     players.sort( function(a, b) {
@@ -1175,8 +1191,8 @@ var ServerInfo = React.createClass({
     players.sort( function(a, b) {
       if (b.team > a.team) return -1;
       if (b.team < a.team) return 1;
-      if (b.rating > a.rating) return 1;
-      if (b.rating < a.rating) return -1;
+      if (b.score > a.score) return 1;
+      if (b.score < a.score) return -1;
       return 0;
     });
 
@@ -1184,6 +1200,7 @@ var ServerInfo = React.createClass({
       return (<tr>
         <td><span className={team_class[player.team]}>{teams[player.team]}</span></td>
         <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}><span dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></span></a></td>
+        <td>{player.team != 3 ? player.score : null}</td>
         <td>{player.rating}</td>
       </tr>);
     });
@@ -1191,6 +1208,7 @@ var ServerInfo = React.createClass({
       <thead><tr>
         <th style={{width: "55px"}}>Team</th>
         <th>Nick</th>
+        <th style={{width: "20px"}}>Score</th>
         <th style={{width: "50px"}}>Glicko</th>
       </tr></thead>
       <tbody>{render_data}</tbody>
@@ -1199,6 +1217,7 @@ var ServerInfo = React.createClass({
 
   renderData: function() {
     if (this.state.server.gameinfo.players.length == 0) return (<div className="emptyserver">empty server</div>);
+    if (this.state.server.gameinfo.g_gametype == 2) return this.renderRaceData();
     return this.state.server.qlstats.ok ? this.renderQLStatsData() : this.renderCommonData();
   },
 
