@@ -1146,6 +1146,22 @@ var ServerInfo = React.createClass({
     return '<span class="qc7">' + nickname + '</span>';
   },
 
+  renderRaceData: function( ) {
+    var players = this.state.server.gameinfo.players;
+
+    var render_data = players.map( player => {
+      return (<tr>
+        <td dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></td>
+      </tr>);
+    });
+    return (<table>
+      <thead><tr>
+        <th>Nick</th>
+      </tr></thead>
+      <tbody>{render_data}</tbody>
+    </table>);
+  },
+
   renderCommonData: function( ) {
     var players = this.state.server.gameinfo.players;
     players.sort( function(a, b) {
@@ -1201,6 +1217,7 @@ var ServerInfo = React.createClass({
 
   renderData: function() {
     if (this.state.server.gameinfo.players.length == 0) return (<div className="emptyserver">empty server</div>);
+    if (this.state.server.gameinfo.g_gametype == 2) return this.renderRaceData();
     return this.state.server.qlstats.ok ? this.renderQLStatsData() : this.renderCommonData();
   },
 
