@@ -1004,10 +1004,10 @@ var FilterOptions = React.createClass({
       var key = window.localStorage.key(i);
       if ( key.substr(0, 11) == 'filterData_' ) {
         window.localStorage.removeItem( key );
+        i--;
       }
     }
     var filterDataNew = JSON.parse( this.state.filterDataB );
-    console.log(filterDataNew);
     Object.keys( filterDataNew ).forEach( filter_id => {
       window.localStorage.setItem("filterData_" + filter_id, JSON.stringify( filterDataNew[ filter_id ] ));
     });
