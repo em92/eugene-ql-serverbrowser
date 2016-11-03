@@ -18,6 +18,10 @@ var query = function() {
       delete item.server;
       skill_rating[ address ] = item;
     });
+  })
+  .catch( error => {
+    console.error("skillrating.query");
+    throw error;
   });
 };
 

@@ -17,6 +17,10 @@ var query = function() {
     servers = data.servers.map(function(item) {
       return item.address;
     });
+  })
+  .catch( error => {
+    console.error("master.query");
+    throw error;
   });
 };
 

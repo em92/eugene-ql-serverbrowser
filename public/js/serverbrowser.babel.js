@@ -1221,6 +1221,30 @@ var ServerInfo = React.createClass({
     return this.state.server.qlstats.ok ? this.renderQLStatsData() : this.renderCommonData();
   },
 
+  renderScore: function() {
+    // must have players
+    if (this.state.server.gameinfo.players.length == 0) return null;
+
+    // must be loaded
+    if (this.state.loading) return null;
+
+    // showing team scores only for team-based gametypes (RR - is not team-based)
+    if (
+      this.state.server.gameinfo.g_gametype < 3 ||
+      this.state.server.gameinfo.g_gametype > 11
+    ) return null;
+
+    // data must be from qlstats
+    if (this.state.server.qlstats.ok == false) return null;
+
+    return (<li>
+      Score: &nbsp;
+        <span className="qc1">{this.state.server.qlstats.serverinfo.scoreRed}</span>
+        &nbsp; &ndash; &nbsp;
+        <span className="qc4">{this.state.server.qlstats.serverinfo.scoreBlue}</span>
+    </li>);
+  },
+
   render: function() {
     if (this.state.server == null) return null;
     return (<div className="serverinfo">
@@ -1228,6 +1252,7 @@ var ServerInfo = React.createClass({
         <li>Gametype: {GAMETYPES[this.state.server.gameinfo.g_gametype + 100*this.state.server.gameinfo.g_instagib]}</li>
         <li>Gamestate: {{'PRE_GAME': 'Warmup', 'IN_PROGRESS': 'In progress'}[this.state.server.gameinfo.g_gamestate]}</li>
         <li>Map: {this.state.server.gameinfo.mapname}</li>
+        {this.renderScore()}
       </ul>
       <div style={{"width": "100%", "text-align": "center"}}>
         <a href={"steam://connect/" + this.state.server.host_address} className="btn btn-primary btn-xs">connect</a>
