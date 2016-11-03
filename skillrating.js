@@ -20,7 +20,8 @@ var query = function() {
     });
   })
   .catch( error => {
-    console.error("skillrating.query", error);
+    console.error("skillrating.query");
+    throw error;
   });
 };
 

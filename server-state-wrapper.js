@@ -363,11 +363,8 @@ var updateServerInfo = function( update_server_list ) {
       updateServerInfo(false);
     })
     .catch( error => {
-      console.error("updateServerInfo error");
       console.error(error);
-      setTimeout( () => {
-        updateServerInfo(true);
-      }, 5000);
+      setTimeout(updateServerInfo, 5000);
     });
     return;
   }
