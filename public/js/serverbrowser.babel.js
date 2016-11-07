@@ -497,7 +497,7 @@ var Server = React.createClass({
   render: function() {
     var self = this;
     return (
-      <tr>
+      <tr className="server-row" onClick={() => {self.props.showServerInfo(self.props.server)}}>
         <Location geo={this.props.server.location} />
         <GameType server={this.props.server} />
         <td>{this.props.server.host_name}</td>
@@ -505,7 +505,6 @@ var Server = React.createClass({
         <PlayerCount server={this.props.server} />
         <td>{this.props.server.password ? <img src="/images/lock.png" /> : null}</td>
         <td>{this.props.server.dedicated ? null : <img src="/images/home.png" />}</td>
-        <td><a onClick={() => {self.props.showServerInfo(self.props.server)}} className="btn btn-primary btn-xs">details</a></td>
         <td><a href={"steam://connect/" + this.props.server.host_address} className="btn btn-primary btn-xs">connect</a></td>
       </tr>
     );
@@ -1344,7 +1343,6 @@ var ServerList = React.createClass({
           <th>Hostname</th>
           <th>Arena</th>
           <th>Players</th>
-          <th></th>
           <th></th>
           <th></th>
           <th></th>
