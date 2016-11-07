@@ -1233,6 +1233,9 @@ var ServerInfo = React.createClass({
       this.state.server.gameinfo.g_gametype > 11
     ) return null;
 
+    // not showing scores on warmup
+    if (this.state.server.gameinfo.g_gamestate == "PRE_GAME") return null;
+
     // data must be from qlstats
     if (this.state.server.qlstats.ok == false) return null;
 
