@@ -260,3 +260,7 @@ textarea {
 .serverinfo ul {
   padding-right: 40px;
 }
+
+.server-row {
+  cursor: pointer;
+}
