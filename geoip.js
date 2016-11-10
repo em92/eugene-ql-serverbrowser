@@ -8,7 +8,11 @@ var temp_cache = {};
 var tasks = new Set();
 
 var FLAG_PERMANENT = "+";
-var TIMEOUT = 500; // 500 ms -> 120 request per minute
+var TIMEOUT = 1000; // 1000 ms -> 60 request per minute
+
+var get_region = function( geo_data ) {
+  return geo_data.region ? geo_data.region : c2c[geo_data.country];
+}
 
 var mainLoop = function() {
   if (tasks.size == 0) {
@@ -31,6 +35,12 @@ var mainLoop = function() {
   rp(options)
   .then( data => {
     var geo_data = {country: data.countryCode, city: data.city.split(" (")[0]}
+    if ( geo_data.country == "RU" && data.timezone.startsWith("Asia") ) {
+      geo_data[ "region" ] = "AS";
+    }
+    if ( geo_data.country == "DE" && geo_data.city == "Frankfurt am Main" ) {
+      geo_data.city = "Frankfurt";
+    }
     console.log("geoip: mainLoop data: " + ip + " => " + geo_data.city + (is_permanent ? "" : " (temporary)"));
     if (is_permanent) {
       cache[ip] = geo_data;
@@ -52,10 +62,10 @@ var lookup = function(ip, is_permanent) {
   if (typeof(is_permanent) == "undefined") is_permanent = false;
 
   if (typeof(cache[ip]) != 'undefined')
-    return extend( {region: c2c[cache[ip].country] }, cache[ip] );
+    return extend( {region: get_region( cache[ip] ) }, cache[ip] );
 
   if (typeof(temp_cache[ip]) != 'undefined')
-    return extend( {region: c2c[temp_cache[ip].country] }, temp_cache[ip] );
+    return extend( {region: get_region( temp_cache[ip] ) }, temp_cache[ip] );
 
   tasks.add(ip + (is_permanent ? FLAG_PERMANENT : ""));
   if (tasks.size == 1)
