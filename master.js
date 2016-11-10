@@ -3,19 +3,18 @@ var rp = require('request-promise');
 var servers = [];
 
 var query = function() {
-  //console.log("Querying syncore's server list");
-  
   var options = {
-    uri: 'https://ql.syncore.org/api/servers',
+    uri: 'https://api.steampowered.com/IGameServersService/GetServerList/v1/?key='+process.env.STEAM_WEB_API_KEY+'&filter=appid%5C282440&limit=100000',
     timeout: 5000,
     json: true
   };
-  
+
   return rp(options)
   .then( data => {
+    data = data.response;
     if (data.servers.length == 0) return;
     servers = data.servers.map(function(item) {
-      return item.address;
+      return item.addr;
     });
   })
   .catch( error => {
