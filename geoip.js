@@ -38,6 +38,9 @@ var mainLoop = function() {
     if ( geo_data.country == "RU" && data.timezone.startsWith("Asia") ) {
       geo_data[ "region" ] = "AS";
     }
+    if ( geo_data.country == "DE" && geo_data.city == "Frankfurt am Main" ) {
+      geo_data.city = "Frankfurt";
+    }
     console.log("geoip: mainLoop data: " + ip + " => " + geo_data.city + (is_permanent ? "" : " (temporary)"));
     if (is_permanent) {
       cache[ip] = geo_data;
