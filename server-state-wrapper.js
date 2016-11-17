@@ -400,7 +400,7 @@ var updateServerInfo = function( update_server_list ) {
             }
           }
           state = format(server, state);
-          if ( state == null && typeof(serverInfo[server]) != "undefined" ) {
+          if ( state == null ) {
             delete serverInfo[server];
           } else {
             serverInfo[server] = state;
