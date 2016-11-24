@@ -261,6 +261,15 @@ textarea {
   padding-right: 40px;
 }
 
+.serverinfo p {
+  text-align: center;
+}
+
+.serverinfo p span {
+  margin-left: 5px;
+  font-size: small;
+}
+
 .server-row {
   cursor: pointer;
 }

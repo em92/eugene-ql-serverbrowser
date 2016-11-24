@@ -1085,7 +1085,7 @@ var FilterOptions = React.createClass({
 
 var ServerInfo = React.createClass({
   getInitialState: function() {
-    return { server: null };
+    return { server: null, is_showing_tags: false };
   },
 
   show: function( server ) {
@@ -1098,7 +1098,15 @@ var ServerInfo = React.createClass({
   },
 
   hide: function() {
-    this.setState({server: null});
+    this.setState({server: null, is_showing_tags: false});
+  },
+
+  showTags: function() {
+    this.setState({is_showing_tags: true});
+  },
+
+  hideTags: function() {
+    this.setState({is_showing_tags: false});
   },
 
   downloadQLStatsData: function( server ) {
@@ -1260,8 +1268,18 @@ var ServerInfo = React.createClass({
       <div style={{"width": "100%", "text-align": "center"}}>
         <a href={"steam://connect/" + this.state.server.host_address} className="btn btn-primary btn-xs">connect</a>
         &nbsp;
+        <a onClick={this.state.is_showing_tags ? this.hideTags : this.showTags} className="btn btn-primary btn-xs">{this.state.is_showing_tags ? "hide tags" : "show tags"}</a>
+        &nbsp;
         <a onClick={this.hide} className="btn btn-primary btn-xs">close</a>
       </div>
+      { this.state.is_showing_tags ? 
+        <p>
+          {this.state.server.tags.map( tag => {
+            return <span>{tag}&nbsp;</span>;
+          })}
+        </p>
+        : null
+      }
       {this.state.loading ? <img src="/images/loading.gif" /> : this.renderData()}
     </div>);
   }
