@@ -1254,6 +1254,7 @@ var ServerInfo = React.createClass({
         <li>Gametype: {GAMETYPES[this.state.server.gameinfo.g_gametype + 100*this.state.server.gameinfo.g_instagib]}</li>
         <li>Gamestate: {{'PRE_GAME': 'Warmup', 'IN_PROGRESS': 'In progress'}[this.state.server.gameinfo.g_gamestate]}</li>
         <li>Map: {this.state.server.gameinfo.mapname}</li>
+        <li>Address: {this.state.server.host_address}</li>
         {this.renderScore()}
       </ul>
       <div style={{"width": "100%", "text-align": "center"}}>
