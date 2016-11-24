@@ -1280,7 +1280,7 @@ var ServerInfo = React.createClass({
         </p>
         : null
       }
-      {this.state.loading ? <img src="/images/loading.gif" /> : this.renderData()}
+      {this.state.loading ? <div style={{"text-align": "center"}}><img src="/images/loading.gif" /></div> : this.renderData()}
     </div>);
   }
 });
