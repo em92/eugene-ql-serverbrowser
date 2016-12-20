@@ -337,6 +337,11 @@ var queryQLStatsServerInfo = function( endpoint, callback ) {
 
   Q(skillrating.query_server_players( endpoint ))
   .then( data => {
+    if ( typeof(data) == 'undefined' ) {
+      callback({ok: false, msg: "not available. try later"});
+      return;
+    }
+
     data.players = data.players.map( player => {
       player.score = getScoreByPlayerName( player.name );
       return player;

@@ -1,4 +1,5 @@
 var rp = require('request-promise');
+var error_handler = require('./master.js').rp_error_handler;
 
 var skill_rating = {};
 
@@ -19,10 +20,7 @@ var query = function() {
       skill_rating[ address ] = item;
     });
   })
-  .catch( error => {
-    console.error("skillrating.query");
-    throw error;
-  });
+  .catch( error_handler );
 };
 
 var query_server_players = function( address ) {
@@ -32,7 +30,7 @@ var query_server_players = function( address ) {
     json: true
   };
 
-  return rp(options);
+  return rp(options).catch( error_handler );
 };
 
 
