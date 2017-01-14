@@ -121,6 +121,8 @@ var format = function(address, state) {
       item.gameinfo.g_instagib = 0;
     } else if (item.gameinfo.g_gametype == 7) { // 7 - not valid gametype
       throw new Error("invalid gametype: 7");
+    } else if (item.gameinfo.g_gametype == null) { // can be returned, if server is not ql
+      throw new Error("invalid gametype: null");
     }
 
     if (item.gameinfo.g_gamestate == "COUNT_DOWN") {
