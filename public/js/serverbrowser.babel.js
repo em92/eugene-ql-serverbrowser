@@ -936,20 +936,25 @@ var FilterBlock = React.createClass({
   }
 });
 
-var FilterOptions = React.createClass({
-  getInitialState: function() {
-    var filterData = {};
-    for (var i=0; i<window.localStorage.length; i++) {
-      var key = window.localStorage.key(i);
-      var id = key.substr(11);
-      if ( key.substr(0, 11) == 'filterData_' && id != "" ) {
-        try {
-          filterData[ id ] = JSON.parse( window.localStorage.getItem( key ) );
-        } catch(e) {
-          console.error(key, e);
-        }
+function get_filter_data_from_localstorage() {
+  var filterData = {};
+  for (var i=0; i<window.localStorage.length; i++) {
+    var key = window.localStorage.key(i);
+    var id = key.substr(11);
+    if ( key.substr(0, 11) == 'filterData_' && id != "" ) {
+      try {
+        filterData[ id ] = JSON.parse( window.localStorage.getItem( key ) );
+      } catch(e) {
+        console.error(key, e);
       }
     }
+  }
+  return filterData;
+}
+
+var FilterOptions = React.createClass({
+  getInitialState: function() {
+    var filterData = get_filter_data_from_localstorage();
     return {
       filterData: filterData,
       filterDataB: JSON.stringify(filterData, null, 2), // B = Beautified
@@ -1321,7 +1326,7 @@ var ServerList = React.createClass({
       dataType: 'json',
       cache: true,
       success: (function (data) {
-        this.setState( {servers: data.servers, loading: false, error: false } );
+        this.setState( {servers: data.servers ? data.servers : [], loading: false, error: data.error } );
 
         var selected_server = this.refs.serverinfo.getServer();
         if (selected_server == null) return;
@@ -1343,7 +1348,16 @@ var ServerList = React.createClass({
   },
 
   componentDidMount: function() {
-    this.filterData = window.localStorage.filterData ? "/" + window.btoa(window.localStorage.filterData) : "";
+    // don't do anything, if filterData is not defined
+    if (!this.props.filterData) return;
+
+    if ( typeof(this.props.filterData) == "object" ) {
+      this.filterData = JSON.stringify( this.props.filterData );
+    } else {
+      this.filterData = this.props.filterData;
+    }
+
+    this.filterData = "/" + window.btoa(this.filterData);
     this.downloadServerList();
     setInterval(this.downloadServerList, 10000);
   },
@@ -1382,4 +1396,64 @@ var ServerList = React.createClass({
   }
 });
 
-ReactDOM.render(<ServerList />, document.getElementById('content'));
+var SteamAccountBlock = React.createClass({
+
+  getInitialState: function() {
+    return { loading: true, error: false };
+  },
+
+  downloadAccountInfo: function() {
+    $.ajax({
+      url: "get_settings",
+      dataType: 'json',
+      success: (function (data) {
+        this.props.getSettingsCallback(data);
+        this.setState({steam_id: data.steam_id});
+      }).bind(this),
+      error: (function (xhr, status, err) {
+        this.props.getSettingsCallback({error: err});
+        console.error(xhr, status, err);
+      }).bind(this)
+    });
+  },
+
+  componentDidMount: function() {
+    this.downloadAccountInfo();
+  },
+
+  render: function() {
+    return <div style={{color: "green"}}>{this.state.steam_id}</div>;
+  }
+
+});
+
+var App = React.createClass({
+
+  getInitialState: function() {
+    return { loading: true, error: false };
+  },
+
+  getSettingsCallback: function(data) {
+    if (data.error)
+      this.setState({
+        error: data.error,
+        loading: false
+      });
+    else
+      this.setState({
+        filterData: data.settings ? data.settings : ( window.localStorage.filterData ? window.localStorage.filterData : {"gametype": "any"} ),
+        steamId: data.steam_id,
+        loading: false
+      });
+  },
+
+  render: function() {
+    return (<div>
+      <SteamAccountBlock getSettingsCallback={this.getSettingsCallback} />
+      <ServerList key={this.state.steamId} filterData={this.state.filterData} />}
+    </div>);
+  }
+
+});
+
+ReactDOM.render(<App />, document.getElementById('content'));
