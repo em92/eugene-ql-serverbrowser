@@ -51,6 +51,8 @@ var serverList = function(filter_data) {
   return {servers: result};
 };
 
+app.use(require('body-parser').json());
+
 app.get('/serverlist/:filter_data', function (req, res) {
   res.setHeader("Content-Type", "application/json");
   res.send(serverList(req.params.filter_data));
@@ -83,7 +85,7 @@ if (process.env.npm_lifecycle_event == "start-dev") {
   var index_file_data = fs.readFileSync(__dirname + '/public/index.html', {encoding: 'utf8'}).replace(
     '<script type="text/javascript" src="/js/serverbrowser.js"></script>',
     '<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script><script type="text/babel" src="/js/serverbrowser.babel.js"></script>'
-  );
+  ).replace('.min.js', '.js');
   app.get('/', function (req, res) {
     res.setHeader("Content-Type", "text/html");
     res.send(index_file_data);
@@ -91,6 +93,8 @@ if (process.env.npm_lifecycle_event == "start-dev") {
 }
 
 app.use(express.static('public'));
+
+require("./auth.js")(app);
 
 app.listen(HTTP_PORT, function () {
   console.log("Eugene's Quake Live Server Browser started on port " + HTTP_PORT);
