@@ -12,6 +12,11 @@ var query = function() {
   
   return rp(options)
   .then( data => {
+    if ( Array.isArray(data) == false) {
+      console.error("skillrating: data does not seem to be array");
+      console.error(data);
+      return;
+    }
     server_ips = {};
     skill_rating = {}
     data.forEach(function(item) {
