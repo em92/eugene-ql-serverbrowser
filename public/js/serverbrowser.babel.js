@@ -1408,10 +1408,14 @@ var SteamAccountBlock = React.createClass({
       dataType: 'json',
       success: (function (data) {
         this.props.getSettingsCallback(data);
-        this.setState({steam_id: data.steam_id});
+        this.setState($.extend({loading: false}, data));
       }).bind(this),
       error: (function (xhr, status, err) {
         this.props.getSettingsCallback({error: err});
+        this.setState({
+          error: err,
+          loading: false
+        });
         console.error(xhr, status, err);
       }).bind(this)
     });
@@ -1422,7 +1426,22 @@ var SteamAccountBlock = React.createClass({
   },
 
   render: function() {
-    return <div style={{color: "green"}}>{this.state.steam_id}</div>;
+    if (this.state.loading)
+      return <div id="steam_account_block">Loading...</div>
+
+    if (this.state.steam_id == "0")
+      return <a id="steam_signin" href="/auth/steam">
+        <img src="https://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_01.png" />
+      </a>
+
+    return <div id="steam_account_block">
+      <img src={this.state.avatar} />
+
+      <div className="right_block_wrapper">
+        <div className="hello">Hello, {this.state.name}!</div>
+        <div className="cntrl">Save settings | <a href="/logout">Logout</a></div>
+      </div>
+    </div>;
   }
 
 });

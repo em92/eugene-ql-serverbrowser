@@ -35,6 +35,7 @@ passport.use(new SteamStrategy({
   function(identifier, profile, done) {
     profile = {
       "name": profile._json.personaname,
+      "avatar": profile._json.avatar,
       "steamid": profile._json.steamid
     }
     return done(null, profile);
