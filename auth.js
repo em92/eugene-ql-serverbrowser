@@ -61,7 +61,8 @@ module.exports = function(app) {
   app.use(passport.session());
 
   app.post('/save_settings', ensureAuthenticated, function(req, res){
-    client.set("qlsb:filters:" + obj.steamid, JSON.stringify(req.body), function(err, reply) {
+    client.set("qlsb:filters:" + req.user.steamid, JSON.stringify(req.body), function(err, reply) {
+      var obj = {};
       if (err) {
         obj.error = err;
       } else {
