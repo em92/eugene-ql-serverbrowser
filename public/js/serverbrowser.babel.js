@@ -952,6 +952,35 @@ function get_filter_data_from_localstorage() {
   return filterData;
 }
 
+function get_clean_filter_data( filterData ) {
+  return Object.keys( filterData ).map( i => {
+    var state = $.extend({}, filterData[i]);
+    if (state.tags) {
+      state.tags = state.tags.join();
+    }
+    return state;
+  });
+}
+
+function reset_filter_data() {
+  for (var i=0; i<window.localStorage.length; i++) {
+    var key = window.localStorage.key(i);
+    if ( key.substr(0, 11) == 'filterData_' ) {
+      window.localStorage.removeItem( key );
+      i--;
+    }
+  }
+}
+
+function import_filter_data( filterDataB ) {
+  reset_filter_data();
+  var filterDataNew = JSON.parse( filterDataB );
+  Object.keys( filterDataNew ).forEach( filter_id => {
+    window.localStorage.setItem("filterData_" + filter_id, JSON.stringify( filterDataNew[ filter_id ] ));
+  });
+  return filterDataNew;
+}
+
 var FilterOptions = React.createClass({
   getInitialState: function() {
     var filterData = get_filter_data_from_localstorage();
@@ -989,13 +1018,7 @@ var FilterOptions = React.createClass({
   },
 
   setFilterData: function( filterData ) {
-    var filterDataRaw = Object.keys( filterData ).map( i => {
-      var state = $.extend({}, filterData[i]);
-      if (state.tags) {
-        state.tags = state.tags.join();
-      }
-      return state;
-    });
+    var filterDataRaw = get_clean_filter_data( filterData );
     this.props.acceptFilterCallback( {"_": filterDataRaw } );
   },
 
@@ -1004,17 +1027,7 @@ var FilterOptions = React.createClass({
   },
 
   importFilterData: function() {
-    for (var i=0; i<window.localStorage.length; i++) {
-      var key = window.localStorage.key(i);
-      if ( key.substr(0, 11) == 'filterData_' ) {
-        window.localStorage.removeItem( key );
-        i--;
-      }
-    }
-    var filterDataNew = JSON.parse( this.state.filterDataB );
-    Object.keys( filterDataNew ).forEach( filter_id => {
-      window.localStorage.setItem("filterData_" + filter_id, JSON.stringify( filterDataNew[ filter_id ] ));
-    });
+    var filterDataNew = import_filter_data( this.state.filterDataB );
     this.setFilterData( filterDataNew );
     this.setState( this.getInitialState() );
   },
@@ -1421,6 +1434,27 @@ var SteamAccountBlock = React.createClass({
     });
   },
 
+  saveSettings: function() {
+    $.ajax({
+      url: "save_settings",
+      method: "POST",
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      data: JSON.stringify( get_filter_data_from_localstorage() ),
+      success: (function (data) {
+console.log(data);
+      }).bind(this),
+      error: (function (xhr, status, err) {
+        this.props.getSettingsCallback({error: err});
+        this.setState({
+          error: err,
+          loading: false
+        });
+        console.error(xhr, status, err);
+      }).bind(this)
+    });
+  },
+
   componentDidMount: function() {
     this.downloadAccountInfo();
   },
@@ -1439,7 +1473,8 @@ var SteamAccountBlock = React.createClass({
 
       <div className="right_block_wrapper">
         <div className="hello">Hello, {this.state.name}!</div>
-        <div className="cntrl">Save settings | <a href="/logout">Logout</a></div>
+        <div className="cntrl">
+          <a onClick={this.saveSettings}>Save settings</a> | <a href="/logout">Logout</a></div>
       </div>
     </div>;
   }
@@ -1453,14 +1488,16 @@ var App = React.createClass({
   },
 
   getSettingsCallback: function(data) {
+console.log(data.settings);
     if (data.error)
       this.setState({
         error: data.error,
         loading: false
       });
     else
+      var defaultFilterData = window.localStorage.filterData ? window.localStorage.filterData : {"gametype": "any"};
       this.setState({
-        filterData: data.settings ? data.settings : ( window.localStorage.filterData ? window.localStorage.filterData : {"gametype": "any"} ),
+        filterData: data.settings ? get_clean_filter_data( import_filter_data( JSON.stringify( data.settings ) ) ) : defaultFilterData,
         steamId: data.steam_id,
         loading: false
       });
