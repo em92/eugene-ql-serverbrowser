@@ -957,6 +957,28 @@ function is_valid_filter_data_string( filterDataB ) {
   return false;
 }
 
+function render_ql_nickname( nickname, classname ) {
+  if ( nickname.length == 0 ) return null;
+
+  var another_classname = classname;
+  var start_index = ['0', '1', '2', '3', '4', '5', '6', '7'].reduce(function(result_index, current) {
+    var current_index = nickname.indexOf("^" + current);
+    if (current_index == -1 ) return result_index;
+    if (current_index < result_index) {
+      result_index = current_index;
+      another_classname = "qc" + current;
+    }
+    return result_index;
+  }, nickname.length);
+
+  var part1 = nickname.substr(0, start_index);
+  var part2 = nickname.substr(start_index+2);
+
+  return (<span className={classname}>{part1}
+    {render_ql_nickname(part2, another_classname)}
+  </span>);
+}
+
 var FilterOptions = React.createClass({
   getInitialState: function() {
     return {
@@ -1133,19 +1155,12 @@ var ServerInfo = React.createClass({
     return this.state.server;
   },
 
-  renderQLNickname: function(nickname) {
-    nickname = ['0', '1', '2', '3', '4', '5', '6', '7'].reduce(function(sum, current) {
-      return sum.split("^" + current).join('</span><span class="qc' + current + '">');
-    }, nickname);
-    return '<span class="qc7">' + nickname + '</span>';
-  },
-
   renderRaceData: function( ) {
     var players = this.state.server.gameinfo.players;
 
     var render_data = players.map( player => {
       return (<tr>
-        <td dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></td>
+        <td>{render_ql_nickname(player.name)}></td>
       </tr>);
     });
     return (<table>
@@ -1165,7 +1180,7 @@ var ServerInfo = React.createClass({
 
     var render_data = players.map( player => {
       return (<tr>
-        <td dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></td>
+        <td>{render_ql_nickname(player.name)}</td>
         <td>{player.score}</td>
       </tr>);
     });
@@ -1193,7 +1208,7 @@ var ServerInfo = React.createClass({
     var render_data = players.map( player => {
       return (<tr>
         <td><span className={team_class[player.team]}>{teams[player.team]}</span></td>
-        <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}><span dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></span></a></td>
+        <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}>{render_ql_nickname(player.name)}</a></td>
         <td>{player.team != 3 ? player.score : null}</td>
         <td>{player.rating}</td>
       </tr>);
@@ -1279,7 +1294,6 @@ var ServerList = React.createClass({
 
   acceptFilter: function(filterDataIn) {
     filterDataIn = JSON.stringify(filterDataIn);
-    window.localStorage.setItem('filterData', filterDataIn);
     this.filterData = "/" + window.btoa(filterDataIn);
     this.downloadServerList();
   },
@@ -1404,6 +1418,8 @@ var SteamAccountBlock = React.createClass({
   },
 
   saveSettings: function() {
+    this.setState({settings_saving_progress: "Saving..."});
+    var self = this;
     $.ajax({
       url: "save_settings",
       method: "POST",
@@ -1411,6 +1427,10 @@ var SteamAccountBlock = React.createClass({
       contentType: 'application/json; charset=utf-8',
       data: window.localStorage['filterDataB'],
       success: (function (data) {
+        this.setState({settings_saving_progress: "Saved"});
+        setTimeout( function() {
+          self.setState({settings_saving_progress: false})
+        }, 3000);
       }).bind(this),
       error: (function (xhr, status, err) {
         this.props.getSettingsCallback({error: err});
@@ -1418,6 +1438,7 @@ var SteamAccountBlock = React.createClass({
           error: err,
           loading: false
         });
+        this.setState({settings_saving_progress: "Error"});
         console.error(xhr, status, err);
       }).bind(this)
     });
@@ -1440,9 +1461,11 @@ var SteamAccountBlock = React.createClass({
       <img src={this.state.avatar} />
 
       <div className="right_block_wrapper">
-        <div className="hello">Hello, {this.state.name}!</div>
+        <div className="hello">Hello, {render_ql_nickname(this.state.name)}!</div>
         <div className="cntrl">
-          <a onClick={this.saveSettings}>Save settings</a> | <a href="/logout">Logout</a></div>
+          { this.state.settings_saving_progress ? <span>{this.state.settings_saving_progress}</span> : <a href="javascript:void(0)" onClick={this.saveSettings}>Save settings</a> }
+          <span> | </span>
+          <a href="/logout">Logout</a></div>
       </div>
     </div>;
   }
