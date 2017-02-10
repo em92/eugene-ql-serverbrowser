@@ -783,7 +783,7 @@ var FilterBlock = React.createClass({
     };
 
     try {
-      var filter_data = JSON.parse(window.localStorage.getItem('filterData_' + id));
+      var filter_data = this.props.filterData;
       if (filter_data == null) filter_data = {};
       return {
         id: id,
@@ -810,9 +810,8 @@ var FilterBlock = React.createClass({
   },
 
   acceptFilterData: function( result ) {
-    window.localStorage.setItem('filterData_' + this.state.id, JSON.stringify(this.state.filter_data));
     this.setState( { filter_data: result } );
-    this.props.parentCallback(this.state.id, result);
+    this.props.parentCallback(this.props.id, result);
   },
 
   createFilterItem: function(event) {
@@ -937,19 +936,14 @@ var FilterBlock = React.createClass({
 });
 
 function get_filter_data_from_localstorage() {
-  var filterData = {};
-  for (var i=0; i<window.localStorage.length; i++) {
-    var key = window.localStorage.key(i);
-    var id = key.substr(11);
-    if ( key.substr(0, 11) == 'filterData_' && id != "" ) {
-      try {
-        filterData[ id ] = JSON.parse( window.localStorage.getItem( key ) );
-      } catch(e) {
-        console.error(key, e);
-      }
-    }
+  var default_result = {"gametype": "any"};
+  try {
+    var data = JSON.parse( window.localStorage['filterDataB'] );
+    if ( Array.isArray(data) ) return default_result;
+    return data;
+  } catch(e) {
+    return default_result;
   }
-  return filterData;
 }
 
 function get_clean_filter_data( filterData ) {
@@ -962,31 +956,11 @@ function get_clean_filter_data( filterData ) {
   });
 }
 
-function reset_filter_data() {
-  for (var i=0; i<window.localStorage.length; i++) {
-    var key = window.localStorage.key(i);
-    if ( key.substr(0, 11) == 'filterData_' ) {
-      window.localStorage.removeItem( key );
-      i--;
-    }
-  }
-}
-
-function import_filter_data( filterDataB ) {
-  reset_filter_data();
-  var filterDataNew = JSON.parse( filterDataB );
-  Object.keys( filterDataNew ).forEach( filter_id => {
-    window.localStorage.setItem("filterData_" + filter_id, JSON.stringify( filterDataNew[ filter_id ] ));
-  });
-  return filterDataNew;
-}
-
 var FilterOptions = React.createClass({
   getInitialState: function() {
-    var filterData = get_filter_data_from_localstorage();
     return {
-      filterData: filterData,
-      filterDataB: JSON.stringify(filterData, null, 2), // B = Beautified
+      filterData: this.props.filterData,
+      filterDataB: JSON.stringify(this.props.filterData, null, 2), // B = Beautified
       filterDataBisValid: true,
       showingRawFilterData: false,
       hidden: true
@@ -1011,13 +985,13 @@ var FilterOptions = React.createClass({
     return function() {
       var filterData = self.state.filterData;
       delete filterData[ id ];
-      window.localStorage.removeItem("filterData_" + id);
       self.setFilterData( filterData );
       self.setState({});
     }
   },
 
   setFilterData: function( filterData ) {
+    window.localStorage.setItem( "filterDataB", filterData );
     var filterDataRaw = get_clean_filter_data( filterData );
     this.props.acceptFilterCallback( {"_": filterDataRaw } );
   },
@@ -1027,7 +1001,7 @@ var FilterOptions = React.createClass({
   },
 
   importFilterData: function() {
-    var filterDataNew = import_filter_data( this.state.filterDataB );
+    var filterDataNew = JSON.parse( this.state.filterDataB );
     this.setFilterData( filterDataNew );
     this.setState( this.getInitialState() );
   },
@@ -1080,6 +1054,8 @@ var FilterOptions = React.createClass({
         <FilterBlock
           id={filter_id}
           parentCallback={self.onFilterItemBlockChange}
+          filterData={this.state.filterData[filter_id]}
+          key={filter_id}
         />
         <div onClick={this.onRemoveFilterClickHandler(filter_id)} className="filter-block-close"></div>
       </div>)
@@ -1283,7 +1259,7 @@ var ServerInfo = React.createClass({
         <li>Address: {this.state.server.host_address}</li>
         {this.renderScore()}
       </ul>
-      <div style={{"width": "100%", "text-align": "center"}}>
+      <div style={{"width": "100%", "textAlign": "center"}}>
         <a href={"steam://connect/" + this.state.server.host_address} className="btn btn-primary btn-xs">connect</a>
         &nbsp;
         <a onClick={this.state.is_showing_tags ? this.hideTags : this.showTags} className="btn btn-primary btn-xs">{this.state.is_showing_tags ? "hide tags" : "show tags"}</a>
@@ -1298,7 +1274,7 @@ var ServerInfo = React.createClass({
         </p>
         : null
       }
-      {this.state.loading ? <div style={{"text-align": "center"}}><img src="/images/loading.gif" /></div> : this.renderData()}
+      {this.state.loading ? <div style={{"textAlign": "center"}}><img src="/images/loading.gif" /></div> : this.renderData()}
     </div>);
   }
 });
@@ -1365,7 +1341,7 @@ var ServerList = React.createClass({
     if (!this.props.filterData) return;
 
     if ( typeof(this.props.filterData) == "object" ) {
-      this.filterData = JSON.stringify( this.props.filterData );
+      this.filterData = JSON.stringify( get_clean_filter_data( this.props.filterData ) );
     } else {
       this.filterData = this.props.filterData;
     }
@@ -1402,7 +1378,7 @@ var ServerList = React.createClass({
       result = (<div className="no-servers">No results</div>);
 
     return (<div>
-      <FilterOptions acceptFilterCallback={this.acceptFilter} />
+      <FilterOptions filterData={this.props.filterData} acceptFilterCallback={this.acceptFilter} />
       {result}
       <ServerInfo ref="serverinfo" updateServerDetails={this.updateServerDetails} />
     </div>);
@@ -1440,9 +1416,8 @@ var SteamAccountBlock = React.createClass({
       method: "POST",
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
-      data: JSON.stringify( get_filter_data_from_localstorage() ),
+      data: window.localStorage['filterDataB'],
       success: (function (data) {
-console.log(data);
       }).bind(this),
       error: (function (xhr, status, err) {
         this.props.getSettingsCallback({error: err});
@@ -1488,7 +1463,6 @@ var App = React.createClass({
   },
 
   getSettingsCallback: function(data) {
-console.log(data.settings);
     if (data.error)
       this.setState({
         error: data.error,
@@ -1497,16 +1471,22 @@ console.log(data.settings);
     else
       var defaultFilterData = window.localStorage.filterData ? window.localStorage.filterData : {"gametype": "any"};
       this.setState({
-        filterData: data.settings ? get_clean_filter_data( import_filter_data( JSON.stringify( data.settings ) ) ) : defaultFilterData,
+        //filterData: {"default": {"gametype": "any"} }, //data.settings ? get_clean_filter_data( import_filter_data( JSON.stringify( data.settings ) ) ) : defaultFilterData,
+        filterData: {"default": {"gametype": ['any']} },
         steamId: data.steam_id,
         loading: false
       });
   },
 
   render: function() {
+    if (this.state.error) {
+      console.error(this.state.error);
+      return null;
+    }
+
     return (<div>
       <SteamAccountBlock getSettingsCallback={this.getSettingsCallback} />
-      <ServerList key={this.state.steamId} filterData={this.state.filterData} />}
+      { this.state.loading ? null : <ServerList filterData={this.state.filterData} />} }
     </div>);
   }
 
