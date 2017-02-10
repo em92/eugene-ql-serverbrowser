@@ -281,7 +281,7 @@ textarea {
   position: absolute;
   right: 5px;
   top: 5px;
-  width: 200px;
+  min-width: 200px;
   border-radius: 5px;
   padding: 5px;,
 }
