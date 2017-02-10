@@ -935,17 +935,6 @@ var FilterBlock = React.createClass({
   }
 });
 
-function get_filter_data_from_localstorage() {
-  var default_result = {"gametype": "any"};
-  try {
-    var data = JSON.parse( window.localStorage['filterDataB'] );
-    if ( Array.isArray(data) ) return default_result;
-    return data;
-  } catch(e) {
-    return default_result;
-  }
-}
-
 function get_clean_filter_data( filterData ) {
   return Object.keys( filterData ).map( i => {
     var state = $.extend({}, filterData[i]);
@@ -954,6 +943,18 @@ function get_clean_filter_data( filterData ) {
     }
     return state;
   });
+}
+
+function is_valid_filter_data_string( filterDataB ) {
+  try {
+    var data = JSON.parse( filterDataB );
+    if ( Array.isArray(data) ) return false;
+    if ( Object.keys(data).every( item => typeof(data[item]) == "object" && ( Array.isArray(data[item]) == false ) ) ) {
+      return true;
+    }
+  } catch(e) {
+  }
+  return false;
 }
 
 var FilterOptions = React.createClass({
@@ -991,7 +992,7 @@ var FilterOptions = React.createClass({
   },
 
   setFilterData: function( filterData ) {
-    window.localStorage.setItem( "filterDataB", filterData );
+    window.localStorage.setItem( "filterDataB", JSON.stringify( filterData ) );
     var filterDataRaw = get_clean_filter_data( filterData );
     this.props.acceptFilterCallback( {"_": filterDataRaw } );
   },
@@ -1011,17 +1012,9 @@ var FilterOptions = React.createClass({
   },
 
   onTextFilterChange: function( event ) {
-    var filterDataBisValid = true;
-    try {
-      var temp = JSON.parse(event.target.value);
-      filterDataBisValid = Object.keys(temp).every( item => typeof(temp[item]) == "object" && ( Array.isArray(temp[item]) == false ) );
-    } catch(e) {
-      console.error(e);
-      filterDataBisValid = false;
-    }
     this.setState({
       filterDataB:        event.target.value,
-      filterDataBisValid: filterDataBisValid
+      filterDataBisValid: is_valid_filter_data_string( event.target.value )
     });
   },
 
@@ -1468,14 +1461,19 @@ var App = React.createClass({
         error: data.error,
         loading: false
       });
-    else
-      var defaultFilterData = window.localStorage.filterData ? window.localStorage.filterData : {"gametype": "any"};
+    else {
+      var default_filter_data = {"0default": {"gametype": ['any']} };
+      var filterDataB = window.localStorage['filterDataB'];
+      if ( is_valid_filter_data_string( filterDataB ) ) {
+        default_filter_data = JSON.parse( filterDataB );
+      }
+
       this.setState({
-        //filterData: {"default": {"gametype": "any"} }, //data.settings ? get_clean_filter_data( import_filter_data( JSON.stringify( data.settings ) ) ) : defaultFilterData,
-        filterData: {"default": {"gametype": ['any']} },
+        filterData: default_filter_data,
         steamId: data.steam_id,
         loading: false
       });
+    }
   },
 
   render: function() {
