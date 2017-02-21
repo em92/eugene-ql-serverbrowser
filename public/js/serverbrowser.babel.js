@@ -1220,6 +1220,8 @@ var ServerInfo = React.createClass({
       return 0;
     });
 
+    if ( players.length == 0 ) return (<div className="emptyserver">empty server</div>);
+
     var render_data = players.map( player => {
       return (<tr>
         <td><span className={team_class[player.team]}>{teams[player.team]}</span></td>
