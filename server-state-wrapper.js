@@ -96,7 +96,7 @@ var isInstagibByTags = function(tags) {
 var format = function(address, state) {
   try {
     if ( state.raw.gameid != "282440" )
-      throw new Error("invalid gameid: " + state.gameid);
+      throw new Error("invalid gameid: " + state.raw.gameid);
 
     var item = {
       host_address: address,
