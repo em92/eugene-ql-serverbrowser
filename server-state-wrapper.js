@@ -108,6 +108,10 @@ var format = function(address, state) {
         g_gametype: state.raw.rules ? parseInt(state.raw.rules.g_gametype) : getGametypeByTags(state.raw.tags),
         g_factory: state.raw.rules ? state.raw.rules.g_factory : getFactoryByTags(state.raw.tags),
         g_instagib: state.raw.rules ? parseInt(state.raw.rules.g_instagib) : isInstagibByTags(state.raw.tags),
+
+        g_bluescore: state.raw.rules ? parseInt(state.raw.rules.g_bluescore) : 0,
+        g_redscore:  state.raw.rules ? parseInt(state.raw.rules.g_redscore)  : 0,
+
         mapname: state.map.toLowerCase(),
         rating_min: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].min : 0,
         rating_max: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].max : 9999,
@@ -116,6 +120,8 @@ var format = function(address, state) {
         teamsize: state.raw.rules ? parseInt(state.raw.rules.teamsize) : 0
       }
     };
+
+    item.gameinfo.is_team_game = (item.gameinfo.g_gametype >= 3 && item.gameinfo.g_gametype <= 11);
 
     if (item.gameinfo.g_gametype == 2) { // Race
       item.gameinfo.g_instagib = 0;

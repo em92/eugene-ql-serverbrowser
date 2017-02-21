@@ -494,6 +494,19 @@ var PlayerCount = React.createClass({
 });
 
 var Server = React.createClass({
+  renderScore: function() {
+    if (this.props.server.gameinfo.g_gamestate == 'PRE_GAME') return;
+
+    if (this.props.server.gameinfo.is_team_game) {
+      return <span style={{"whiteSpace": "pre"}}>
+        <span className="qc1">{this.props.server.gameinfo.g_redscore}</span>
+        <span> : </span>
+        <span className="qc4">{this.props.server.gameinfo.g_bluescore}</span>
+      </span>
+    } else {
+    }
+  },
+
   render: function() {
     var self = this;
     return (
@@ -503,6 +516,7 @@ var Server = React.createClass({
         <td>{this.props.server.host_name}</td>
         <td>{this.props.server.gameinfo.mapname}</td>
         <PlayerCount server={this.props.server} />
+        <td>{this.renderScore()}</td>
         <td>{this.props.server.gameinfo.g_gamestate == 'PRE_GAME' ? <img src="/images/warmup.png" /> : null}</td>
         <td>{this.props.server.password ? <img src="/images/lock.png" /> : null}</td>
         <td>{this.props.server.dedicated ? null : <img src="/images/home.png" />}</td>
@@ -1235,26 +1249,17 @@ var ServerInfo = React.createClass({
     // must have players
     if (this.state.server.gameinfo.players.length == 0) return null;
 
-    // must be loaded
-    if (this.state.loading) return null;
-
     // showing team scores only for team-based gametypes (RR - is not team-based)
-    if (
-      this.state.server.gameinfo.g_gametype < 3 ||
-      this.state.server.gameinfo.g_gametype > 11
-    ) return null;
+    if (this.state.server.gameinfo.is_team_game == false) return null;
 
     // not showing scores on warmup
     if (this.state.server.gameinfo.g_gamestate == "PRE_GAME") return null;
 
-    // data must be from qlstats
-    if (this.state.server.qlstats.ok == false) return null;
-
     return (<li>
       Score: &nbsp;
-        <span className="qc1">{this.state.server.qlstats.serverinfo.scoreRed}</span>
+        <span className="qc1">{this.state.server.gameinfo.g_redscore}</span>
         &nbsp; &ndash; &nbsp;
-        <span className="qc4">{this.state.server.qlstats.serverinfo.scoreBlue}</span>
+        <span className="qc4">{this.state.server.gameinfo.g_bluescore}</span>
     </li>);
   },
 
@@ -1376,6 +1381,7 @@ var ServerList = React.createClass({
           <th>Hostname</th>
           <th>Arena</th>
           <th>Players</th>
+          <th></th>
           <th></th>
           <th></th>
           <th></th>
