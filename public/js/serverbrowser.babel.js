@@ -1503,7 +1503,7 @@ var App = React.createClass({
       }
 
       this.setState({
-        filterData: default_filter_data,
+        filterData: data.settings ? data.settings : default_filter_data,
         steamId: data.steam_id,
         loading: false
       });
