@@ -90,6 +90,7 @@ module.exports = function(app) {
           obj.settings = null;
         };
         obj.steam_id = obj.steamid;
+        delete obj.steamid;
       }
       res.send(obj);
     });
