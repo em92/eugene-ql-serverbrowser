@@ -514,6 +514,7 @@ var Server = React.createClass({
 
   render: function() {
     var self = this;
+    var data = this.props.server;
     return (
       <tr className="server-row" onClick={() => {self.props.showServerInfo(self.props.server)}}>
         <Location geo={this.props.server.location} />
@@ -522,7 +523,8 @@ var Server = React.createClass({
         <td>{this.props.server.gameinfo.mapname}</td>
         <PlayerCount server={this.props.server} />
         <td>{this.renderScore()}</td>
-        <td>{this.props.server.gameinfo.g_gamestate == 'PRE_GAME' ? <img src="/images/warmup.png" /> : null}</td>
+        <td>{data.gameinfo.g_gamestate == 'PRE_GAME' &&
+            !( data.gameinfo.g_gametype == 2 && data.tags.indexOf("minqlx") > -1 )? <img src="/images/warmup.png" /> : null}</td>
         <td>{this.props.server.password ? <img src="/images/lock.png" /> : null}</td>
         <td>{this.props.server.dedicated ? null : <img src="/images/home.png" />}</td>
         <td><a href={"steam://connect/" + this.props.server.host_address} className="btn btn-primary btn-xs">connect</a></td>
