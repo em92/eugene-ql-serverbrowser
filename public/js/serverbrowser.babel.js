@@ -503,7 +503,12 @@ var Server = React.createClass({
         <span> : </span>
         <span className="qc4">{this.props.server.gameinfo.g_bluescore}</span>
       </span>
-    } else {
+    } else if (this.props.server.gameinfo.g_gametype == 0 && this.props.server.gameinfo.players.length > 1) {
+      return <span style={{"whiteSpace": "pre"}}>
+        <span>{this.props.server.gameinfo.players[0].score}</span>
+        <span> : </span>
+        <span>{this.props.server.gameinfo.players[1].score}</span>
+      </span>
     }
   },
 
@@ -1175,7 +1180,7 @@ var ServerInfo = React.createClass({
 
     var render_data = players.map( player => {
       return (<tr>
-        <td>{render_ql_nickname(player.name)}></td>
+        <td>{render_ql_nickname(player.name)}</td>
       </tr>);
     });
     return (<table>
@@ -1188,10 +1193,6 @@ var ServerInfo = React.createClass({
 
   renderCommonData: function( ) {
     var players = this.state.server.gameinfo.players;
-    players.sort( function(a, b) {
-      if (b.score > a.score) return 1;
-      if (b.score < a.score) return -1;
-    });
 
     var render_data = players.map( player => {
       return (<tr>
@@ -1215,9 +1216,7 @@ var ServerInfo = React.createClass({
     players.sort( function(a, b) {
       if (b.team > a.team) return -1;
       if (b.team < a.team) return 1;
-      if (b.score > a.score) return 1;
-      if (b.score < a.score) return -1;
-      return 0;
+      return b.score - a.score;
     });
 
     if ( players.length == 0 ) return (<div className="emptyserver">empty server</div>);

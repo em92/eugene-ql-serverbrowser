@@ -138,6 +138,10 @@ var format = function(address, state) {
       item.gameinfo.g_gamestate = "IN_PROGRESS";
     }
 
+    item.gameinfo.players.sort( (p1, p2) => {
+      return p2.score - p1.score;
+    });
+
     if (
       item.dedicated == false ||
       typeof(skillrating.skill_rating[ address ]) == "undefined"
