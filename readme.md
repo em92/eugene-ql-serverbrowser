@@ -1,6 +1,3 @@
-Товарищ! По [ссылке](readme-ru.md) этот-же документ на русском языке.
-If you don't speak Russian - ignore line above.
-
 # Eugene's QL Server Browser
 
 ### Features
