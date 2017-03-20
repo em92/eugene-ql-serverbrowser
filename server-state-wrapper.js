@@ -95,6 +95,9 @@ var isInstagibByTags = function(tags) {
 
 var format = function(address, state) {
   try {
+    if ( state.raw.gameid != "282440" )
+      throw new Error("invalid gameid: " + state.raw.gameid);
+
     var item = {
       host_address: address,
       host_name: state.name,
@@ -108,6 +111,10 @@ var format = function(address, state) {
         g_gametype: state.raw.rules ? parseInt(state.raw.rules.g_gametype) : getGametypeByTags(state.raw.tags),
         g_factory: state.raw.rules ? state.raw.rules.g_factory : getFactoryByTags(state.raw.tags),
         g_instagib: state.raw.rules ? parseInt(state.raw.rules.g_instagib) : isInstagibByTags(state.raw.tags),
+
+        g_bluescore: state.raw.rules ? parseInt(state.raw.rules.g_bluescore) : 0,
+        g_redscore:  state.raw.rules ? parseInt(state.raw.rules.g_redscore)  : 0,
+
         mapname: state.map.toLowerCase(),
         rating_min: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].min : 0,
         rating_max: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].max : 9999,
@@ -117,15 +124,23 @@ var format = function(address, state) {
       }
     };
 
+    item.gameinfo.is_team_game = (item.gameinfo.g_gametype >= 3 && item.gameinfo.g_gametype <= 11);
+
     if (item.gameinfo.g_gametype == 2) { // Race
       item.gameinfo.g_instagib = 0;
     } else if (item.gameinfo.g_gametype == 7) { // 7 - not valid gametype
       throw new Error("invalid gametype: 7");
+    } else if (item.gameinfo.g_gametype == null) { // can be returned, if server is not ql
+      throw new Error("invalid gametype: null");
     }
 
     if (item.gameinfo.g_gamestate == "COUNT_DOWN") {
       item.gameinfo.g_gamestate = "IN_PROGRESS";
     }
+
+    item.gameinfo.players.sort( (p1, p2) => {
+      return p2.score - p1.score;
+    });
 
     if (
       item.dedicated == false ||
@@ -337,6 +352,11 @@ var queryQLStatsServerInfo = function( endpoint, callback ) {
 
   Q(skillrating.query_server_players( endpoint ))
   .then( data => {
+    if ( typeof(data) == 'undefined' ) {
+      callback({ok: false, msg: "not available. try later"});
+      return;
+    }
+
     data.players = data.players.map( player => {
       player.score = getScoreByPlayerName( player.name );
       return player;

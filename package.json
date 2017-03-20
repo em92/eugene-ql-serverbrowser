@@ -1,16 +1,25 @@
 {
   "name": "eugene-ql-serverbrowser",
-  "version": "0.6.0",
   "private": true,
+  "version": "0.7.0",
   "scripts": {
     "start": "./node_modules/babel/bin/babel.js public/js/serverbrowser.babel.js --out-file public/js/serverbrowser.js && ./node_modules/uglify-js/bin/uglifyjs public/js/serverbrowser.js -o public/js/serverbrowser.js && ./main.js",
     "start-dev": "./main.js"
   },
+  "config": {
+    "realm": "http://localhost:3000/",
+    "redis_url": "redis://127.0.0.1:6379"
+  },
   "dependencies": {
     "babel": "^5.8.38",
+    "body-parser": "^1.16.0",
     "express": "^4.13.4",
+    "express-session": "^1.14.2",
     "game-server-query": "^1.0.8",
+    "passport": "^0.3.2",
+    "passport-steam": "^1.0.7",
     "q": "^1.4.1",
+    "redis": "^2.6.5",
     "uglify-js": "^2.7.3",
     "request-promise": "^3.0.0"
   }

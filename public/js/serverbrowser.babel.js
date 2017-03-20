@@ -494,8 +494,27 @@ var PlayerCount = React.createClass({
 });
 
 var Server = React.createClass({
+  renderScore: function() {
+    if (this.props.server.gameinfo.g_gamestate == 'PRE_GAME') return;
+
+    if (this.props.server.gameinfo.is_team_game) {
+      return <span style={{"whiteSpace": "pre"}}>
+        <span className="qc1">{this.props.server.gameinfo.g_redscore}</span>
+        <span> : </span>
+        <span className="qc4">{this.props.server.gameinfo.g_bluescore}</span>
+      </span>
+    } else if (this.props.server.gameinfo.g_gametype == 0 && this.props.server.gameinfo.players.length > 1) {
+      return <span style={{"whiteSpace": "pre"}}>
+        <span>{this.props.server.gameinfo.players[0].score}</span>
+        <span> : </span>
+        <span>{this.props.server.gameinfo.players[1].score}</span>
+      </span>
+    }
+  },
+
   render: function() {
     var self = this;
+    var data = this.props.server;
     return (
       <tr className="server-row" onClick={() => {self.props.showServerInfo(self.props.server)}}>
         <Location geo={this.props.server.location} />
@@ -503,6 +522,9 @@ var Server = React.createClass({
         <td>{this.props.server.host_name}</td>
         <td>{this.props.server.gameinfo.mapname}</td>
         <PlayerCount server={this.props.server} />
+        <td>{this.renderScore()}</td>
+        <td>{data.gameinfo.g_gamestate == 'PRE_GAME' &&
+            !( data.gameinfo.g_gametype == 2 && data.tags.indexOf("minqlx") > -1 )? <img src="/images/warmup.png" /> : null}</td>
         <td>{this.props.server.password ? <img src="/images/lock.png" /> : null}</td>
         <td>{this.props.server.dedicated ? null : <img src="/images/home.png" />}</td>
         <td><a href={"steam://connect/" + this.props.server.host_address} className="btn btn-primary btn-xs">connect</a></td>
@@ -783,7 +805,7 @@ var FilterBlock = React.createClass({
     };
 
     try {
-      var filter_data = JSON.parse(window.localStorage.getItem('filterData_' + id));
+      var filter_data = this.props.filterData;
       if (filter_data == null) filter_data = {};
       return {
         id: id,
@@ -810,9 +832,8 @@ var FilterBlock = React.createClass({
   },
 
   acceptFilterData: function( result ) {
-    window.localStorage.setItem('filterData_' + this.state.id, JSON.stringify(this.state.filter_data));
     this.setState( { filter_data: result } );
-    this.props.parentCallback(this.state.id, result);
+    this.props.parentCallback(this.props.id, result);
   },
 
   createFilterItem: function(event) {
@@ -936,23 +957,55 @@ var FilterBlock = React.createClass({
   }
 });
 
+function get_clean_filter_data( filterData ) {
+  return Object.keys( filterData ).map( i => {
+    var state = $.extend({}, filterData[i]);
+    if (state.tags) {
+      state.tags = state.tags.join();
+    }
+    return state;
+  });
+}
+
+function is_valid_filter_data_string( filterDataB ) {
+  try {
+    var data = JSON.parse( filterDataB );
+    if ( Array.isArray(data) ) return false;
+    if ( Object.keys(data).every( item => typeof(data[item]) == "object" && ( Array.isArray(data[item]) == false ) ) ) {
+      return true;
+    }
+  } catch(e) {
+  }
+  return false;
+}
+
+function render_ql_nickname( nickname, classname ) {
+  if ( nickname.length == 0 ) return null;
+
+  var another_classname = classname;
+  var start_index = ['0', '1', '2', '3', '4', '5', '6', '7'].reduce(function(result_index, current) {
+    var current_index = nickname.indexOf("^" + current);
+    if (current_index == -1 ) return result_index;
+    if (current_index < result_index) {
+      result_index = current_index;
+      another_classname = "qc" + current;
+    }
+    return result_index;
+  }, nickname.length);
+
+  var part1 = nickname.substr(0, start_index);
+  var part2 = nickname.substr(start_index+2);
+
+  return (<span className={classname}>{part1}
+    {render_ql_nickname(part2, another_classname)}
+  </span>);
+}
+
 var FilterOptions = React.createClass({
   getInitialState: function() {
-    var filterData = {};
-    for (var i=0; i<window.localStorage.length; i++) {
-      var key = window.localStorage.key(i);
-      var id = key.substr(11);
-      if ( key.substr(0, 11) == 'filterData_' && id != "" ) {
-        try {
-          filterData[ id ] = JSON.parse( window.localStorage.getItem( key ) );
-        } catch(e) {
-          console.error(key, e);
-        }
-      }
-    }
     return {
-      filterData: filterData,
-      filterDataB: JSON.stringify(filterData, null, 2), // B = Beautified
+      filterData: this.props.filterData,
+      filterDataB: JSON.stringify(this.props.filterData, null, 2), // B = Beautified
       filterDataBisValid: true,
       showingRawFilterData: false,
       hidden: true
@@ -977,20 +1030,14 @@ var FilterOptions = React.createClass({
     return function() {
       var filterData = self.state.filterData;
       delete filterData[ id ];
-      window.localStorage.removeItem("filterData_" + id);
       self.setFilterData( filterData );
       self.setState({});
     }
   },
 
   setFilterData: function( filterData ) {
-    var filterDataRaw = Object.keys( filterData ).map( i => {
-      var state = $.extend({}, filterData[i]);
-      if (state.tags) {
-        state.tags = state.tags.join();
-      }
-      return state;
-    });
+    window.localStorage.setItem( "filterDataB", JSON.stringify( filterData ) );
+    var filterDataRaw = get_clean_filter_data( filterData );
     this.props.acceptFilterCallback( {"_": filterDataRaw } );
   },
 
@@ -999,17 +1046,7 @@ var FilterOptions = React.createClass({
   },
 
   importFilterData: function() {
-    for (var i=0; i<window.localStorage.length; i++) {
-      var key = window.localStorage.key(i);
-      if ( key.substr(0, 11) == 'filterData_' ) {
-        window.localStorage.removeItem( key );
-        i--;
-      }
-    }
     var filterDataNew = JSON.parse( this.state.filterDataB );
-    Object.keys( filterDataNew ).forEach( filter_id => {
-      window.localStorage.setItem("filterData_" + filter_id, JSON.stringify( filterDataNew[ filter_id ] ));
-    });
     this.setFilterData( filterDataNew );
     this.setState( this.getInitialState() );
   },
@@ -1019,17 +1056,9 @@ var FilterOptions = React.createClass({
   },
 
   onTextFilterChange: function( event ) {
-    var filterDataBisValid = true;
-    try {
-      var temp = JSON.parse(event.target.value);
-      filterDataBisValid = Object.keys(temp).every( item => typeof(temp[item]) == "object" && ( Array.isArray(temp[item]) == false ) );
-    } catch(e) {
-      console.error(e);
-      filterDataBisValid = false;
-    }
     this.setState({
       filterDataB:        event.target.value,
-      filterDataBisValid: filterDataBisValid
+      filterDataBisValid: is_valid_filter_data_string( event.target.value )
     });
   },
 
@@ -1062,6 +1091,8 @@ var FilterOptions = React.createClass({
         <FilterBlock
           id={filter_id}
           parentCallback={self.onFilterItemBlockChange}
+          filterData={this.state.filterData[filter_id]}
+          key={filter_id}
         />
         <div onClick={this.onRemoveFilterClickHandler(filter_id)} className="filter-block-close"></div>
       </div>)
@@ -1146,19 +1177,12 @@ var ServerInfo = React.createClass({
     return this.state.server;
   },
 
-  renderQLNickname: function(nickname) {
-    nickname = ['0', '1', '2', '3', '4', '5', '6', '7'].reduce(function(sum, current) {
-      return sum.split("^" + current).join('</span><span class="qc' + current + '">');
-    }, nickname);
-    return '<span class="qc7">' + nickname + '</span>';
-  },
-
   renderRaceData: function( ) {
     var players = this.state.server.gameinfo.players;
 
     var render_data = players.map( player => {
       return (<tr>
-        <td dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></td>
+        <td>{render_ql_nickname(player.name)}</td>
       </tr>);
     });
     return (<table>
@@ -1171,14 +1195,10 @@ var ServerInfo = React.createClass({
 
   renderCommonData: function( ) {
     var players = this.state.server.gameinfo.players;
-    players.sort( function(a, b) {
-      if (b.score > a.score) return 1;
-      if (b.score < a.score) return -1;
-    });
 
     var render_data = players.map( player => {
       return (<tr>
-        <td dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></td>
+        <td>{render_ql_nickname(player.name)}</td>
         <td>{player.score}</td>
       </tr>);
     });
@@ -1198,15 +1218,15 @@ var ServerInfo = React.createClass({
     players.sort( function(a, b) {
       if (b.team > a.team) return -1;
       if (b.team < a.team) return 1;
-      if (b.score > a.score) return 1;
-      if (b.score < a.score) return -1;
-      return 0;
+      return b.score - a.score;
     });
+
+    if ( players.length == 0 ) return (<div className="emptyserver">empty server</div>);
 
     var render_data = players.map( player => {
       return (<tr>
         <td><span className={team_class[player.team]}>{teams[player.team]}</span></td>
-        <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}><span dangerouslySetInnerHTML={{__html: this.renderQLNickname(player.name)}}></span></a></td>
+        <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}>{render_ql_nickname(player.name)}</a></td>
         <td>{player.team != 3 ? player.score : null}</td>
         <td>{player.rating}</td>
       </tr>);
@@ -1232,26 +1252,17 @@ var ServerInfo = React.createClass({
     // must have players
     if (this.state.server.gameinfo.players.length == 0) return null;
 
-    // must be loaded
-    if (this.state.loading) return null;
-
     // showing team scores only for team-based gametypes (RR - is not team-based)
-    if (
-      this.state.server.gameinfo.g_gametype < 3 ||
-      this.state.server.gameinfo.g_gametype > 11
-    ) return null;
+    if (this.state.server.gameinfo.is_team_game == false) return null;
 
     // not showing scores on warmup
     if (this.state.server.gameinfo.g_gamestate == "PRE_GAME") return null;
 
-    // data must be from qlstats
-    if (this.state.server.qlstats.ok == false) return null;
-
     return (<li>
       Score: &nbsp;
-        <span className="qc1">{this.state.server.qlstats.serverinfo.scoreRed}</span>
+        <span className="qc1">{this.state.server.gameinfo.g_redscore}</span>
         &nbsp; &ndash; &nbsp;
-        <span className="qc4">{this.state.server.qlstats.serverinfo.scoreBlue}</span>
+        <span className="qc4">{this.state.server.gameinfo.g_bluescore}</span>
     </li>);
   },
 
@@ -1265,7 +1276,7 @@ var ServerInfo = React.createClass({
         <li>Address: {this.state.server.host_address}</li>
         {this.renderScore()}
       </ul>
-      <div style={{"width": "100%", "text-align": "center"}}>
+      <div style={{"width": "100%", "textAlign": "center"}}>
         <a href={"steam://connect/" + this.state.server.host_address} className="btn btn-primary btn-xs">connect</a>
         &nbsp;
         <a onClick={this.state.is_showing_tags ? this.hideTags : this.showTags} className="btn btn-primary btn-xs">{this.state.is_showing_tags ? "hide tags" : "show tags"}</a>
@@ -1280,7 +1291,7 @@ var ServerInfo = React.createClass({
         </p>
         : null
       }
-      {this.state.loading ? <div style={{"text-align": "center"}}><img src="/images/loading.gif" /></div> : this.renderData()}
+      {this.state.loading ? <div style={{"textAlign": "center"}}><img src="/images/loading.gif" /></div> : this.renderData()}
     </div>);
   }
 });
@@ -1292,7 +1303,6 @@ var ServerList = React.createClass({
 
   acceptFilter: function(filterDataIn) {
     filterDataIn = JSON.stringify(filterDataIn);
-    window.localStorage.setItem('filterData', filterDataIn);
     this.filterData = "/" + window.btoa(filterDataIn);
     this.downloadServerList();
   },
@@ -1321,7 +1331,7 @@ var ServerList = React.createClass({
       dataType: 'json',
       cache: true,
       success: (function (data) {
-        this.setState( {servers: data.servers, loading: false, error: false } );
+        this.setState( {servers: data.servers ? data.servers : [], loading: false, error: data.error } );
 
         var selected_server = this.refs.serverinfo.getServer();
         if (selected_server == null) return;
@@ -1343,7 +1353,16 @@ var ServerList = React.createClass({
   },
 
   componentDidMount: function() {
-    this.filterData = window.localStorage.filterData ? "/" + window.btoa(window.localStorage.filterData) : "";
+    // don't do anything, if filterData is not defined
+    if (!this.props.filterData) return;
+
+    if ( typeof(this.props.filterData) == "object" ) {
+      this.filterData = JSON.stringify( get_clean_filter_data( this.props.filterData ) );
+    } else {
+      this.filterData = this.props.filterData;
+    }
+
+    this.filterData = "/" + window.btoa(this.filterData);
     this.downloadServerList();
     setInterval(this.downloadServerList, 10000);
   },
@@ -1368,6 +1387,8 @@ var ServerList = React.createClass({
           <th></th>
           <th></th>
           <th></th>
+          <th></th>
+          <th></th>
         </tr></thead>
         <tbody>{result}</tbody>
       </table>);
@@ -1375,11 +1396,132 @@ var ServerList = React.createClass({
       result = (<div className="no-servers">No results</div>);
 
     return (<div>
-      <FilterOptions acceptFilterCallback={this.acceptFilter} />
+      <FilterOptions filterData={this.props.filterData} acceptFilterCallback={this.acceptFilter} />
       {result}
       <ServerInfo ref="serverinfo" updateServerDetails={this.updateServerDetails} />
     </div>);
   }
 });
 
-ReactDOM.render(<ServerList />, document.getElementById('content'));
+var SteamAccountBlock = React.createClass({
+
+  getInitialState: function() {
+    return { loading: true, error: false };
+  },
+
+  downloadAccountInfo: function() {
+    $.ajax({
+      url: "get_settings",
+      dataType: 'json',
+      success: (function (data) {
+        this.props.getSettingsCallback(data);
+        this.setState($.extend({loading: false}, data));
+      }).bind(this),
+      error: (function (xhr, status, err) {
+        this.props.getSettingsCallback({error: err});
+        this.setState({
+          error: err,
+          loading: false
+        });
+        console.error(xhr, status, err);
+      }).bind(this)
+    });
+  },
+
+  saveSettings: function() {
+    this.setState({settings_saving_progress: "Saving..."});
+    var self = this;
+    $.ajax({
+      url: "save_settings",
+      method: "POST",
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      data: window.localStorage['filterDataB'],
+      success: (function (data) {
+        this.setState({settings_saving_progress: "Saved"});
+        setTimeout( function() {
+          self.setState({settings_saving_progress: false})
+        }, 3000);
+      }).bind(this),
+      error: (function (xhr, status, err) {
+        this.props.getSettingsCallback({error: err});
+        this.setState({
+          error: err,
+          loading: false
+        });
+        this.setState({settings_saving_progress: "Error"});
+        console.error(xhr, status, err);
+      }).bind(this)
+    });
+  },
+
+  componentDidMount: function() {
+    this.downloadAccountInfo();
+  },
+
+  render: function() {
+    if (this.state.loading)
+      return <div id="steam_account_block">Loading...</div>
+
+    if (this.state.steam_id == "0")
+      return <a id="steam_signin" href="/auth/steam">
+        <img src="https://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_01.png" />
+      </a>
+
+    return <div id="steam_account_block">
+      <img src={this.state.avatar} />
+
+      <div className="right_block_wrapper">
+        <div className="hello">Hello, {render_ql_nickname(this.state.name)}!</div>
+        <div className="cntrl">
+          { this.state.settings_saving_progress ? <span>{this.state.settings_saving_progress}</span> : <a href="javascript:void(0)" onClick={this.saveSettings}>Save settings</a> }
+          <span> | </span>
+          <a href="/logout">Logout</a></div>
+      </div>
+    </div>;
+  }
+
+});
+
+var App = React.createClass({
+
+  getInitialState: function() {
+    return { loading: true, error: false };
+  },
+
+  getSettingsCallback: function(data) {
+    if (data.error)
+      this.setState({
+        error: data.error,
+        loading: false
+      });
+    else {
+      var default_filter_data = {"0default": {"gametype": ['any']} };
+      var filterDataB = window.localStorage['filterDataB'];
+      if ( is_valid_filter_data_string( filterDataB ) ) {
+        default_filter_data = JSON.parse( filterDataB );
+      }
+
+      this.setState({
+        filterData: data.settings ? data.settings : default_filter_data,
+        steamId: data.steam_id,
+        loading: false
+      });
+    }
+  },
+
+  render: function() {
+    if (this.state.error) {
+      console.error(this.state.error);
+      return null;
+    }
+
+    return (<div>
+      <SteamAccountBlock getSettingsCallback={this.getSettingsCallback} />
+      { this.state.loading ? null : <ServerList filterData={this.state.filterData} />} }
+    </div>);
+  }
+
+});
+
+ReactDOM.render(<App />, document.getElementById('content'));
