@@ -105,12 +105,15 @@ var format = function(address, state) {
       password: state.password,
       tags: state.raw.tags.split(",").map( tag => tag.trim().toLowerCase() ),
       dedicated: state.raw.listentype == "d",
+      vac: state.raw.secure ? true : false,
       gameinfo: {
         bots: state.bots,
         g_gamestate: state.raw.rules ? state.raw.rules.g_gamestate : "n/a",
         g_gametype: state.raw.rules ? parseInt(state.raw.rules.g_gametype) : getGametypeByTags(state.raw.tags),
         g_factory: state.raw.rules ? state.raw.rules.g_factory : getFactoryByTags(state.raw.tags),
+        g_factorytitle: state.raw.rules ? state.raw.rules.g_factorytitle : "n/a",
         g_instagib: state.raw.rules ? parseInt(state.raw.rules.g_instagib) : isInstagibByTags(state.raw.tags),
+        g_levelstarttime: state.raw.rules ? parseInt(state.raw.rules.g_levelstarttime) : 0,
 
         g_bluescore: state.raw.rules ? parseInt(state.raw.rules.g_bluescore) : 0,
         g_redscore:  state.raw.rules ? parseInt(state.raw.rules.g_redscore)  : 0,
@@ -120,6 +123,7 @@ var format = function(address, state) {
         rating_max: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].max : 9999,
         players: state.players,
         sv_maxclients: state.raw.rules ? parseInt(state.raw.rules.sv_maxclients): state.maxplayers,
+        timelimit: state.raw.rules ? parseInt(state.raw.rules.timelimit) : 0,
         teamsize: state.raw.rules ? parseInt(state.raw.rules.teamsize) : 0
       }
     };
