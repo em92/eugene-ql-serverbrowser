@@ -361,6 +361,11 @@ var queryQLStatsServerInfo = function( endpoint, callback ) {
       return;
     }
 
+    if (data.ok == false) {
+      callback(data);
+      return;
+    }
+
     data.players = data.players.map( player => {
       player.score = getScoreByPlayerName( player.name );
       return player;
