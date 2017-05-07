@@ -23,7 +23,7 @@ var query = function(servers, callback) {
       
       if( servers[index] ) {
         gsq( endpoint_to_gsq_param ( servers[index] ), inner_callback );
-      } else if (index == servers.length + MAX_PARALLEL_QUERY_COUNT - 1) {
+      } else if (index == servers.length + Math.min( MAX_PARALLEL_QUERY_COUNT - 1, servers.length ) ) {
         resolve();
       }
     };
