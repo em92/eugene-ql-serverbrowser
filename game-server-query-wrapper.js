@@ -28,8 +28,8 @@ var query = function(servers, callback) {
       }
     };
     
-    for ( var i=0; i<Math.min( MAX_PARALLEL_QUERY_COUNT, servers.length ); i++ ) {
-      gsq( endpoint_to_gsq_param ( servers[i] ), inner_callback );
+    for ( ; index<Math.min( MAX_PARALLEL_QUERY_COUNT, servers.length ); index++ ) {
+      gsq( endpoint_to_gsq_param ( servers[index] ), inner_callback );
     }
       
   });
