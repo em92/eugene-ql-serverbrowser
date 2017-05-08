@@ -80,6 +80,21 @@ app.get('/qlstats/:endpoint', function (req, res) {
   });
 });
 
+app.get('/serverinfo2/:endpoints', function (req, res) {
+  res.setHeader("Content-Type", "application/json");
+  var failed = [];
+  var result = [];
+  req.params.endpoints.split(",").forEach( function(endpoint) {
+    endpoint = endpoint.trim();
+    if ( serverInfo[ endpoint ] ) {
+      result.push( serverInfo[ endpoint ] );
+    } else {
+      failed.push( endpoint );
+    }
+  });
+  res.send({result: result, failed: failed});
+});
+
 if (process.env.npm_lifecycle_event == "start-dev") {
   var fs = require("fs");
   var index_file_data = fs.readFileSync(__dirname + '/public/index.html', {encoding: 'utf8'}).replace(
