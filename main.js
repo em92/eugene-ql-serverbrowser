@@ -85,14 +85,17 @@ app.get('/serverinfo2/:endpoints', function (req, res) {
   res.setHeader("Content-Type", "application/json");
   var failed = [];
   var result = [];
-  dns.lookup( req.params.endpoints.split(",") )
+  var input_endpoints = req.params.endpoints.split(",");
+  dns.lookup( input_endpoints )
   .then( endpoints => {
-    endpoints.forEach( function(endpoint) {
+    endpoints.forEach( function(endpoint, i) {
       endpoint = endpoint.trim();
       if ( serverInfo[ endpoint ] ) {
-        result.push( serverInfo[ endpoint ] );
+        var server = Object.assign({}, serverInfo[ endpoint ]);
+        server.host_address = input_endpoints[i];
+        result.push( server );
       } else {
-        failed.push( endpoint );
+        failed.push( input_endpoints[i] );
       }
     });
     res.send({result: result, failed: failed});
