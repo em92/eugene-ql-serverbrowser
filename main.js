@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var express = require('express');
 var ssw = require("./server-state-wrapper.js");
+var dns = require("./dns.js");
 
 var serverInfo = ssw.serverInfo;
 var checkServerUsingFilterData = ssw.checkServerUsingFilterData;
@@ -84,15 +85,18 @@ app.get('/serverinfo2/:endpoints', function (req, res) {
   res.setHeader("Content-Type", "application/json");
   var failed = [];
   var result = [];
-  req.params.endpoints.split(",").forEach( function(endpoint) {
-    endpoint = endpoint.trim();
-    if ( serverInfo[ endpoint ] ) {
-      result.push( serverInfo[ endpoint ] );
-    } else {
-      failed.push( endpoint );
-    }
+  dns.lookup( req.params.endpoints.split(",") )
+  .then( endpoints => {
+    endpoints.forEach( function(endpoint) {
+      endpoint = endpoint.trim();
+      if ( serverInfo[ endpoint ] ) {
+        result.push( serverInfo[ endpoint ] );
+      } else {
+        failed.push( endpoint );
+      }
+    });
+    res.send({result: result, failed: failed});
   });
-  res.send({result: result, failed: failed});
 });
 
 if (process.env.npm_lifecycle_event == "start-dev") {
