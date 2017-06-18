@@ -4,6 +4,16 @@ var session = require('express-session');
 var SteamStrategy = require('passport-steam').Strategy;
 var redis = require("redis");
 
+if (!process.env.npm_config_node_version) {
+  console.error("run using 'npm start' or 'npm run start-dev'. quitting...");
+  process.exit(1);
+}
+
+if (!process.env.npm_package_config_realm) {
+  console.error("realm value is not set in package.json. quitting...");
+  process.exit(1);
+}
+
 passport.serializeUser(function(user, done) {
   done(null, user);
 });
