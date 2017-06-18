@@ -1,13 +1,14 @@
 {
   "name": "eugene-ql-serverbrowser",
   "private": true,
-  "version": "0.7.0",
+  "version": "0.7.1",
   "scripts": {
-    "start": "./node_modules/babel/bin/babel.js public/js/serverbrowser.babel.js --out-file public/js/serverbrowser.js && ./node_modules/uglify-js/bin/uglifyjs public/js/serverbrowser.js -o public/js/serverbrowser.js && ./main.js",
+    "compile": "./node_modules/babel/bin/babel.js public/js/serverbrowser.babel.js --out-file public/js/serverbrowser.js && ./node_modules/uglify-js/bin/uglifyjs public/js/serverbrowser.js -o public/js/serverbrowser.js",
+    "start": "./main.js",
     "start-dev": "./main.js"
   },
   "config": {
-    "realm": "http://localhost:3000/",
+    "realm": "http://qlsb.eugenemolotov.ru/",
     "redis_url": "redis://127.0.0.1:6379"
   },
   "dependencies": {

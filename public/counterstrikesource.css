@@ -109,7 +109,7 @@ noscript {
 }
 
 .filter-item {
-  height: 35px;
+  height: 100%;
   padding: 3px;
   overflow: visible;
   float: right;

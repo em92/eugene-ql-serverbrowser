@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var express = require('express');
 var ssw = require("./server-state-wrapper.js");
+var dns = require("./dns.js");
 
 var serverInfo = ssw.serverInfo;
 var checkServerUsingFilterData = ssw.checkServerUsingFilterData;
@@ -77,6 +78,27 @@ app.get('/qlstats/:endpoint', function (req, res) {
   ssw.queryQLStatsServerInfo( req.params.endpoint, function( data ) {
     res.setHeader("Content-Type", "application/json");
     res.send( data );
+  });
+});
+
+app.get('/serverinfo2/:endpoints', function (req, res) {
+  res.setHeader("Content-Type", "application/json");
+  var failed = [];
+  var result = [];
+  var input_endpoints = req.params.endpoints.split(",");
+  dns.lookup( input_endpoints )
+  .then( endpoints => {
+    endpoints.forEach( function(endpoint, i) {
+      endpoint = endpoint.trim();
+      if ( serverInfo[ endpoint ] ) {
+        var server = Object.assign({}, serverInfo[ endpoint ]);
+        server.host_address = input_endpoints[i];
+        result.push( server );
+      } else {
+        failed.push( input_endpoints[i] );
+      }
+    });
+    res.send({result: result, failed: failed});
   });
 });
 
