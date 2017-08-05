@@ -472,7 +472,7 @@ var GameType = React.createClass({
 var PlayerCount = React.createClass({
   render: function() {
     var d = [
-      this.props.server.gameinfo.sv_maxclients, // ffa
+      this.props.server.gameinfo.teamsize, // ffa
       this.props.server.gameinfo.sv_maxclients, // duel
       this.props.server.gameinfo.sv_maxclients, // race
       this.props.server.gameinfo.teamsize*2,  // tdm
@@ -484,7 +484,7 @@ var PlayerCount = React.createClass({
       this.props.server.gameinfo.teamsize*2, // ft
       this.props.server.gameinfo.teamsize*2, // dom
       this.props.server.gameinfo.teamsize*2, // ad
-      this.props.server.gameinfo.sv_maxclients, // rr
+      this.props.server.gameinfo.teamsize, // rr
     ][this.props.server.gameinfo.g_gametype];
     if (d == 0) {
       d = this.props.server.gameinfo.sv_maxclients;
