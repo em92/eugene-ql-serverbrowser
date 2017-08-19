@@ -1048,7 +1048,10 @@ var FilterOptions = React.createClass({
   importFilterData: function() {
     var filterDataNew = JSON.parse( this.state.filterDataB );
     this.setFilterData( filterDataNew );
-    this.setState( this.getInitialState() );
+    this.setState({
+      filterData: filterDataNew,
+      showingRawFilterData: false
+    });
   },
 
   showCommonFilter: function() {
