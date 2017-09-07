@@ -103,6 +103,17 @@ app.get('/serverinfo2/:endpoints', function (req, res) {
   });
 });
 
+app.post("/promote", auth.ensure_logged_in, function(req, res) {
+  sp.locate_player(req.user.steamid, ssw.serverInfo, (result) => {
+    if (result.ok == false) {
+      res.json(result);
+      return;
+    }
+
+    ssw.serverInfo[result.endpoint].is_promoted = sp.promote( result.endpoint );
+  });
+});
+
 if (process.env.npm_lifecycle_event == "start-dev") {
   var fs = require("fs");
   var index_file_data = fs.readFileSync(__dirname + '/public/index.html', {encoding: 'utf8'}).replace(
