@@ -58,7 +58,7 @@ function ensureAuthenticated(req, res, next) {
   res.send({not_logged_in: true, steam_id: "0"});
 }
 
-module.exports = function(app) {
+function bind_methods(app) {
 
   app.use(session({
     secret: Math.random().toString(),
@@ -119,4 +119,7 @@ module.exports = function(app) {
   app.get('/auth/steam/return', passport.authenticate('steam', { failureRedirect: '/' }), function(req, res) {
     res.redirect('/');
   });
+
 }
+
+module.exports.bind_methods = bind_methods;

@@ -2,6 +2,7 @@
 var express = require('express');
 var ssw = require("./server-state-wrapper.js");
 var dns = require("./dns.js");
+var auth = require("./auth.js");
 
 var serverInfo = ssw.serverInfo;
 var checkServerUsingFilterData = ssw.checkServerUsingFilterData;
@@ -116,7 +117,7 @@ if (process.env.npm_lifecycle_event == "start-dev") {
 
 app.use(express.static('public'));
 
-require("./auth.js")(app);
+auth.bind_methods(app);
 
 app.listen(HTTP_PORT, function () {
   console.log("Eugene's Quake Live Server Browser started on port " + HTTP_PORT);
