@@ -158,6 +158,10 @@ var format = function(address, state) {
       };
     }
 
+    if (item.players.length == 0) {
+      sp.demote( address );
+    }
+
     if (process.env.npm_lifecycle_event == "start-dev") {
       item.raw = state;
     }
