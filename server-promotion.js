@@ -29,7 +29,12 @@ var demote = function( endpoints ) {
 
 
 var is_promoted = function( endpoint ) {
-  return ( servers[endpoint] || 0 ) + PROMOTION_TIMEOUT > current_timestamp();
+  if (!servers[endpoint]) return 0;
+  if (servers[endpoint] + PROMOTION_TIMEOUT < current_timestamp()) {
+    demote(endpoint);
+    return 0;
+  }
+  return servers[endpoint];
 }
 
 
