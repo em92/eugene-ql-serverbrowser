@@ -3,6 +3,7 @@ var gsqw = require("./game-server-query-wrapper.js");
 var master = require('./master.js');
 var Q = require('q');
 var skillrating = require('./skillrating.js');
+var sp = require('./server-promotion.js');
 
 var serverInfo = {};
 
@@ -106,6 +107,7 @@ var format = function(address, state) {
       tags: state.raw.tags.split(",").map( tag => tag.trim().toLowerCase() ),
       dedicated: state.raw.listentype == "d",
       vac: state.raw.secure ? true : false,
+      is_promoted: sp.is_promoted(address),
       gameinfo: {
         bots: state.bots,
         g_gamestate: state.raw.rules ? state.raw.rules.g_gamestate : "n/a",
