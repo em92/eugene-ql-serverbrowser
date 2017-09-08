@@ -1462,6 +1462,31 @@ var SteamAccountBlock = React.createClass({
     this.downloadAccountInfo();
   },
 
+  onPromoteClick: function() {
+    this.setState({promoting_progress: "Promoting..."});
+    var self = this;
+    $.ajax({
+      url: "promote",
+      method: "POST",
+      data: "dummy",
+      success: function (data) {
+        self.setState({promoting_progress: data.message});
+        setTimeout( function() {
+          self.setState({promoting_progress: false})
+        }, 3000);
+      },
+      error: (function (xhr, status, err) {
+        this.props.getSettingsCallback({error: err});
+        this.setState({
+          error: err,
+          loading: false
+        });
+        this.setState({promoting_progress: "Error"});
+        console.error(xhr, status, err);
+      }).bind(this)
+    });
+  },
+
   render: function() {
     if (this.state.loading)
       return <div id="steam_account_block">Loading...</div>
@@ -1478,6 +1503,8 @@ var SteamAccountBlock = React.createClass({
         <div className="hello">Hello, {render_ql_nickname(this.state.name)}!</div>
         <div className="cntrl">
           { this.state.settings_saving_progress ? <span>{this.state.settings_saving_progress}</span> : <a href="javascript:void(0)" onClick={this.saveSettings}>Save settings</a> }
+          <span> | </span>
+          { this.state.promoting_progress ? <span>{this.state.promoting_progress}</span> : <a href="javascript:void(0)" onClick={this.onPromoteClick}>Promote</a> }
           <span> | </span>
           <a href="/logout">Logout</a></div>
       </div>
