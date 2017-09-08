@@ -215,6 +215,7 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
         return +(server.gameinfo[key].toUpperCase() == value);
 
       case 'min_players':
+        if (server.is_promoted) return 1;
         return +(server.gameinfo.players.length >= value);
 
       case 'region':
