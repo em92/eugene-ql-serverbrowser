@@ -3,6 +3,7 @@ var express = require('express');
 var ssw = require("./server-state-wrapper.js");
 var dns = require("./dns.js");
 var auth = require("./auth.js");
+var sp = require("./server-promotion.js");
 
 var serverInfo = ssw.serverInfo;
 var checkServerUsingFilterData = ssw.checkServerUsingFilterData;
@@ -103,21 +104,10 @@ app.get('/serverinfo2/:endpoints', function (req, res) {
   });
 });
 
-app.post("/promote", auth.ensure_logged_in, function(req, res) {
-  sp.locate_player(req.user.steamid, ssw.serverInfo, (result) => {
-    if (result.ok == false) {
-      res.json(result);
-      return;
-    }
-
-    ssw.serverInfo[result.endpoint].is_promoted = sp.promote( result.endpoint );
-  });
-});
-
 if (process.env.npm_lifecycle_event == "start-dev") {
   var fs = require("fs");
   var index_file_data = fs.readFileSync(__dirname + '/public/index.html', {encoding: 'utf8'}).replace(
-    '<script type="text/javascript" src="/js/serverbrowser.js"></script>',
+    '<script type="text/javascript" src="/js/serverbrowser.js?1"></script>',
     '<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script><script type="text/babel" src="/js/serverbrowser.babel.js"></script>'
   ).replace('.min.js', '.js');
   app.get('/', function (req, res) {
@@ -129,6 +119,29 @@ if (process.env.npm_lifecycle_event == "start-dev") {
 app.use(express.static('public'));
 
 auth.bind_methods(app);
+
+app.post("/promote", auth.ensure_logged_in, function(req, res) {
+  sp.locate_player(req.user.steamid, ssw.serverInfo, (result) => {
+    if (result.ok == false) {
+      res.json(result);
+      return;
+    }
+
+    if (!ssw.serverInfo[result.endpoint]) {
+      res.json({
+        message: "Your server cannot be found in server list",
+        ok: false
+      });
+      return;
+    }
+
+    ssw.serverInfo[result.endpoint].is_promoted = sp.promote( result.endpoint );
+    res.json({
+      message: "Your server has been promoted",
+      ok: false
+    });
+  });
+});
 
 app.listen(HTTP_PORT, function () {
   console.log("Eugene's Quake Live Server Browser started on port " + HTTP_PORT);
