@@ -123,3 +123,4 @@ function bind_methods(app) {
 }
 
 module.exports.bind_methods = bind_methods;
+module.exports.ensure_logged_in = ensureAuthenticated;
