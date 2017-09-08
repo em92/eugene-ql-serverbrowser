@@ -1504,7 +1504,7 @@ var SteamAccountBlock = React.createClass({
         <div className="cntrl">
           { this.state.settings_saving_progress ? <span>{this.state.settings_saving_progress}</span> : <a href="javascript:void(0)" onClick={this.saveSettings}>Save settings</a> }
           <span> | </span>
-          { this.state.promoting_progress ? <span>{this.state.promoting_progress}</span> : <a href="javascript:void(0)" onClick={this.onPromoteClick}>Promote</a> }
+          { this.state.promoting_progress ? <span>{this.state.promoting_progress}</span> : <a href="javascript:void(0)" onClick={this.onPromoteClick}>Promote joined server</a> }
           <span> | </span>
           <a href="/logout">Logout</a></div>
       </div>
