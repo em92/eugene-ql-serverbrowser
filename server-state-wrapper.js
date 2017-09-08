@@ -158,7 +158,7 @@ var format = function(address, state) {
       };
     }
 
-    if (item.players.length == 0) {
+    if (item.gameinfo.players.length == 0) {
       sp.demote( address );
     }
 
