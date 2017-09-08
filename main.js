@@ -35,6 +35,13 @@ var serverList = function(filter_data) {
 
   var sort_priority = {"EU": 6, "NA": 5, "SA": 4, "OC": 3, "AS": 2, "AF": 1};
   result.sort(function(server1, server2) {
+    if ( (server1.is_promoted > 0) && (server2.is_promoted == 0) )
+      return -1;
+    else if ( (server2.is_promoted > 0) && (server1.is_promoted == 0) )
+      return 1;
+    else if ( (server1.is_promoted > 0) && (server2.is_promoted > 0) )
+      return server2.is_promoted - server1.is_promoted;
+
     if ( (server1.gameinfo.players.length > 0) && (server2.gameinfo.players.length == 0) )
       return -1;
     else if ( (server2.gameinfo.players.length > 0) && (server1.gameinfo.players.length == 0) )
