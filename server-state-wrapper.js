@@ -219,6 +219,9 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
         return +(server.gameinfo.players.length >= value);
 
       case 'region':
+        if (value == "EUX") return +( server.location.region == "EU" || server.location.region == "EA" );
+        if (value == "ASX") return +( server.location.region == "AS" )
+        if (value == "AS")  return +( server.location.region == "AS" || server.location.region == "EA" );
         return +(server.location.region == value);
 
       case 'country':

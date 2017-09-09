@@ -736,10 +736,12 @@ var FilterItemRegion = React.createClass({
   mixins: [FilterItemComboBoxMixin],
   options: {
     "eu": "Europe",
+    "eux": "Europe (with Ural and Siberia)",
     "na": "North America",
     "sa": "South America",
     "oc": "Oceania",
     "as": "Asia",
+    "asx": "Asia (without Ural and Siberia)",
     "af": "Africa"
   },
   name: "region"
