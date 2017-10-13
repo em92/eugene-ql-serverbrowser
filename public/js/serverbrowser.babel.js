@@ -527,6 +527,7 @@ var Server = React.createClass({
             !( data.gameinfo.g_gametype == 2 && data.tags.indexOf("minqlx") > -1 )? <img src="/images/warmup.png" /> : null}</td>
         <td>{this.props.server.password ? <img src="/images/lock.png" /> : null}</td>
         <td>{this.props.server.dedicated ? null : <img src="/images/home.png" />}</td>
+        <td>{this.props.server.is_rated ? null : <img src="/images/unrated.png" />}</td>
         <td><a href={"steam://connect/" + this.props.server.host_address} className="btn btn-primary btn-xs">connect</a></td>
       </tr>
     );
@@ -1389,6 +1390,7 @@ var ServerList = React.createClass({
           <th>Hostname</th>
           <th>Arena</th>
           <th>Players</th>
+          <th></th>
           <th></th>
           <th></th>
           <th></th>

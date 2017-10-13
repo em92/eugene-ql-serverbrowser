@@ -108,6 +108,7 @@ var format = function(address, state) {
       dedicated: state.raw.listentype == "d",
       vac: state.raw.secure ? true : false,
       is_promoted: sp.is_promoted(address),
+      is_rated: skillrating.skill_rating[ address ] ? true : false,
       gameinfo: {
         bots: state.bots,
         g_gamestate: state.raw.rules ? state.raw.rules.g_gamestate : "n/a",
@@ -135,6 +136,7 @@ var format = function(address, state) {
 
     if (item.gameinfo.g_gametype == 2) { // Race
       item.gameinfo.g_instagib = 0;
+      item.is_rated = true;
     } else if (item.gameinfo.g_gametype == 7) { // 7 - not valid gametype
       throw new Error("invalid gametype: 7");
     } else if (item.gameinfo.g_gametype == null) { // can be returned, if server is not ql
