@@ -123,6 +123,7 @@ var format = function(address, state) {
         mapname: state.map.toLowerCase(),
         rating_min: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].min : 0,
         rating_max: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].max : 9999,
+        rating_avg: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].avg : null,
         players: state.players,
         sv_maxclients: state.raw.rules ? parseInt(state.raw.rules.sv_maxclients): state.maxplayers,
         timelimit: state.raw.rules ? parseInt(state.raw.rules.timelimit) : 0,
@@ -271,10 +272,10 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
         return +(server.tags.some( tag => tag == 'pql' ) == value);
 
       case 'rating_min':
-        return +(server.gameinfo.rating_min >= value);
+        return +(server.gameinfo.rating_avg != null ? value < server.gameinfo.rating_avg : 0);
 
       case 'rating_max':
-        return +(server.gameinfo.rating_max <= value);
+        return +(server.gameinfo.rating_avg != null ? value > server.gameinfo.rating_avg : 0);
 
       // +(bool) -> int
       default:
