@@ -134,6 +134,11 @@ var format = function(address, state) {
 
     item.gameinfo.is_team_game = (item.gameinfo.g_gametype >= 3 && item.gameinfo.g_gametype <= 11);
 
+    if (item.is_rated && skillrating.skill_rating[ address ].pc == 0) {
+      // if QLStats thinks that non-ghosts players count is 0
+      item.gameinfo.players = [];
+    }
+
     if (item.gameinfo.g_gametype == 2) { // Race
       item.gameinfo.g_instagib = 0;
       item.is_rated = true;
