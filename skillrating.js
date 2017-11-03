@@ -1,5 +1,5 @@
 var rp = require('request-promise');
-var error_handler = require('./master.js').rp_error_handler;
+var error_handler = require('./common.js').rp_error_handler;
 
 var skill_rating = {};
 var ZMQ_TO_GAME_ADDR_DATA = {

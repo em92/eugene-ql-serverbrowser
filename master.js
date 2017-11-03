@@ -1,17 +1,7 @@
 var rp = require('request-promise');
+var error_handler = require('./common.js').rp_error_handler;
 
 var servers = [];
-
-var error_handler = function(error) {
-  if (error.name == 'RequestError') {
-    console.error(error.name, error.options.uri, error.message);
-    return;
-  } else if (error.name == 'StatusCodeError') {
-    console.error(error.name, error.options.uri, error.statusCode);
-    return;
-  }
-  throw error;
-}
 
 if (!process.env.STEAM_WEB_API_KEY) {
   console.error("environment variable STEAM_WEB_API_KEY is not set. quitting...");
@@ -37,7 +27,6 @@ var query = function() {
 };
 
 module.exports.query = query;
-module.exports.rp_error_handler = error_handler;
 Object.defineProperty(module.exports, "servers", {
   get: function() { return servers; }
 });
