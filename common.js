@@ -26,6 +26,10 @@ var redis_client = redis.createClient({
   }
 });
 
+var get_current_timestamp = function() {
+  return Math.round(new Date().getTime()/1000);
+};
 
 module.exports.rp_error_handler = rp_error_handler;
 module.exports.redis = redis_client;
+module.exports.get_current_timestamp = get_current_timestamp;
