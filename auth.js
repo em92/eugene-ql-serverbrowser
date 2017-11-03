@@ -2,7 +2,7 @@ var express = require('express');
 var passport = require('passport');
 var session = require('express-session');
 var SteamStrategy = require('passport-steam').Strategy;
-var redis = require("redis");
+var redis = require('./common.js').redis;
 
 if (!process.env.npm_config_node_version) {
   console.error("run using 'npm start' or 'npm run start-dev'. quitting...");
@@ -20,21 +20,6 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(obj, done) {
   done(null, obj);
-});
-
-var client = redis.createClient({
-  url: process.env.npm_package_config_redis_url,
-  retry_strategy: function (options) {
-
-    if (options.error && options.error.code) {
-      console.error("redis", options.error.code);
-    } else {
-      console.error("redis", options.error);
-    }
-
-    // reconnect in 3 seconds
-    return 3000;
-  }
 });
 
 passport.use(new SteamStrategy({
@@ -71,7 +56,7 @@ function bind_methods(app) {
   app.use(passport.session());
 
   app.post('/save_settings', ensureAuthenticated, function(req, res){
-    client.set("qlsb:filters:" + req.user.steamid, JSON.stringify(req.body), function(err, reply) {
+    redis.set("qlsb:filters:" + req.user.steamid, JSON.stringify(req.body), function(err, reply) {
       var obj = {};
       if (err) {
         obj.error = err;
@@ -84,7 +69,7 @@ function bind_methods(app) {
 
   app.get('/get_settings', ensureAuthenticated, function(req, res){
     var obj = Object.assign({}, req.user);
-    client.get("qlsb:filters:" + obj.steamid, function(err, reply) {
+    redis.get("qlsb:filters:" + obj.steamid, function(err, reply) {
       if (err) {
         obj.error = err;
       } else {
