@@ -2,6 +2,7 @@ var express = require('express');
 var passport = require('passport');
 var session = require('express-session');
 var SteamStrategy = require('passport-steam').Strategy;
+var get_player_ratings = require('./skillrating.js').get_player_ratings;
 var redis = require('./common.js').redis;
 
 if (!process.env.npm_config_node_version) {
@@ -19,7 +20,10 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(obj, done) {
-  done(null, obj);
+  get_player_ratings( obj.steamid )
+  .then( () => {
+    done(null, obj);
+  });
 });
 
 passport.use(new SteamStrategy({
