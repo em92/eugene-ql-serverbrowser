@@ -1,5 +1,12 @@
 var rp = require('request-promise');
-var error_handler = require('./common.js').rp_error_handler;
+var common = require('./common.js');
+
+var redis = common.redis;
+var error_handler = common.rp_error_handler;
+var get_current_timestamp = common.get_current_timestamp;
+
+const RATINGS_CACHE_RESET_TIME = 60*10;
+const DEFAULT_RATING = 800;
 
 var skill_rating = {};
 var ZMQ_TO_GAME_ADDR_DATA = {
@@ -65,8 +72,78 @@ var query_server_players = function( address ) {
 };
 
 
+var get_player_ratings = function( steam_id ) {
+
+  return new Promise((resolve, reject) => {
+
+    redis.get("qlsb:ratings:" + steam_id, function(err, reply) {
+      var ratings = {};
+
+      if (!err) {
+        try {
+          if (reply) {
+            ratings = JSON.parse(reply);
+          }
+        } catch(e) {
+          console.error("qlsb:ratings:" + steam_id + " not json object");
+          console.error(reply);
+        };
+      }
+
+      ratings['last_update'] = ratings['last_update'] || 0;
+      if ( get_current_timestamp() - ratings['last_update'] < RATINGS_CACHE_RESET_TIME ) {
+        resolve(ratings);
+        return;
+      }
+
+      rp({
+        uri: 'http://qlstats.net/player/' + steam_id + '.json',
+        timeout: 2000,
+        json: true
+      })
+      .then( data => {
+        data = data[0]['elos'];
+        delete data['overall'];
+        Object.keys( data ).forEach( gametype => {
+          var gametype_result = {};
+          var summary = data[ gametype ];
+          ratings[ gametype ] = {
+            "a_rating": summary.g2_r ? summary.g2_r : DEFAULT_RATING,
+            "b_rating": summary.b_r ? summary.b_r : DEFAULT_RATING,
+            "a_games": summary.g2_games ? summary.g2_games : 0,
+            "b_games": summary.b_games ? summary.b_games : 0
+          };
+        });
+
+        ratings["last_update"] = get_current_timestamp();
+
+        redis.set("qlsb:ratings:" + steam_id, JSON.stringify(ratings), function(err, reply) {
+          if (err) {
+            console.error("could not save ratings cache for player " + steam_id);
+            console.error(err);
+          }
+
+          resolve(ratings);
+        });
+
+      })
+      .catch( err => {
+        console.error( "failed to fetch qlstats data for user " + steam_id );
+        console.error( err );
+        console.error( err.stack );
+        resolve(ratings);
+      });
+
+    });
+
+  });
+
+};
+
+
 module.exports.query = query;
 module.exports.query_server_players = query_server_players;
+module.exports.get_player_ratings = get_player_ratings;
 Object.defineProperty(module.exports, "skill_rating", {
   get: function() { return skill_rating; }
 });
