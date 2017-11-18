@@ -10,6 +10,8 @@ const DEFAULT_RATING = 800;
 
 var skill_rating = {};
 var ZMQ_TO_GAME_ADDR_DATA = {
+  '46.101.130.49': -1, // DOGs/
+  '94.249.194.83': -1, // DOGs/
   '109.94.1.176': -1000, // 125FPS Podolsk/Moscow
   '120.76.221.244': -2000 // Moon (China)
 };
