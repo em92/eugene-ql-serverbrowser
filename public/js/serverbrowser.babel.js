@@ -489,7 +489,7 @@ var PlayerCount = React.createClass({
     if (d == 0) {
       d = this.props.server.gameinfo.sv_maxclients;
     }
-    return <td>{this.props.server.gameinfo.players.length + "/" + d}</td>;
+    return <td>{this.props.server.gameinfo.players.length + ( this.props.server.gameinfo.bots.length ? "+" + this.props.server.gameinfo.bots.length : "" ) + "/" + d}</td>;
   }
 });
 
@@ -1218,9 +1218,22 @@ var ServerInfo = React.createClass({
   },
 
   renderQLStatsData: function( ) {
-    var teams = ["Play", "Red", "Blue", "Spec"];
-    var team_class = ['qc2', 'qc1', 'qc4', 'qc7'];
+    var teams = ["Play", "Red", "Blue", "Spec", "Bot"];
+    var team_class = ['qc2', 'qc1', 'qc4', 'qc7', 'qc2'];
     var players = this.state.server.qlstats.players;
+
+    players = players.filter( function(p) {
+      return p.steamid != "0";
+    });
+
+    players = players.concat(this.state.server.gameinfo.bots.map( function(p) {
+      return {
+        "team": 4,
+        "score": p.score,
+        "name": p.name
+      };
+    }));
+
     players.sort( function(a, b) {
       if (b.team > a.team) return -1;
       if (b.team < a.team) return 1;
@@ -1232,7 +1245,7 @@ var ServerInfo = React.createClass({
     var render_data = players.map( player => {
       return (<tr>
         <td><span className={team_class[player.team]}>{teams[player.team]}</span></td>
-        <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}>{render_ql_nickname(player.name)}</a></td>
+        <td>{ player.steamid ? <a target="_blank" href={'http://qlstats.net/player/' + player.steamid}>{render_ql_nickname(player.name)}</a> : render_ql_nickname(player.name) }</td>
         <td>{player.team != 3 ? player.score : null}</td>
         <td>{player.rating}</td>
       </tr>);
