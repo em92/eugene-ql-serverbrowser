@@ -21,7 +21,8 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(obj, done) {
   get_player_ratings( obj.steamid )
-  .then( () => {
+  .then( data => {
+    Object.assign(obj, {'ratings': data});
     done(null, obj);
   });
 });
