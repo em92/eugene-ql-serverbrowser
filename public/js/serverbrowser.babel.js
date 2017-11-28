@@ -493,6 +493,20 @@ var PlayerCount = React.createClass({
   }
 });
 
+var ServerRank = React.createClass({
+  render: function() {
+    var server = this.props.server;
+    if (server.is_rated == false || server.rank == -1)
+      return <td><img src="/images/unrated.png" /></td>;
+
+    if (typeof(server.rank) == "undefined" || server.gameinfo.players.length == 0)
+      return <td></td>;
+
+   return <td><img src={"/images/rank" + server.rank + ".png"} /></td>;
+  }
+});
+
+
 var Server = React.createClass({
   renderScore: function() {
     if (this.props.server.gameinfo.g_gamestate == 'PRE_GAME') return;
@@ -527,7 +541,7 @@ var Server = React.createClass({
             !( data.gameinfo.g_gametype == 2 && data.tags.indexOf("minqlx") > -1 )? <img src="/images/warmup.png" /> : null}</td>
         <td>{this.props.server.password ? <img src="/images/lock.png" /> : null}</td>
         <td>{this.props.server.dedicated ? null : <img src="/images/home.png" />}</td>
-        <td>{this.props.server.is_rated ? null : <img src="/images/unrated.png" />}</td>
+        <ServerRank server={this.props.server} />
         <td><a href={"steam://connect/" + this.props.server.host_address} className="btn btn-primary btn-xs">connect</a></td>
       </tr>
     );
