@@ -15,7 +15,7 @@ if (HTTP_PORT != HTTP_PORT || HTTP_PORT.toString() != process.env.PORT) {
 }
 var MAX_SERVER_OUTPUT_COUNT = 100;
 
-var serverList = function(filter_data) {
+var serverList = function(filter_data, ratings) {
 
   if (typeof filter_data != 'undefined') {
     try {
@@ -58,20 +58,38 @@ var serverList = function(filter_data) {
   result = result.filter(function(server, i) {
     return i < MAX_SERVER_OUTPUT_COUNT;
   });
+
+  if (ratings) {
+    result = result.map( server => {
+      if (
+        server.gameinfo.rating_type &&
+        ratings[ server.gameinfo.gt_short ] &&
+        ratings[ server.gameinfo.gt_short ][ server.gameinfo.rating_type + "_games" ] > 0
+      ) {
+
+        var server_rating = server.gameinfo.rating_avg;
+        var player_rating = ratings[ server.gameinfo.gt_short ][ server.gameinfo.rating_type + "_rating" ];
+        var diff = player_rating - server_rating;
+        if (diff < -300) {
+          server.rank = 3;
+        } else if ( diff < -100 ) {
+          server.rank = 2;
+        } else if ( diff < 100 ) {
+          server.rank = 1;
+        } else {
+          server.rank = 0;
+        }
+      } else {
+        server.rank = -1;
+      }
+
+      return server;
+    });
+  }
   return {servers: result};
 };
 
 app.use(require('body-parser').json());
-
-app.get('/serverlist/:filter_data', function (req, res) {
-  res.setHeader("Content-Type", "application/json");
-  res.send(serverList(req.params.filter_data));
-});
-
-app.get('/serverlist', function (req, res) {
-  res.setHeader("Content-Type", "application/json");
-  res.send(serverList());
-});
 
 app.get('/rawserverlist', function (req, res) {
   res.setHeader("Content-Type", "application/json");
@@ -126,6 +144,16 @@ if (process.env.npm_lifecycle_event == "start-dev") {
 app.use(express.static('public'));
 
 auth.bind_methods(app);
+
+app.get('/serverlist/:filter_data', function (req, res) {
+  res.setHeader("Content-Type", "application/json");
+  res.send(serverList( req.params.filter_data, req.user ? req.user.ratings : undefined ));
+});
+
+app.get('/serverlist', function (req, res) {
+  res.setHeader("Content-Type", "application/json");
+  res.send(serverList( undefined, req.user ? req.user.ratings : undefined ));
+});
 
 app.post("/promote", auth.ensure_logged_in, function(req, res) {
   sp.locate_player(req.user.steamid, ssw.serverInfo, (result) => {
