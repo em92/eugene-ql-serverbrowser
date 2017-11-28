@@ -110,6 +110,8 @@ var format = function(address, state) {
       is_promoted: sp.is_promoted(address),
       is_rated: skillrating.skill_rating[ address ] ? true : false,
       gameinfo: {
+        gt_short: getFactoryByTags(state.raw.tags),
+
         bots: state.bots,
         g_gamestate: state.raw.rules ? state.raw.rules.g_gamestate : "n/a",
         g_gametype: state.raw.rules ? parseInt(state.raw.rules.g_gametype) : getGametypeByTags(state.raw.tags),
@@ -125,6 +127,7 @@ var format = function(address, state) {
         rating_min: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].min : 0,
         rating_max: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].max : 9999,
         rating_avg: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].avg : null,
+        rating_type: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].rating.toLowerCase() : null,
         players: state.players,
         sv_maxclients: state.raw.rules ? parseInt(state.raw.rules.sv_maxclients): state.maxplayers,
         timelimit: state.raw.rules ? parseInt(state.raw.rules.timelimit) : 0,
