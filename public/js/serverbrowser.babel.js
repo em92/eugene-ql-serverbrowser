@@ -1202,6 +1202,17 @@ var ServerInfo = React.createClass({
   renderCommonData: function( ) {
     var players = this.state.server.gameinfo.players;
 
+    players = players.concat(this.state.server.gameinfo.bots.map( function(p) {
+      return {
+        "score": p.score,
+        "name": p.name
+      };
+    }));
+
+    players.sort( function(a, b) {
+      return b.score - a.score;
+    });
+
     var render_data = players.map( player => {
       return (<tr>
         <td>{render_ql_nickname(player.name)}</td>
