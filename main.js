@@ -33,7 +33,6 @@ var serverList = function(filter_data, ratings) {
     }
   };
 
-  var sort_priority = {"EU": 6, "NA": 5, "SA": 4, "OC": 3, "AS": 2, "AF": 1};
   result.sort(function(server1, server2) {
     if ( (server1.is_promoted > 0) && (server2.is_promoted == 0) )
       return -1;
@@ -46,13 +45,8 @@ var serverList = function(filter_data, ratings) {
       return -1;
     else if ( (server2.gameinfo.players.length > 0) && (server1.gameinfo.players.length == 0) )
       return 1;
-    else if ( server1.gameinfo.players.length == server2.gameinfo.players.length ) // equal 0
-      return 0;
-    else if ( sort_priority[server2.location.region] > sort_priority[server1.location.region] )
-      return 1;
-    else if ( sort_priority[server1.location.region] > sort_priority[server2.location.region] )
-      return -1;
-    return 0;
+    else
+      return server2.gameinfo.g_levelstarttime - server1.gameinfo.g_levelstarttime;
   });
 
   result = result.filter(function(server, i) {
