@@ -1,7 +1,7 @@
 {
   "name": "eugene-ql-serverbrowser",
   "private": true,
-  "version": "0.7.1",
+  "version": "0.8.0",
   "scripts": {
     "compile": "./node_modules/babel/bin/babel.js public/js/serverbrowser.babel.js --out-file public/js/serverbrowser.js && ./node_modules/uglify-js/bin/uglifyjs public/js/serverbrowser.js -o public/js/serverbrowser.js",
     "start": "./main.js",
