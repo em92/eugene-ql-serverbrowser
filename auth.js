@@ -2,7 +2,8 @@ var express = require('express');
 var passport = require('passport');
 var session = require('express-session');
 var SteamStrategy = require('passport-steam').Strategy;
-var redis = require("redis");
+var get_player_ratings = require('./skillrating.js').get_player_ratings;
+var redis = require('./common.js').redis;
 
 if (!process.env.npm_config_node_version) {
   console.error("run using 'npm start' or 'npm run start-dev'. quitting...");
@@ -19,22 +20,11 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(obj, done) {
-  done(null, obj);
-});
-
-var client = redis.createClient({
-  url: process.env.npm_package_config_redis_url,
-  retry_strategy: function (options) {
-
-    if (options.error && options.error.code) {
-      console.error("redis", options.error.code);
-    } else {
-      console.error("redis", options.error);
-    }
-
-    // reconnect in 3 seconds
-    return 3000;
-  }
+  get_player_ratings( obj.steamid )
+  .then( data => {
+    Object.assign(obj, {'ratings': data});
+    done(null, obj);
+  });
 });
 
 passport.use(new SteamStrategy({
@@ -58,7 +48,7 @@ function ensureAuthenticated(req, res, next) {
   res.send({not_logged_in: true, steam_id: "0"});
 }
 
-module.exports = function(app) {
+function bind_methods(app) {
 
   app.use(session({
     secret: Math.random().toString(),
@@ -71,7 +61,7 @@ module.exports = function(app) {
   app.use(passport.session());
 
   app.post('/save_settings', ensureAuthenticated, function(req, res){
-    client.set("qlsb:filters:" + req.user.steamid, JSON.stringify(req.body), function(err, reply) {
+    redis.set("qlsb:filters:" + req.user.steamid, JSON.stringify(req.body), function(err, reply) {
       var obj = {};
       if (err) {
         obj.error = err;
@@ -84,7 +74,7 @@ module.exports = function(app) {
 
   app.get('/get_settings', ensureAuthenticated, function(req, res){
     var obj = Object.assign({}, req.user);
-    client.get("qlsb:filters:" + obj.steamid, function(err, reply) {
+    redis.get("qlsb:filters:" + obj.steamid, function(err, reply) {
       if (err) {
         obj.error = err;
       } else {
@@ -119,4 +109,8 @@ module.exports = function(app) {
   app.get('/auth/steam/return', passport.authenticate('steam', { failureRedirect: '/' }), function(req, res) {
     res.redirect('/');
   });
+
 }
+
+module.exports.bind_methods = bind_methods;
+module.exports.ensure_logged_in = ensureAuthenticated;

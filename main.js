@@ -2,6 +2,8 @@
 var express = require('express');
 var ssw = require("./server-state-wrapper.js");
 var dns = require("./dns.js");
+var auth = require("./auth.js");
+var sp = require("./server-promotion.js");
 
 var serverInfo = ssw.serverInfo;
 var checkServerUsingFilterData = ssw.checkServerUsingFilterData;
@@ -13,7 +15,7 @@ if (HTTP_PORT != HTTP_PORT || HTTP_PORT.toString() != process.env.PORT) {
 }
 var MAX_SERVER_OUTPUT_COUNT = 100;
 
-var serverList = function(filter_data) {
+var serverList = function(filter_data, ratings) {
 
   if (typeof filter_data != 'undefined') {
     try {
@@ -31,38 +33,57 @@ var serverList = function(filter_data) {
     }
   };
 
-  var sort_priority = {"EU": 6, "NA": 5, "SA": 4, "OC": 3, "AS": 2, "AF": 1};
   result.sort(function(server1, server2) {
+    if ( (server1.is_promoted > 0) && (server2.is_promoted == 0) )
+      return -1;
+    else if ( (server2.is_promoted > 0) && (server1.is_promoted == 0) )
+      return 1;
+    else if ( (server1.is_promoted > 0) && (server2.is_promoted > 0) )
+      return server2.is_promoted - server1.is_promoted;
+
     if ( (server1.gameinfo.players.length > 0) && (server2.gameinfo.players.length == 0) )
       return -1;
     else if ( (server2.gameinfo.players.length > 0) && (server1.gameinfo.players.length == 0) )
       return 1;
-    else if ( server1.gameinfo.players.length == server2.gameinfo.players.length ) // equal 0
-      return 0;
-    else if ( sort_priority[server2.location.region] > sort_priority[server1.location.region] )
-      return 1;
-    else if ( sort_priority[server1.location.region] > sort_priority[server2.location.region] )
-      return -1;
-    return 0;
+    else
+      return server2.gameinfo.g_levelstarttime - server1.gameinfo.g_levelstarttime;
   });
 
   result = result.filter(function(server, i) {
     return i < MAX_SERVER_OUTPUT_COUNT;
   });
+
+  if (ratings) {
+    result = result.map( server => {
+      if (
+        server.gameinfo.rating_type &&
+        ratings[ server.gameinfo.gt_short ] &&
+        ratings[ server.gameinfo.gt_short ][ server.gameinfo.rating_type + "_games" ] > 0
+      ) {
+
+        var server_rating = server.gameinfo.rating_avg;
+        var player_rating = ratings[ server.gameinfo.gt_short ][ server.gameinfo.rating_type + "_rating" ];
+        var diff = player_rating - server_rating;
+        if (diff < -300) {
+          server.rank = 3;
+        } else if ( diff < -100 ) {
+          server.rank = 2;
+        } else if ( diff < 100 ) {
+          server.rank = 1;
+        } else {
+          server.rank = 0;
+        }
+      } else {
+        server.rank = -1;
+      }
+
+      return server;
+    });
+  }
   return {servers: result};
 };
 
 app.use(require('body-parser').json());
-
-app.get('/serverlist/:filter_data', function (req, res) {
-  res.setHeader("Content-Type", "application/json");
-  res.send(serverList(req.params.filter_data));
-});
-
-app.get('/serverlist', function (req, res) {
-  res.setHeader("Content-Type", "application/json");
-  res.send(serverList());
-});
 
 app.get('/rawserverlist', function (req, res) {
   res.setHeader("Content-Type", "application/json");
@@ -105,7 +126,7 @@ app.get('/serverinfo2/:endpoints', function (req, res) {
 if (process.env.npm_lifecycle_event == "start-dev") {
   var fs = require("fs");
   var index_file_data = fs.readFileSync(__dirname + '/public/index.html', {encoding: 'utf8'}).replace(
-    '<script type="text/javascript" src="/js/serverbrowser.js"></script>',
+    '<script type="text/javascript" src="/js/serverbrowser.js?1"></script>',
     '<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script><script type="text/babel" src="/js/serverbrowser.babel.js"></script>'
   ).replace('.min.js', '.js');
   app.get('/', function (req, res) {
@@ -116,7 +137,40 @@ if (process.env.npm_lifecycle_event == "start-dev") {
 
 app.use(express.static('public'));
 
-require("./auth.js")(app);
+auth.bind_methods(app);
+
+app.get('/serverlist/:filter_data', function (req, res) {
+  res.setHeader("Content-Type", "application/json");
+  res.send(serverList( req.params.filter_data, req.user ? req.user.ratings : undefined ));
+});
+
+app.get('/serverlist', function (req, res) {
+  res.setHeader("Content-Type", "application/json");
+  res.send(serverList( undefined, req.user ? req.user.ratings : undefined ));
+});
+
+app.post("/promote", auth.ensure_logged_in, function(req, res) {
+  sp.locate_player(req.user.steamid, ssw.serverInfo, (result) => {
+    if (result.ok == false) {
+      res.json(result);
+      return;
+    }
+
+    if (!ssw.serverInfo[result.endpoint]) {
+      res.json({
+        message: "Your server cannot be found in server list",
+        ok: false
+      });
+      return;
+    }
+
+    ssw.serverInfo[result.endpoint].is_promoted = sp.promote( result.endpoint );
+    res.json({
+      message: "Your server has been promoted",
+      ok: false
+    });
+  });
+});
 
 app.listen(HTTP_PORT, function () {
   console.log("Eugene's Quake Live Server Browser started on port " + HTTP_PORT);

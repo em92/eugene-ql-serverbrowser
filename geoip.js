@@ -7,6 +7,14 @@ var cache = {};
 var temp_cache = {};
 var tasks = new Set();
 
+var URAL_SIBERIA_TIMEZONES = [
+  'Asia/Yekaterinburg',
+  'Asia/Omsk',
+  'Asia/Novosibirsk',
+  'Asia/Novokuznetsk',
+  'Asia/Krasnoyarsk',
+  'Asia/Irkutsk'
+];
 var FLAG_PERMANENT = "+";
 var TIMEOUT = 1000; // 1000 ms -> 60 request per minute
 
@@ -37,6 +45,7 @@ var mainLoop = function() {
     var geo_data = {country: data.countryCode, city: data.city.split(" (")[0]}
     if ( geo_data.country == "RU" && data.timezone.startsWith("Asia") ) {
       geo_data[ "region" ] = "AS";
+      if (URAL_SIBERIA_TIMEZONES.indexOf( data.timezone ) > -1) geo_data[ "region" ] = "EA";
     }
     if ( geo_data.country == "DE" && geo_data.city == "Frankfurt am Main" ) {
       geo_data.city = "Frankfurt";

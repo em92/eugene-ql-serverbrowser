@@ -3,6 +3,7 @@ var gsqw = require("./game-server-query-wrapper.js");
 var master = require('./master.js');
 var Q = require('q');
 var skillrating = require('./skillrating.js');
+var sp = require('./server-promotion.js');
 
 var serverInfo = {};
 
@@ -106,7 +107,11 @@ var format = function(address, state) {
       tags: state.raw.tags.split(",").map( tag => tag.trim().toLowerCase() ),
       dedicated: state.raw.listentype == "d",
       vac: state.raw.secure ? true : false,
+      is_promoted: sp.is_promoted(address),
+      is_rated: skillrating.skill_rating[ address ] ? true : false,
       gameinfo: {
+        gt_short: getFactoryByTags(state.raw.tags),
+
         bots: state.bots,
         g_gamestate: state.raw.rules ? state.raw.rules.g_gamestate : "n/a",
         g_gametype: state.raw.rules ? parseInt(state.raw.rules.g_gametype) : getGametypeByTags(state.raw.tags),
@@ -121,6 +126,8 @@ var format = function(address, state) {
         mapname: state.map.toLowerCase(),
         rating_min: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].min : 0,
         rating_max: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].max : 9999,
+        rating_avg: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].avg : null,
+        rating_type: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].rating.toLowerCase() : null,
         players: state.players,
         sv_maxclients: state.raw.rules ? parseInt(state.raw.rules.sv_maxclients): state.maxplayers,
         timelimit: state.raw.rules ? parseInt(state.raw.rules.timelimit) : 0,
@@ -130,8 +137,14 @@ var format = function(address, state) {
 
     item.gameinfo.is_team_game = (item.gameinfo.g_gametype >= 3 && item.gameinfo.g_gametype <= 11);
 
+    if (item.is_rated && skillrating.skill_rating[ address ].pc == 0) {
+      // if QLStats thinks that non-ghosts players count is 0
+      item.gameinfo.players = [];
+    }
+
     if (item.gameinfo.g_gametype == 2) { // Race
       item.gameinfo.g_instagib = 0;
+      item.is_rated = true;
     } else if (item.gameinfo.g_gametype == 7) { // 7 - not valid gametype
       throw new Error("invalid gametype: 7");
     } else if (item.gameinfo.g_gametype == null) { // can be returned, if server is not ql
@@ -154,6 +167,10 @@ var format = function(address, state) {
         msg: "Server is not being tracked (cached)",
         ok: false
       };
+    }
+
+    if (item.gameinfo.players.length == 0) {
+      sp.demote( address );
     }
 
     if (process.env.npm_lifecycle_event == "start-dev") {
@@ -209,9 +226,13 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
         return +(server.gameinfo[key].toUpperCase() == value);
 
       case 'min_players':
+        if (server.is_promoted) return 1;
         return +(server.gameinfo.players.length >= value);
 
       case 'region':
+        if (value == "EUX") return +( server.location.region == "EU" || server.location.region == "EA" );
+        if (value == "ASX") return +( server.location.region == "AS" )
+        if (value == "AS")  return +( server.location.region == "AS" || server.location.region == "EA" );
         return +(server.location.region == value);
 
       case 'country':
@@ -261,10 +282,10 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
         return +(server.tags.some( tag => tag == 'pql' ) == value);
 
       case 'rating_min':
-        return +(server.gameinfo.rating_min >= value);
+        return +(server.gameinfo.rating_avg != null ? value < server.gameinfo.rating_avg : 0);
 
       case 'rating_max':
-        return +(server.gameinfo.rating_max <= value);
+        return +(server.gameinfo.rating_avg != null ? value > server.gameinfo.rating_avg : 0);
 
       // +(bool) -> int
       default:

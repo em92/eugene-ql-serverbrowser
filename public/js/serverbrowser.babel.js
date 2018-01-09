@@ -436,8 +436,8 @@ var FILTERS = {
   "mapname":      "Map",
   "min_players":  "Min. players count",
   "private":      "Accessibility",
-  "rating_min":   "Rating (min)",
-  "rating_max":   "Rating (max)",
+  "rating_min":   "Server rating (min)",
+  "rating_max":   "Server rating (max)",
   "region":       "Region",
   "turbo":        "Aircontrol",
   "vampiric":     "Vampiric damage",
@@ -472,7 +472,7 @@ var GameType = React.createClass({
 var PlayerCount = React.createClass({
   render: function() {
     var d = [
-      this.props.server.gameinfo.sv_maxclients, // ffa
+      this.props.server.gameinfo.teamsize, // ffa
       this.props.server.gameinfo.sv_maxclients, // duel
       this.props.server.gameinfo.sv_maxclients, // race
       this.props.server.gameinfo.teamsize*2,  // tdm
@@ -484,14 +484,28 @@ var PlayerCount = React.createClass({
       this.props.server.gameinfo.teamsize*2, // ft
       this.props.server.gameinfo.teamsize*2, // dom
       this.props.server.gameinfo.teamsize*2, // ad
-      this.props.server.gameinfo.sv_maxclients, // rr
+      this.props.server.gameinfo.teamsize, // rr
     ][this.props.server.gameinfo.g_gametype];
     if (d == 0) {
       d = this.props.server.gameinfo.sv_maxclients;
     }
-    return <td>{this.props.server.gameinfo.players.length + "/" + d}</td>;
+    return <td>{this.props.server.gameinfo.players.length + ( this.props.server.gameinfo.bots.length ? "+" + this.props.server.gameinfo.bots.length : "" ) + "/" + d}</td>;
   }
 });
+
+var ServerRank = React.createClass({
+  render: function() {
+    var server = this.props.server;
+    if (server.is_rated == false || server.rank == -1)
+      return <td><img src="/images/unrated.png" /></td>;
+
+    if (typeof(server.rank) == "undefined" || server.gameinfo.players.length == 0)
+      return <td></td>;
+
+   return <td><img src={"/images/rank" + server.rank + ".png"} /></td>;
+  }
+});
+
 
 var Server = React.createClass({
   renderScore: function() {
@@ -527,6 +541,7 @@ var Server = React.createClass({
             !( data.gameinfo.g_gametype == 2 && data.tags.indexOf("minqlx") > -1 )? <img src="/images/warmup.png" /> : null}</td>
         <td>{this.props.server.password ? <img src="/images/lock.png" /> : null}</td>
         <td>{this.props.server.dedicated ? null : <img src="/images/home.png" />}</td>
+        <ServerRank server={this.props.server} />
         <td><a href={"steam://connect/" + this.props.server.host_address} className="btn btn-primary btn-xs">connect</a></td>
       </tr>
     );
@@ -736,10 +751,12 @@ var FilterItemRegion = React.createClass({
   mixins: [FilterItemComboBoxMixin],
   options: {
     "eu": "Europe",
+    "eux": "Europe (with Ural and Siberia)",
     "na": "North America",
     "sa": "South America",
     "oc": "Oceania",
     "as": "Asia",
+    "asx": "Asia (without Ural and Siberia)",
     "af": "Africa"
   },
   name: "region"
@@ -1048,7 +1065,10 @@ var FilterOptions = React.createClass({
   importFilterData: function() {
     var filterDataNew = JSON.parse( this.state.filterDataB );
     this.setFilterData( filterDataNew );
-    this.setState( this.getInitialState() );
+    this.setState({
+      filterData: filterDataNew,
+      showingRawFilterData: false
+    });
   },
 
   showCommonFilter: function() {
@@ -1196,6 +1216,17 @@ var ServerInfo = React.createClass({
   renderCommonData: function( ) {
     var players = this.state.server.gameinfo.players;
 
+    players = players.concat(this.state.server.gameinfo.bots.map( function(p) {
+      return {
+        "score": p.score,
+        "name": p.name
+      };
+    }));
+
+    players.sort( function(a, b) {
+      return b.score - a.score;
+    });
+
     var render_data = players.map( player => {
       return (<tr>
         <td>{render_ql_nickname(player.name)}</td>
@@ -1212,9 +1243,22 @@ var ServerInfo = React.createClass({
   },
 
   renderQLStatsData: function( ) {
-    var teams = ["Play", "Red", "Blue", "Spec"];
-    var team_class = ['qc2', 'qc1', 'qc4', 'qc7'];
+    var teams = ["Play", "Red", "Blue", "Spec", "Bot"];
+    var team_class = ['qc2', 'qc1', 'qc4', 'qc7', 'qc2'];
     var players = this.state.server.qlstats.players;
+
+    players = players.filter( function(p) {
+      return p.steamid != "0";
+    });
+
+    players = players.concat(this.state.server.gameinfo.bots.map( function(p) {
+      return {
+        "team": 4,
+        "score": p.score,
+        "name": p.name
+      };
+    }));
+
     players.sort( function(a, b) {
       if (b.team > a.team) return -1;
       if (b.team < a.team) return 1;
@@ -1226,7 +1270,7 @@ var ServerInfo = React.createClass({
     var render_data = players.map( player => {
       return (<tr>
         <td><span className={team_class[player.team]}>{teams[player.team]}</span></td>
-        <td><a target="_blank" href={'http://qlstats.net/player/' + player.steamid}>{render_ql_nickname(player.name)}</a></td>
+        <td>{ player.steamid ? <a target="_blank" href={'http://qlstats.net/player/' + player.steamid}>{render_ql_nickname(player.name)}</a> : render_ql_nickname(player.name) }</td>
         <td>{player.team != 3 ? player.score : null}</td>
         <td>{player.rating}</td>
       </tr>);
@@ -1389,6 +1433,7 @@ var ServerList = React.createClass({
           <th></th>
           <th></th>
           <th></th>
+          <th></th>
         </tr></thead>
         <tbody>{result}</tbody>
       </table>);
@@ -1459,6 +1504,31 @@ var SteamAccountBlock = React.createClass({
     this.downloadAccountInfo();
   },
 
+  onPromoteClick: function() {
+    this.setState({promoting_progress: "Promoting..."});
+    var self = this;
+    $.ajax({
+      url: "promote",
+      method: "POST",
+      data: "dummy",
+      success: function (data) {
+        self.setState({promoting_progress: data.message});
+        setTimeout( function() {
+          self.setState({promoting_progress: false})
+        }, 3000);
+      },
+      error: (function (xhr, status, err) {
+        this.props.getSettingsCallback({error: err});
+        this.setState({
+          error: err,
+          loading: false
+        });
+        this.setState({promoting_progress: "Error"});
+        console.error(xhr, status, err);
+      }).bind(this)
+    });
+  },
+
   render: function() {
     if (this.state.loading)
       return <div id="steam_account_block">Loading...</div>
@@ -1475,6 +1545,8 @@ var SteamAccountBlock = React.createClass({
         <div className="hello">Hello, {render_ql_nickname(this.state.name)}!</div>
         <div className="cntrl">
           { this.state.settings_saving_progress ? <span>{this.state.settings_saving_progress}</span> : <a href="javascript:void(0)" onClick={this.saveSettings}>Save settings</a> }
+          <span> | </span>
+          { this.state.promoting_progress ? <span>{this.state.promoting_progress}</span> : <a href="javascript:void(0)" onClick={this.onPromoteClick}>Promote joined server</a> }
           <span> | </span>
           <a href="/logout">Logout</a></div>
       </div>
