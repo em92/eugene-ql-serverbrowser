@@ -45,6 +45,9 @@ var serverList = function(filter_data, ratings) {
       return -1;
     else if ( (server2.gameinfo.players.length > 0) && (server1.gameinfo.players.length == 0) )
       return 1;
+
+    if (server1.gameinfo.g_gametype != server2.gameinfo.g_gametype)
+      return server1.gameinfo.g_gametype - server2.gameinfo.g_gametype;
     else
       return server2.gameinfo.g_levelstarttime - server1.gameinfo.g_levelstarttime;
   });
