@@ -1342,7 +1342,7 @@ var ServerInfo = React.createClass({
 
 var ServerList = React.createClass({
   getInitialState: function() {
-    return { servers: [], error: false };
+    return { servers: [], error: false, loading: true, sleeping: true };
   },
 
   acceptFilter: function(filterDataIn) {
@@ -1367,6 +1367,19 @@ var ServerList = React.createClass({
         return server;
       }
     })});
+  },
+
+  dataUpdateStart: function() {
+    this.stopSleepTimer();
+    if (this.state.sleeping == false) return;
+    this.setState({sleeping: false, loading: true});
+    this.downloadServerList();
+    this.dataUpdateTimer = setInterval(this.downloadServerList, 10000);
+  },
+
+  dataUpdateStop: function() {
+    this.setState({sleeping: true, loading: false});
+    clearInterval(this.dataUpdateTimer);
   },
 
   downloadServerList: function() {
@@ -1396,6 +1409,17 @@ var ServerList = React.createClass({
     });
   },
 
+  startSleepTimer: function() {
+    var self = this;
+    this.sleepTimer = setTimeout(() => {
+      self.dataUpdateStop();
+    }, 60000);
+  },
+
+  stopSleepTimer: function() {
+    clearTimeout(this.sleepTimer);
+  },
+
   componentDidMount: function() {
     // don't do anything, if filterData is not defined
     if (!this.props.filterData) return;
@@ -1407,8 +1431,11 @@ var ServerList = React.createClass({
     }
 
     this.filterData = "/" + window.btoa(this.filterData);
-    this.downloadServerList();
-    setInterval(this.downloadServerList, 10000);
+
+    this.dataUpdateStart();
+
+    addEventListener("blur",  this.startSleepTimer, false);
+    addEventListener("focus", this.dataUpdateStart, false);
   },
 
   render: function() {
@@ -1420,6 +1447,10 @@ var ServerList = React.createClass({
 
     if (this.state.error)
       result = (<div className="error">{this.state.error}</div>);
+    else if (this.state.loading)
+      result = (<div className="no-servers">Loading...</div>);
+    else if (this.state.sleeping)
+      result = (<div className="no-servers">Zzzzzz...</div>);
     else if (result.length != 0)
       result = (<table>
         <thead><tr>
