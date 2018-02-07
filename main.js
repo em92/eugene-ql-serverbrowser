@@ -17,6 +17,20 @@ var MAX_SERVER_OUTPUT_COUNT = 100;
 
 var serverList = function(filter_data, ratings) {
 
+  var gametype_weight = function(g_gametype) {
+    switch(g_gametype) {
+      case 1: // Duel
+        return 101;
+
+      case 2: // Race
+        return 100;
+
+      default:
+        return g_gametype;
+    }
+    return
+  }
+
   if (typeof filter_data != 'undefined') {
     try {
       filter_data = (new Buffer(filter_data, 'base64')).toString();
@@ -45,9 +59,11 @@ var serverList = function(filter_data, ratings) {
       return -1;
     else if ( (server2.gameinfo.players.length > 0) && (server1.gameinfo.players.length == 0) )
       return 1;
+    else if ( (server1.gameinfo.players.length == 0) && (server2.gameinfo.players.length == 0) )
+      return 0;
 
     if (server1.gameinfo.g_gametype != server2.gameinfo.g_gametype)
-      return server1.gameinfo.g_gametype - server2.gameinfo.g_gametype;
+      return gametype_weight( server1.gameinfo.g_gametype ) - gametype_weight( server2.gameinfo.g_gametype );
     else
       return server2.gameinfo.g_levelstarttime - server1.gameinfo.g_levelstarttime;
   });
