@@ -17,6 +17,20 @@ var MAX_SERVER_OUTPUT_COUNT = 100;
 
 var serverList = function(filter_data, ratings) {
 
+  var gametype_weight = function(g_gametype) {
+    switch(g_gametype) {
+      case 1: // Duel
+        return 101;
+
+      case 2: // Race
+        return 100;
+
+      default:
+        return g_gametype;
+    }
+    return
+  }
+
   if (typeof filter_data != 'undefined') {
     try {
       filter_data = (new Buffer(filter_data, 'base64')).toString();
@@ -45,6 +59,11 @@ var serverList = function(filter_data, ratings) {
       return -1;
     else if ( (server2.gameinfo.players.length > 0) && (server1.gameinfo.players.length == 0) )
       return 1;
+    else if ( (server1.gameinfo.players.length == 0) && (server2.gameinfo.players.length == 0) )
+      return 0;
+
+    if (server1.gameinfo.g_gametype != server2.gameinfo.g_gametype)
+      return gametype_weight( server1.gameinfo.g_gametype ) - gametype_weight( server2.gameinfo.g_gametype );
     else
       return server2.gameinfo.g_levelstarttime - server1.gameinfo.g_levelstarttime;
   });
@@ -126,8 +145,8 @@ app.get('/serverinfo2/:endpoints', function (req, res) {
 if (process.env.npm_lifecycle_event == "start-dev") {
   var fs = require("fs");
   var index_file_data = fs.readFileSync(__dirname + '/public/index.html', {encoding: 'utf8'}).replace(
-    '<script type="text/javascript" src="/js/serverbrowser.js?1"></script>',
-    '<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script><script type="text/babel" src="/js/serverbrowser.babel.js"></script>'
+    '<script type="text/javascript" src="/js/serverbrowser.js?',
+    '<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script><script type="text/babel" src="/js/serverbrowser.babel.js?'
   ).replace('.min.js', '.js');
   app.get('/', function (req, res) {
     res.setHeader("Content-Type", "text/html");
