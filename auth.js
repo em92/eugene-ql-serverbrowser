@@ -53,8 +53,8 @@ function bind_methods(app) {
   app.use(session({
     secret: Math.random().toString(),
     name: 'sid',
-    resave: true,
-    saveUninitialized: true
+    resave: false,
+    saveUninitialized: false
   }));
 
   app.use(passport.initialize());
