@@ -109,7 +109,11 @@ app.get('/rawserverlist', function (req, res) {
   res.send(serverInfo);
 });
 
-app.get('/serverinfo/:endpoint', function (req, res) {
+app.get('/serverinfo/:endpoint', function (req, res, next) {
+  if (!serverInfo[req.params.endpoint]) {
+    next();
+    return;
+  }
   res.setHeader("Content-Type", "application/json");
   res.send(serverInfo[req.params.endpoint]);
 });
