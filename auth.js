@@ -44,8 +44,7 @@ passport.use(new SteamStrategy({
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) return next();
-  res.setHeader("Content-Type", "application/json");
-  res.send({not_logged_in: true, steam_id: "0"});
+  res.json({not_logged_in: true, steam_id: "0"});
 }
 
 function bind_methods(app) {
@@ -92,7 +91,7 @@ function bind_methods(app) {
         obj.steam_id = obj.steamid;
         delete obj.steamid;
       }
-      res.send(obj);
+      res.json(obj);
     });
 
   });
