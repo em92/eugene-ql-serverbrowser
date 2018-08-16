@@ -109,9 +109,9 @@ app.get('/rawserverlist', function (req, res) {
   res.send(serverInfo);
 });
 
-app.get('/serverinfo/:endpoint', function (req, res, next) {
+app.get('/serverinfo/:endpoint', function (req, res) {
   if (!serverInfo[req.params.endpoint]) {
-    next();
+    res.status(404).json({error: "server not found"});
     return;
   }
   res.setHeader("Content-Type", "application/json");
