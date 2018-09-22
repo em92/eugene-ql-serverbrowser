@@ -4,6 +4,8 @@ var session = require('express-session');
 var SteamStrategy = require('passport-steam').Strategy;
 var get_player_ratings = require('./skillrating.js').get_player_ratings;
 var redis = require('./common.js').redis;
+var get_current_timestamp = require('./common.js').get_current_timestamp;
+var RedisStore = require('connect-redis')(session);
 
 if (!process.env.npm_config_node_version) {
   console.error("run using 'npm start' or 'npm run start-dev'. quitting...");
@@ -50,6 +52,10 @@ function ensureAuthenticated(req, res, next) {
 function bind_methods(app) {
 
   app.use(session({
+    store: new RedisStore({
+      client: redis,
+      prefix: "qlsb:sess:" + get_current_timestamp().toString() + "_"
+    }),
     secret: Math.random().toString(),
     name: 'sid',
     resave: false,
