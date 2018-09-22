@@ -105,24 +105,24 @@ var serverList = function(filter_data, ratings) {
 app.use(require('body-parser').json());
 
 app.get('/rawserverlist', function (req, res) {
-  res.setHeader("Content-Type", "application/json");
-  res.send(serverInfo);
+  res.json(serverInfo);
 });
 
 app.get('/serverinfo/:endpoint', function (req, res) {
-  res.setHeader("Content-Type", "application/json");
-  res.send(serverInfo[req.params.endpoint]);
+  if (!serverInfo[req.params.endpoint]) {
+    res.status(404).json({error: "server not found"});
+  } else {
+    res.json(serverInfo[req.params.endpoint]);
+  }
 });
 
 app.get('/qlstats/:endpoint', function (req, res) {
   ssw.queryQLStatsServerInfo( req.params.endpoint, function( data ) {
-    res.setHeader("Content-Type", "application/json");
-    res.send( data );
+    res.json( data );
   });
 });
 
 app.get('/serverinfo2/:endpoints', function (req, res) {
-  res.setHeader("Content-Type", "application/json");
   var failed = [];
   var result = [];
   var input_endpoints = req.params.endpoints.split(",");
@@ -138,7 +138,7 @@ app.get('/serverinfo2/:endpoints', function (req, res) {
         failed.push( input_endpoints[i] );
       }
     });
-    res.send({result: result, failed: failed});
+    res.json({result: result, failed: failed});
   });
 });
 
@@ -159,13 +159,11 @@ app.use(express.static('public'));
 auth.bind_methods(app);
 
 app.get('/serverlist/:filter_data', function (req, res) {
-  res.setHeader("Content-Type", "application/json");
-  res.send(serverList( req.params.filter_data, req.user ? req.user.ratings : undefined ));
+  res.json(serverList( req.params.filter_data, req.user ? req.user.ratings : undefined ));
 });
 
 app.get('/serverlist', function (req, res) {
-  res.setHeader("Content-Type", "application/json");
-  res.send(serverList( undefined, req.user ? req.user.ratings : undefined ));
+  res.json(serverList( undefined, req.user ? req.user.ratings : undefined ));
 });
 
 app.post("/promote", auth.ensure_logged_in, function(req, res) {

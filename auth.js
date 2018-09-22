@@ -4,6 +4,8 @@ var session = require('express-session');
 var SteamStrategy = require('passport-steam').Strategy;
 var get_player_ratings = require('./skillrating.js').get_player_ratings;
 var redis = require('./common.js').redis;
+var get_current_timestamp = require('./common.js').get_current_timestamp;
+var RedisStore = require('connect-redis')(session);
 
 if (!process.env.npm_config_node_version) {
   console.error("run using 'npm start' or 'npm run start-dev'. quitting...");
@@ -44,17 +46,20 @@ passport.use(new SteamStrategy({
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) return next();
-  res.setHeader("Content-Type", "application/json");
-  res.send({not_logged_in: true, steam_id: "0"});
+  res.json({not_logged_in: true, steam_id: "0"});
 }
 
 function bind_methods(app) {
 
   app.use(session({
+    store: new RedisStore({
+      client: redis,
+      prefix: "qlsb:sess:" + get_current_timestamp().toString() + "_"
+    }),
     secret: Math.random().toString(),
     name: 'sid',
-    resave: true,
-    saveUninitialized: true
+    resave: false,
+    saveUninitialized: false
   }));
 
   app.use(passport.initialize());
@@ -92,7 +97,7 @@ function bind_methods(app) {
         obj.steam_id = obj.steamid;
         delete obj.steamid;
       }
-      res.send(obj);
+      res.json(obj);
     });
 
   });

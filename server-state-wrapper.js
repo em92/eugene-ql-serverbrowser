@@ -120,8 +120,8 @@ var format = function(address, state) {
         g_instagib: state.raw.rules ? parseInt(state.raw.rules.g_instagib) : isInstagibByTags(state.raw.tags),
         g_levelstarttime: state.raw.rules ? parseInt(state.raw.rules.g_levelstarttime) : 0,
 
-        g_bluescore: state.raw.rules ? parseInt(state.raw.rules.g_bluescore) : 0,
-        g_redscore:  state.raw.rules ? parseInt(state.raw.rules.g_redscore)  : 0,
+        g_bluescore: state.raw.rules && state.raw.rules.g_bluescore ? parseInt(state.raw.rules.g_bluescore) : 0,
+        g_redscore:  state.raw.rules && state.raw.rules.g_bluescore ? parseInt(state.raw.rules.g_redscore)  : 0,
 
         mapname: state.map.toLowerCase(),
         rating_min: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].min : 0,
