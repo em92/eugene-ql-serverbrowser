@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+require('dotenv').config();
 var express = require('express');
 var ssw = require("./server-state-wrapper.js");
 var dns = require("./dns.js");

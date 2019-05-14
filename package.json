@@ -15,6 +15,7 @@
     "babel": "5.8.38",
     "body-parser": "1.17.2",
     "connect-redis": "3.3.3",
+    "dotenv": "8.0.0",
     "express": "4.15.3",
     "express-session": "1.15.3",
     "game-server-query": "1.0.10",

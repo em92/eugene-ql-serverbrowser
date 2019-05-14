@@ -12,8 +12,8 @@ if (!process.env.npm_config_node_version) {
   process.exit(1);
 }
 
-if (!process.env.npm_package_config_realm) {
-  console.error("realm value is not set in package.json. quitting...");
+if (!process.env.REALM) {
+  console.error("environment variable REALM is not set. quitting...");
   process.exit(1);
 }
 

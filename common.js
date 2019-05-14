@@ -12,7 +12,7 @@ var rp_error_handler = function(error) {
 }
 
 var redis_client = redis.createClient({
-  url: process.env.npm_package_config_redis_url,
+  url: process.env.REDIS_URL,
   retry_strategy: function (options) {
 
     if (options.error && options.error.code) {
