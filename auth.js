@@ -50,12 +50,16 @@ function ensureAuthenticated(req, res, next) {
 }
 
 function bind_methods(app) {
-
-  app.use(session({
-    store: new RedisStore({
+  var store = undefined;
+  if (redis) {
+    store = new RedisStore({
       client: redis,
       prefix: "qlsb:sess:" + get_current_timestamp().toString() + "_"
-    }),
+    });
+  }
+
+  app.use(session({
+    store: store,
     secret: Math.random().toString(),
     name: 'sid',
     resave: false,
