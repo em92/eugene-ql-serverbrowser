@@ -51,21 +51,15 @@
       "country": "US"
     }
   };
+
+  export let onServerRowClickCallback = console.log;
+
+  function handleClick() {
+    onServerRowClickCallback(server);
+  }
 </script>
 
-<style>
-  tr {
-    cursor: pointer;
-  }
-
-  :global(td) {
-    padding-left: 5px;
-    padding-right: 5px;
-    height: 30px;
-  }
-</style>
-
-<tr>
+<tr on:click={handleClick}>
   <ServerDataLocation geo={server.location} />
   <ServerDataGametype server={server} />
   <td>{server.host_name}</td>
