@@ -7,6 +7,7 @@
   import ServerDataIsDedicated from './ServerDataIsDedicated.svelte';
   import ServerDataIsPrivate from './ServerDataIsPrivate.svelte';
   import ServerDataIsWarmup from './ServerDataIsWarmup.svelte';
+  import { serverDetails } from './server-details-store.js';
   export let server = {
     "dedicated": true, 
     "host_address": "139.99.5.168:27960", 
@@ -52,10 +53,8 @@
     }
   };
 
-  export let onServerRowClickCallback = console.log;
-
   function handleClick() {
-    onServerRowClickCallback(server);
+    serverDetails.set(server);
   }
 </script>
 

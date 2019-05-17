@@ -189,41 +189,6 @@ textarea {
   width: 100%;
 }
 
-.serverinfo {
-  padding: 2px;
-  position: fixed;
-  left: 0;
-  top: 0;
-  background-color: white;
-  border: 1px solid black;
-}
-
-.serverinfo .emptyserver {
-  text-align: center;
-}
-
-.serverinfo .closeblock {
-  background-image: url("/images/close.png");
-  position: absolute;
-  bottom: -10px;
-  right: -10px;
-  width: 20px;
-  height: 19px;
-  cursor: pointer;
-}
-
-.serverinfo tr {background: #000}
-.serverinfo tr:hover {background: #222}
-
-.serverinfo th {
-  background-color: white;
-  color: black;
-}
-
-.serverinfo td {
-  color: white;
-}
-
 .qc0 {
   color: rgb(128, 128, 128);
 }
