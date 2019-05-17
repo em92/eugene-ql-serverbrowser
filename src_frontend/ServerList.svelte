@@ -1,21 +1,7 @@
 <script>
   import ServerRow from './ServerRow.svelte';
+  import { servers } from './server-list-store.js';
 
-  let servers = [];
-
-  fetch("/serverlist")
-  .then( response => response.json())
-  .then( data => {
-    servers = data.servers;
-  });
-
-  function showServerInfo(server) {
-    console.log("hey!", server);
-  }
-
-  /** @todo подумать над. Может быть можно обойтись без onServerRowClickCallback
-   * https://svelte.dev/examples#writable-stores
-   */
 </script>
 
 <style>
@@ -31,7 +17,7 @@
 </style>
 
 <table>
-  {#each servers as server}
-    <ServerRow server={server} onServerRowClickCallback={showServerInfo} />
+  {#each $servers as server}
+    <ServerRow server={server} />
   {/each}
 </table>
