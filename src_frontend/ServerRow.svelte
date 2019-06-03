@@ -7,7 +7,7 @@
   import ServerDataIsDedicated from './ServerDataIsDedicated.svelte';
   import ServerDataIsPrivate from './ServerDataIsPrivate.svelte';
   import ServerDataIsWarmup from './ServerDataIsWarmup.svelte';
-  import { serverDetails } from './server-details-store.js';
+  import { chosenServerAddress } from './server-details-store.js';
   export let server = {
     "dedicated": true, 
     "host_address": "139.99.5.168:27960", 
@@ -54,7 +54,7 @@
   };
 
   function handleClick() {
-    serverDetails.set(server);
+    chosenServerAddress.set(server.host_address);
   }
 </script>
 

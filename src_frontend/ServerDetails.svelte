@@ -1,9 +1,10 @@
 <script>
-  import { serverDetails } from "./server-details-store.js";
+  import { serverDetails, chosenServerAddress } from "./server-details-store.js";
+  import Global from "./Global.js";
+  let GAMETYPES = Global.GAMETYPES;
 
   let players = [];
   serverDetails.subscribe( data => {
-    console.log("sss", data);
     if (data == null) return;
     players = data.gameinfo.players.concat(data.gameinfo.bots.map( function(p) {
       return {
@@ -33,16 +34,6 @@
     text-align: center;
   }
 
-  .serverinfo .closeblock {
-    background-image: url("/images/close.png");
-    position: absolute;
-    bottom: -10px;
-    right: -10px;
-    width: 20px;
-    height: 19px;
-    cursor: pointer;
-  }
-
   .serverinfo tr {background: #000}
   .serverinfo tr:hover {background: #222}
 
@@ -54,21 +45,46 @@
   .serverinfo td {
     color: white;
   }
+
+  .serverinfo-buttons {
+    width: 100%;
+    text-align: center;
+  }
 </style>
 
 {#if $serverDetails}
-<table class="serverinfo">
-  <thead><tr>
-    <th>Nick</th>
-    <th style='width: "50px'>Score</th>
-  </tr></thead>
-  <tbody>
-    {#each players as { name, score }}
-      <tr>
-        <td>{name}</td>
-        <td>{score}</td>
-      </tr>)
-    {/each}
-  </tbody>
-</table>
+<div class="serverinfo">
+  <ul>
+    <li>Gametype: {GAMETYPES[$serverDetails.gameinfo.g_gametype + 100*$serverDetails.gameinfo.g_instagib]}</li>
+    <li>Gamestate: {{'PRE_GAME': 'Warmup', 'IN_PROGRESS': 'In progress'}[$serverDetails.gameinfo.g_gamestate]}</li>
+    <li>Map: {$serverDetails.gameinfo.mapname}</li>
+    <li>Address: {$serverDetails.host_address}</li>
+  </ul>
+  <div class="serverinfo-buttons">
+    <a href={"steam://connect/" +$serverDetails.host_address} class="btn btn-primary btn-xs">connect</a>
+    &nbsp;
+    <!--<a onClick={this.state.is_showing_tags ? this.hideTags : this.showTags} className="btn btn-primary btn-xs">{this.state.is_showing_tags ? "hide tags" : "show tags"}</a> -->
+    &nbsp;
+    <button on:click={() => chosenServerAddress.set(null)} class="btn btn-primary btn-xs">close</button>
+  </div>
+  {#if players.length == 0}
+    <div class="emptyserver">empty server</div>
+  {:else}
+    <table>
+      <thead><tr>
+        <th>Nick</th>
+        <th style='width: "50px'>Score</th>
+      </tr></thead>
+      <tbody>
+        {#each players as { name, score }}
+          <tr>
+            <td>{name}</td>
+            <td>{score}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {/if}
+</div>
+
 {/if}
