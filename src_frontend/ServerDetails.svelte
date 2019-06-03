@@ -3,6 +3,7 @@
   import Global from "./Global.js";
   let GAMETYPES = Global.GAMETYPES;
 
+  let isShowingTags = false;
   let players = [];
   serverDetails.subscribe( data => {
     if (data == null) return;
@@ -60,13 +61,23 @@
     <li>Map: {$serverDetails.gameinfo.mapname}</li>
     <li>Address: {$serverDetails.host_address}</li>
   </ul>
+
   <div class="serverinfo-buttons">
     <a href={"steam://connect/" +$serverDetails.host_address} class="btn btn-primary btn-xs">connect</a>
     &nbsp;
-    <!--<a onClick={this.state.is_showing_tags ? this.hideTags : this.showTags} className="btn btn-primary btn-xs">{this.state.is_showing_tags ? "hide tags" : "show tags"}</a> -->
+    <button on:click={() => isShowingTags = !isShowingTags} class="btn btn-primary btn-xs">
+      {isShowingTags ? 'hide' : 'show'} tags
+    </button>
     &nbsp;
     <button on:click={() => chosenServerAddress.set(null)} class="btn btn-primary btn-xs">close</button>
   </div>
+
+  {#if isShowingTags}
+    <p>{#each $serverDetails.tags as tag}
+      <span>{tag}&nbsp;</span>
+    {/each}</p>
+  {/if}
+
   {#if players.length == 0}
     <div class="emptyserver">empty server</div>
   {:else}
