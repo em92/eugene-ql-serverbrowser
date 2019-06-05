@@ -100,7 +100,7 @@ noscript {
   height: 29px;
 }
 
-.no-filters, .no-servers, .loading {
+.no-filters, .no-servers {
   background-color: #ccc;
   width: 100%;
   overflow:auto;

@@ -1,5 +1,6 @@
 <script>
   import { serverDetails, chosenServerAddress } from "./store.js";
+  import PlayerList from "./player-list-common.svelte";
   import Score from "./score.svelte"
   import Global from "../Global.js";
   let GAMETYPES = Global.GAMETYPES;
@@ -36,20 +37,12 @@
     text-align: center;
   }
 
-  .serverinfo tr {background: #000}
-  .serverinfo tr:hover {background: #222}
-
-  .serverinfo th {
-    background-color: white;
-    color: black;
-  }
-
-  .serverinfo td {
-    color: white;
-  }
-
   .serverinfo-buttons {
     width: 100%;
+    text-align: center;
+  }
+
+  .loading {
     text-align: center;
   }
 </style>
@@ -82,21 +75,12 @@
 
   {#if players.length == 0}
     <div class="emptyserver">empty server</div>
+  {:else if $serverDetails.loading}
+    <div class="loading">
+      <img alt="Loading..." src="/images/loading.gif" />
+    </div>
   {:else}
-    <table>
-      <thead><tr>
-        <th>Nick</th>
-        <th style='width: "50px'>Score</th>
-      </tr></thead>
-      <tbody>
-        {#each players as { name, score }}
-          <tr>
-            <td>{name}</td>
-            <td>{score}</td>
-          </tr>
-        {/each}
-      </tbody>
-    </table>
+    <PlayerList server={$serverDetails} />
   {/if}
 </div>
 
