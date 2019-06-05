@@ -1,5 +1,5 @@
 import { derived, writable } from 'svelte/store';
-import { servers } from './server-list-store.js';
+import { servers } from '../server-list-store.js';
 
 export const chosenServerAddress = writable(null);
 export const serverDetails = derived(

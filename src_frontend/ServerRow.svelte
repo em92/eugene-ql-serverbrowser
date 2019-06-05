@@ -7,7 +7,7 @@
   import ServerDataIsDedicated from './ServerDataIsDedicated.svelte';
   import ServerDataIsPrivate from './ServerDataIsPrivate.svelte';
   import ServerDataIsWarmup from './ServerDataIsWarmup.svelte';
-  import { chosenServerAddress } from './server-details-store.js';
+  import { chosenServerAddress } from './server-details/store.js';
   export let server = {
     "dedicated": true, 
     "host_address": "139.99.5.168:27960", 

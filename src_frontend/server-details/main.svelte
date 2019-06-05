@@ -1,6 +1,7 @@
 <script>
-  import { serverDetails, chosenServerAddress } from "./server-details-store.js";
-  import Global from "./Global.js";
+  import { serverDetails, chosenServerAddress } from "./store.js";
+  import Score from "./score.svelte"
+  import Global from "../Global.js";
   let GAMETYPES = Global.GAMETYPES;
 
   let isShowingTags = false;
@@ -60,6 +61,7 @@
     <li>Gamestate: {{'PRE_GAME': 'Warmup', 'IN_PROGRESS': 'In progress'}[$serverDetails.gameinfo.g_gamestate]}</li>
     <li>Map: {$serverDetails.gameinfo.mapname}</li>
     <li>Address: {$serverDetails.host_address}</li>
+    <Score server={$serverDetails} />
   </ul>
 
   <div class="serverinfo-buttons">
