@@ -23,5 +23,16 @@ export default {
     110: 'InstaDOM',
     111: 'InstaA&D',
     112: 'InstaRR'
+  },
+  isValidFilterDataString: function (filterDataB) {
+    try {
+      var data = JSON.parse( filterDataB );
+      if ( Array.isArray(data) ) return false;
+      if ( Object.keys(data).every( item => typeof(data[item]) == "object" && ( Array.isArray(data[item]) == false ) ) ) {
+        return true;
+      }
+    } catch(e) {
+    }
+    return false;
   }
 };
