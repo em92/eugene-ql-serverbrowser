@@ -1,4 +1,6 @@
 <script>
+  import QLNickname from "../ql-nickname.svelte";
+
   export let server = {};
 
   const TEAMS = ["Play", "Red", "Blue", "Spec", "Bot"];
@@ -38,9 +40,9 @@
         <td><span class={TEAM_CLASS[team]}>{TEAMS[team]}</span></td>
 
         <td>{#if steamid}
-          <a target="_blank" href={'http://qlstats.net/player/' + steamid}>{name}</a>
+          <a target="_blank" href={'http://qlstats.net/player/' + steamid}><QLNickname nickname={name} /></a>
         {:else}
-          name
+          <QLNickname nickname={name} />
         {/if}</td>
 
         <td>{#if team !=3}

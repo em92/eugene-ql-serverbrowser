@@ -1,4 +1,5 @@
 <script>
+  import QLNickname from "../ql-nickname.svelte";
   export let server = {
     gameinfo: {
       players: [{
@@ -36,7 +37,7 @@
   <tbody>
     {#each players as { name, score }}
       <tr>
-        <td>{name}</td>
+        <td><QLNickname nickname={name} /></td>
         <td>{score}</td>
       </tr>
     {/each}
