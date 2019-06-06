@@ -15,31 +15,19 @@
     }
   };
 
-  let players = server.gameinfo.players.concat(server.gameinfo.bots.map( function(p) {
-    return {
-      "score": p.score,
-      "name": p.name
-    };
-  }));
-
-  players.sort( function(a, b) {
-    return b.score - a.score;
-  });
+  let players = server.gameinfo.players;
 
 </script>
 
 <table>
   <thead><tr>
     <th>Nick</th>
-    <th style='width: "50px'>Score</th>
   </tr></thead>
   <tbody>
     {#each players as { name, score }}
       <tr>
         <td>{name}</td>
-        <td>{score}</td>
       </tr>
     {/each}
   </tbody>
 </table>
-
