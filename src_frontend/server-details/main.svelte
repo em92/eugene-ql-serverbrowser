@@ -2,8 +2,7 @@
   import { serverDetails, chosenServerAddress } from "./store.js";
   import PlayerList from "./player-list.svelte";
   import Score from "./score.svelte"
-  import Global from "../Global.js";
-  let GAMETYPES = Global.GAMETYPES;
+  import { GAMETYPES } from "../global.js";
 
   let isShowingTags = false;
   let players = [];

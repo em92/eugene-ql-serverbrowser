@@ -1,7 +1,6 @@
 <script>
   import { filters } from "./store.js";
-  import Global from "../Global.js";
-  let isValidFilterDataString = Global.isValidFilterDataString;
+  import { isValidFilterDataString } from '../global.js';
   let stringifiedFilters = JSON.stringify($filters, null, 2);
 </script>
 
