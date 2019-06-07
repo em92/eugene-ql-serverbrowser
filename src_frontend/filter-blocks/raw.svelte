@@ -6,7 +6,7 @@
 
 <div class="filter-controls">
   {#if isValidFilterDataString(stringifiedFilters)}
-    <button class="btn btn-primary btn-xs">Import</button>
+    <button class="btn btn-primary btn-xs" on:click={() => {filters.set(JSON.parse(stringifiedFilters))}}>Import</button>
   {:else}
     <button class="btn btn-danger btn-xs">Bad filter</button>
   {/if}
