@@ -4,6 +4,7 @@ import { cleanFilters as filters } from '../filter-blocks/store.js';
 export const servers = writable([]);
 export const loading = writable(true);
 export const pause = writable(false);
+// TODO: added error state
 
 let encodedFilterData = "";
 const PERIOD = 10000;
