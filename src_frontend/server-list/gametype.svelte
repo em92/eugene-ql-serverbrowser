@@ -1,5 +1,5 @@
 <script>
-  import { GAMETYPES } from "./global.js";
+  import { GAMETYPES } from "../global.js";
   export let server = {
     gameinfo: {
       g_gametype: 11,

@@ -1,6 +1,6 @@
 <script>
-  import ServerRow from './ServerRow.svelte';
-  import { servers } from './server-list-store.js';
+  import ServerRow from './row.svelte';
+  import { servers } from './store.js';
 
 </script>
 

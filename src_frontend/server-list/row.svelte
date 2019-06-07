@@ -1,13 +1,13 @@
 <script>
-  import ServerDataLocation from './ServerDataLocation.svelte';
-  import ServerDataGametype from './ServerDataGametype.svelte';
-  import ServerDataPlayerCount from './ServerDataPlayerCount.svelte';
-  import ServerDataRank from './ServerDataRank.svelte';
-  import ServerDataScore from './ServerDataScore.svelte';
-  import ServerDataIsDedicated from './ServerDataIsDedicated.svelte';
-  import ServerDataIsPrivate from './ServerDataIsPrivate.svelte';
-  import ServerDataIsWarmup from './ServerDataIsWarmup.svelte';
-  import { chosenServerAddress } from './server-details/store.js';
+  import ServerDataLocation from './location.svelte';
+  import ServerDataGametype from './gametype.svelte';
+  import ServerDataPlayerCount from './player-count.svelte';
+  import ServerDataRank from './rank.svelte';
+  import ServerDataScore from './score.svelte';
+  import ServerDataIsDedicated from './is-dedicated.svelte';
+  import ServerDataIsPrivate from './is-private.svelte';
+  import ServerDataIsWarmup from './is-warmup.svelte';
+  import { chosenServerAddress } from '../server-details/store.js';
   export let server = {
     "dedicated": true, 
     "host_address": "139.99.5.168:27960", 

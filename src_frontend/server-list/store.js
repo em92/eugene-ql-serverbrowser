@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { cleanFilters as filters } from './filter-blocks/store.js';
+import { cleanFilters as filters } from '../filter-blocks/store.js';
 
 export const servers = writable([]);
 export const loading = writable(true);
