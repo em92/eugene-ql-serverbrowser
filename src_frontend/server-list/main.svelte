@@ -1,6 +1,7 @@
 <script>
   import ServerRow from './row.svelte';
   import { servers, loading, pause } from './store.js';
+  import { cleanFilters as filters } from '../filter-blocks/store.js';
 
 </script>
 
@@ -25,7 +26,9 @@
 </style>
 
 
-{#if $loading}
+{#if $filters.length == 0}
+  <div class="message">No filters defined. Press &quot;Add filter&quot; to add one</div>
+{:else if $loading}
   <div class="message">Loading...</div>
 {:else if $pause}
   <div class="message">Zzzzzz...</div>
