@@ -35,3 +35,19 @@ export function isValidFilterDataString(filterDataB) {
   }
   return false;
 };
+
+export let FILTER_ITEM_PROMPTS = {
+  "country":      "Country",
+  "g_factory":    "Factory",
+  "g_gamestate":  "Gamestate",
+  "gametype":     "Gametype",
+  "mapname":      "Map",
+  "min_players":  "Min. players count",
+  "private":      "Accessibility",
+  "rating_min":   "Server rating (min)",
+  "rating_max":   "Server rating (max)",
+  "region":       "Region",
+  "turbo":        "Aircontrol",
+  "vampiric":     "Vampiric damage",
+  "tags":         "Tags"
+};

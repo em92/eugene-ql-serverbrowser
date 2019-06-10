@@ -75,10 +75,6 @@ noscript {
   cursor: pointer;
 }
 
-.filter-block-wrapper:not(:first-child) {
-  margin-top: 20px;
-}
-
 .filter-block {
   background-color: #ccc;
   width: 100%;
