@@ -7,9 +7,9 @@
   export let name = "tags";
   export let value = [];
   export let options = [];
+  export let allowFreeTagging = true;
 
   function tokenInput(node) {
-    var self = this;
     var token_input_options = {
       theme: "facebook",
       hintText: "",
@@ -28,19 +28,16 @@
           return data;
         });
       }),
-      allowFreeTagging: true, //this.allowFreeTagging,
-      prePopulate: value.map(item => ({id: item, name: item})),
-      /*prePopulate: ( this.allowFreeTagging ?
-        this.state.value.map( item => ({id: item, name: item}) ) :
-        this.tokens.filter( token => {return self.state.value.indexOf(token.id) > -1})
-      ),*/
+      allowFreeTagging: allowFreeTagging,
+      prePopulate: allowFreeTagging ?
+        value.map(item => ({id: item, name: item})) :
+        options.filter(token => {value.indexOf(token.id) > -1}),
       preventDuplicates: true,
       resultsLimit: 5,
       searchingText: ""
     };
 
-    //$(node).tokenInput(this.tokens, token_input_options);
-    jQuery(node).tokenInput([], token_input_options);
+    jQuery(node).tokenInput(options, token_input_options);
   }
 </script>
 

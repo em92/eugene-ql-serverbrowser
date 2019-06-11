@@ -12,3 +12,10 @@ export let cleanFilters = derived(
     });
   }
 )
+export let filterIds = derived(
+  filters, $filters => {
+    let r = Object.keys($filters);
+    r.sort();
+    return r;
+  }
+)
