@@ -3,6 +3,7 @@
   import { filters } from "./store.js";
   import { FILTER_ITEM_PROMPTS } from "../global.js";
 
+  import Tags from "./tags.svelte";
   import Turbo from "./turbo.svelte";
 
   export let id = "0default";
@@ -41,7 +42,9 @@
     {#if key == 'gametype'}
       <!-- GAMETYPE: bla bla bla-->
     {:else if key == 'turbo'}
-      <Turbo id={id} value={value} />
+      <Turbo filterId={id} value={value} />
+    {:else if key == 'tags'}
+      <Tags filterId={id} value={value} />
     {/if}
   {/each}
 </div>

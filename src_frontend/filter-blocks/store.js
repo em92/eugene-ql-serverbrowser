@@ -1,6 +1,6 @@
 import { derived, writable } from 'svelte/store';
 
-export let filters = writable({"0default": {"turbo": false, "gametype": ["any"]}});
+export let filters = writable({"0default": {"turbo": false, "gametype": ["any"], "tags": ['ca', 'pql']}});
 export let cleanFilters = derived(
   filters, ($filters) => {
     return Object.keys( $filters ).map( i => {
