@@ -10,6 +10,7 @@
   export let options = [];
   export let allowFreeTagging = true;
 
+  // @todo при изменении какого-либо другого свойства из блока происходит перерисовка
   function tokenInput(node) {
     var token_input_options = {
       theme: "facebook",
