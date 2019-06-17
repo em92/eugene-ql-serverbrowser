@@ -34,6 +34,13 @@
       return data;
     });
   }
+
+  function removeFilterBlock() {
+    filters.update( data => {
+      delete data[id];
+      return data;
+    });
+  }
 </script>
 
 <style>
@@ -101,5 +108,5 @@
     </div>
   {/if}
 </div>
-<div role="button" class="filter-block-close"></div>
+<div role="button" on:click={removeFilterBlock} class="filter-block-close"></div>
 </div>
