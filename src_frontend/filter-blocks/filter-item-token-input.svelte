@@ -23,7 +23,7 @@
             .filter((v, i, a) => a.length == 1 || v != "any") // take away "any" value, if length > 1
           ;
 
-          data[filterId][name] = list.concat([token.id]);
+          data[filterId][name] = list;
           return data;
         });
       }),
@@ -37,7 +37,7 @@
       allowFreeTagging: allowFreeTagging,
       prePopulate: allowFreeTagging ?
         value.map(item => ({id: item, name: item})) :
-        options.filter(token => {value.indexOf(token.id) > -1}),
+        options.filter(token => value.indexOf(token.id) > -1),
       preventDuplicates: true,
       resultsLimit: 5,
       searchingText: ""
