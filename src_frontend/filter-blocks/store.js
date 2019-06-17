@@ -1,6 +1,13 @@
 import { derived, writable } from 'svelte/store';
+import { isValidFilterDataString } from '../global.js';
 
-export let filters = writable({"0default": {"turbo": false, "gametype": ["any"], "tags": ['ca', 'pql']}});
+var defaultFilterData = {"0default": {"gametype": ['any']}};
+var filterDataB = window.localStorage['filterDataB'];
+if (isValidFilterDataString(filterDataB)) {
+  defaultFilterData = JSON.parse(filterDataB);
+}
+
+export let filters = writable(defaultFilterData);
 export let cleanFilters = derived(
   filters, ($filters) => {
     return Object.keys( $filters ).map( i => {
@@ -19,3 +26,7 @@ export let filterIds = derived(
     return r;
   }
 )
+
+filters.subscribe( $filters => {
+  window.localStorage.setItem('filterDataB', JSON.stringify($filters));
+})
