@@ -30,8 +30,8 @@ passport.deserializeUser(function(obj, done) {
 });
 
 passport.use(new SteamStrategy({
-    returnURL: process.env.npm_package_config_realm + 'auth/steam/return',
-    realm: process.env.npm_package_config_realm,
+    returnURL: process.env.REALM + 'auth/steam/return',
+    realm: process.env.REALM,
     apiKey: process.env.STEAM_WEB_API_KEY
   },
   function(identifier, profile, done) {
@@ -60,7 +60,7 @@ function bind_methods(app) {
 
   app.use(session({
     store: store,
-    secret: Math.random().toString(),
+    secret: process.env.SESSION_SECRET,
     name: 'sid',
     resave: false,
     saveUninitialized: false
