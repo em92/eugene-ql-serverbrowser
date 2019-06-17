@@ -5,9 +5,9 @@
   import FilterControls from "./filter-controls.svelte";
 
   let isShowingRawFilter = false;
-  let isShowingFilterBlocks = true;
+  let isShowingFilterBlocks = false;
 
-  let toggleRawFilter = () => {isShowingRawFilter = !isShowingRawFilter};
+  let toggleRawFilter = () => {isShowingRawFilter = !isShowingRawFilter; isShowingFilterBlocks = false};
   let toggleFilters = () => {isShowingFilterBlocks = !isShowingFilterBlocks};
   let addFilterCallback = () => {
     let id = (new Date().getTime() + Math.random()).toString();
@@ -20,13 +20,14 @@
 </script>
 
 {#if isShowingRawFilter}
-  <RawFiltersText on:click={toggleRawFilter} />
+  <RawFiltersText toggleCallback={toggleRawFilter} />
 {:else}
   <FilterControls
     onAddFilterClick={addFilterCallback}
     onExportClick={toggleRawFilter}
     onShowHideOptionsClick={toggleFilters}
     isShowingFilterBlocks={isShowingFilterBlocks}
+    filterCnt={$filterIds.length}
   />
   {#if isShowingFilterBlocks || $filterIds.length == 0}
     <div class="filter-block-wrapper">{#each $filterIds as id}
@@ -37,6 +38,7 @@
       onExportClick={toggleRawFilter}
       onShowHideOptionsClick={toggleFilters}
       isShowingFilterBlocks={isShowingFilterBlocks}
+      filterCnt={$filterIds.length}
     />
   {/if}
 {/if}
