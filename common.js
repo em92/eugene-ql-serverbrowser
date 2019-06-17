@@ -29,6 +29,19 @@ if (process.env.REDIS_URL) {
   });
 } else {
   console.error("WARNING: environment variable REDIS_URL is not set. Any data stored to session will be lost after restart!")
+
+  // fake redis client
+  redis_client = {
+    fake: true,
+    data: {},
+    get: function(key, done) {
+      done(null, this.data[key]);
+    },
+    set: function(key, value, done) {
+      this.data[key] = value;
+      done(null, value);
+    }
+  }
 }
 
 var get_current_timestamp = function() {

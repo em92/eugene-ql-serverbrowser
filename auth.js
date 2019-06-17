@@ -26,6 +26,9 @@ passport.deserializeUser(function(obj, done) {
   .then( data => {
     Object.assign(obj, {'ratings': data});
     done(null, obj);
+  })
+  .catch( error => {
+    done(error);
   });
 });
 
@@ -51,7 +54,7 @@ function ensureAuthenticated(req, res, next) {
 
 function bind_methods(app) {
   var store = undefined;
-  if (redis) {
+  if (redis && !redis.fake) {
     store = new RedisStore({
       client: redis,
       prefix: "qlsb:sess:" + get_current_timestamp().toString() + "_"

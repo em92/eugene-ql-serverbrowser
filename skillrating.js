@@ -90,6 +90,8 @@ var get_player_ratings = function( steam_id ) {
           console.error("qlsb:ratings:" + steam_id + " not json object");
           console.error(reply);
         };
+      } else {
+        reject(err);
       }
 
       ratings['last_update'] = ratings['last_update'] || 0;
