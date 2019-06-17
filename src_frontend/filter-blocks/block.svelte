@@ -36,38 +36,29 @@
   }
 </script>
 
-<!--
 <style>
   .filter-block {
-    /*
     background-color: #ccc;
     width: 100%;
-    overflow:auto;
-    */
-    background-color: black; color: white;
+    overflow: hidden;
+    position: relative;
   }
 
-  .filter-item-close {
+  .filter-block-wrapper:not(:first-child) {
+    margin-top: 20px;
+  }
+
+  .filter-block-close {
     background-image: url("/images/close.png");
-    display: block;
-    float: left;
-    height: 19px;
-    left: 6px;
-    position: relative;
-    top: 9px;
-    width: 20px;
-    cursor: pointer;
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    z-index: 10;
+
   }
 </style>
 
-
-        <div className="filter-item-wrapper" key={i}>
-          <div>{filter_item.body}</div>
-          <div onClick={() => {this.removeFilterItem(filter_item.name)}} className="filter-item-close"></div>
-        </div>
--->
-
-
+<div class="filter-block-wrapper">
 <div class="filter-block">
   {#each filterItems as {key, value}}
     {#if key == 'gametype'}
@@ -111,3 +102,4 @@
   {/if}
 </div>
 <div role="button" class="filter-block-close"></div>
+</div>
