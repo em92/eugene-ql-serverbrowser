@@ -1,6 +1,7 @@
 <script>
   import { filters } from "./store.js";
   import { FILTER_ITEM_PROMPTS } from "../global.js";
+  import FilterItemAbstract from "./filter-item-abstract.svelte";
 
   export let filterId = "0default";
   export let name = "turbo";
@@ -27,14 +28,11 @@
   }
 </script>
 
-<div class="filter-item">
-  <div class="filter-item-left">{FILTER_ITEM_PROMPTS[name]}</div>
-  <div class="filter-item-right">
-    <select class="form-control input-sm" bind:value={value} on:change={onAnythingChanged}>
-      <option value="none" disabled="true"></option>
-      {#each options as {value, title}}
-        <option value={value}>{title}</option>
-      {/each}
-    </select>
-  </div>
-</div>
+<FilterItemAbstract filterId={filterId} name={name}>
+  <select class="form-control input-sm" bind:value={value} on:change={onAnythingChanged}>
+    <option value="none" disabled="true"></option>
+    {#each options as {value, title}}
+      <option value={value}>{title}</option>
+    {/each}
+  </select>
+</FilterItemAbstract>

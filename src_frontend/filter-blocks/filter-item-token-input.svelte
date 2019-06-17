@@ -2,6 +2,7 @@
   import { filters } from "./store.js";
   import { FILTER_ITEM_PROMPTS } from "../global.js";
   import jQuery from 'jquery';
+  import FilterItemAbstract from "./filter-item-abstract.svelte";
 
   export let filterId = "0default";
   export let name = "tags";
@@ -16,7 +17,12 @@
       noResultsText: "",
       onAdd: (token => {
         filters.update( data => {
-          let list = data[filterId][name];
+          let list = data[filterId][name]
+            .concat([token.id])
+            .filter((v, i, a) => a.indexOf(v) === i) // filter non-unique values
+            .filter((v, i, a) => a.length == 1 || v != "any") // take away "any" value, if length > 1
+          ;
+
           data[filterId][name] = list.concat([token.id]);
           return data;
         });
@@ -41,9 +47,6 @@
   }
 </script>
 
-<div class="filter-item">
-  <div class="filter-item-left">{FILTER_ITEM_PROMPTS[name]}</div>
-  <div class="filter-item-right">
-    <input type="text" use:tokenInput />
-  </div>
-</div>
+<FilterItemAbstract filterId={filterId} name={name}>
+  <input type="text" use:tokenInput />
+</FilterItemAbstract>
