@@ -25,7 +25,7 @@
 </script>
 
 <FilterItemAbstract filterId={filterId} name={name}>
-  <input type="text" class="simple_text" value={value} on:change={onAnythingChanged} />
+  <input type="number" class="simple_text" value={value} on:input={onAnythingChanged} />
 </FilterItemAbstract>
 
 <!--
