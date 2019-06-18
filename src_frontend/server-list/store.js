@@ -23,10 +23,10 @@ export const servers = derived(
     .then( data => {
       set(data.servers);
       loading.set(false);
-    });
+    })
+    .catch(console.error);
   }
 )
-// TODO: added error state
 
 let sleepTimer = null;
 
