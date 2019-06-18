@@ -1,5 +1,4 @@
 var dns = require('dns');
-var Q = require('q');
 
 var promisified_resolve4 = function( hostname ) {
   return new Promise( (resolve, reject) => {
@@ -21,7 +20,7 @@ var lookup = function( endpoints ) {
 
   var host2ip = {};
 
-  return Q.all( Array.from(hosts_to_resolve).map( domain => promisified_resolve4( domain ) ) )
+  return Promise.all( Array.from(hosts_to_resolve).map( domain => promisified_resolve4( domain ) ) )
   .then( resolved_ips => {
     resolved_ips.forEach( ( ip, i ) => {
       if (ip == null) return;

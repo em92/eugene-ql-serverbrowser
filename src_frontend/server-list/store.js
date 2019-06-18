@@ -1,4 +1,4 @@
-import { writable, readable, derived } from 'svelte/store';
+import { writable, readable, derived, get } from 'svelte/store';
 import { cleanFilters as filters } from '../filter-blocks/store.js';
 
 export const loading = writable(true);
@@ -36,14 +36,12 @@ function startSleepTimer() {
 
 function dataUpdateStop() {
   clearInterval(sleepTimer);
-  sleepTimer = null;
   pause.set(true);
   loading.set(true);
 }
 
 function dataUpdateStart() {
-  if (sleepTimer) return;
-  pause.set(false);
+  if (get(pause)) pause.set(false);
 }
 
 window.addEventListener("blur",  startSleepTimer, false);
