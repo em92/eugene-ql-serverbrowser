@@ -1,6 +1,7 @@
 <script>
   import QLNickname from "../ql-nickname.svelte";
   import { pause } from "../server-list/store.js";
+  import { filters } from "../filter-blocks/store.js";
 
   let loading = true;
   let settings = {steam_id: "0"};
@@ -11,6 +12,9 @@
   .then( response => response.json())
   .then( data => {
     settings = data;
+    if (settings.settings) {
+      filters.set(settings.settings);
+    }
   })
   .catch( error => {
     console.error(error);
