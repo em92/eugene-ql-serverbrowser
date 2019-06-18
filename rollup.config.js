@@ -9,15 +9,11 @@ const production = !process.env.ROLLUP_WATCH;
 export default {
 	input: 'src_frontend/main.js',
 	output: {
-    globals: {
-      jquery: "jQuery",
-    },
 		sourcemap: true,
 		format: 'iife',
 		name: 'app',
 		file: 'public/bundle.js'
-  },
-  external: ["jquery"],
+	},
 	plugins: [
 		svelte({
 			// enable run-time checks when not in production
