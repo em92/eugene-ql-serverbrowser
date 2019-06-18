@@ -15,7 +15,7 @@
     if (result != result) result = 0; // NaN -> 0
     if (result < 0) result *= -1;
     if (result > 9999) result = 9999;
-    value = result;
+    event.target.value = value = result;
 
     filters.update( data => {
       data[filterId][name] = value;
