@@ -1,7 +1,6 @@
 var geoip = require('./geoip.js');
 var gsqw = require("./game-server-query-wrapper.js");
 var master = require('./master.js');
-var Q = require('q');
 var skillrating = require('./skillrating.js');
 var sp = require('./server-promotion.js');
 
@@ -375,7 +374,7 @@ var queryQLStatsServerInfo = function( endpoint, callback ) {
     }, null);
   };
 
-  Q(skillrating.query_server_players( endpoint ))
+  skillrating.query_server_players( endpoint )
   .then( data => {
     if ( typeof(data) == 'undefined' ) {
       callback({ok: false, msg: "not available. try later"});
@@ -404,7 +403,7 @@ var updateServerInfo = function( update_server_list ) {
   if (typeof(update_server_list) == "undefined") update_server_list = true;
 
   if (update_server_list == true) {
-    Q.all( [ master.query(), skillrating.query() ] ).then( () => {
+    Promise.all( [ master.query(), skillrating.query() ] ).then( () => {
       Object.keys(serverInfo).forEach( server => {
         if ( master.servers.indexOf( server ) == -1 ) {
           delete serverInfo[server];
