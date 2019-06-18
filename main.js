@@ -143,18 +143,6 @@ app.get('/serverinfo2/:endpoints', function (req, res) {
   });
 });
 
-if (process.env.npm_lifecycle_event == "start-dev") {
-  var fs = require("fs");
-  var index_file_data = fs.readFileSync(__dirname + '/public/index.html', {encoding: 'utf8'}).replace(
-    '<script type="text/javascript" src="/js/serverbrowser.js?',
-    '<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script><script type="text/babel" src="/js/serverbrowser.babel.js?'
-  ).replace('.min.js', '.js');
-  app.get('/', function (req, res) {
-    res.setHeader("Content-Type", "text/html");
-    res.send(index_file_data);
-  });
-}
-
 app.use(express.static('public'));
 
 auth.bind_methods(app);
