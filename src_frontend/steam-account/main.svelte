@@ -61,81 +61,54 @@
   }
 </script>
 
-<!--var SteamAccountBlock = React.createClass({
-
-  onPromoteClick: function() {
-    this.setState({promoting_progress: "Promoting..."});
-    var self = this;
-    $.ajax({
-      url: "promote",
-      method: "POST",
-      data: "dummy",
-      success: function (data) {
-        self.setState({promoting_progress: data.message});
-        setTimeout( function() {
-          self.setState({promoting_progress: false})
-        }, 3000);
-      },
-      error: (function (xhr, status, err) {
-        this.props.getSettingsCallback({error: err});
-        this.setState({
-          error: err,
-          loading: false
-        });
-        this.setState({promoting_progress: "Error"});
-        console.error(xhr, status, err);
-      }).bind(this)
-    });
-  },
-
-  render: function() {
-    if (this.state.loading)
-      return <div id="steam_account_block">Loading...</div>
-
-    if (this.state.steam_id == "0")
-      return <a id="steam_signin" href="/auth/steam">
-        <img src="https://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_01.png" />
-      </a>
-
-    return <div id="steam_account_block">
-      <img src={this.state.avatar} />
-
-      <div className="right_block_wrapper">
-        <div className="hello">Hello, {render_ql_nickname(this.state.name)}!</div>
-        <div className="cntrl">
-          { this.state.settings_saving_progress ? <span>{this.state.settings_saving_progress}</span> : <a href="javascript:void(0)" onClick={this.saveSettings}>Save settings</a> }
-          <span> | </span>
-          { this.state.promoting_progress ? <span>{this.state.promoting_progress}</span> : <a href="javascript:void(0)" onClick={this.onPromoteClick}>Promote joined server</a> }
-          <span> | </span>
-          <a href="/logout">Logout</a></div>
-      </div>
-    </div>;
+<style>
+  a:hover,
+  a {
+    color: white;
   }
 
-});
-
--->
-
-<style>
   .signin {
     position: absolute;
     top: 5px;
     right: 5px;
   }
+
+  .steam_account_block .right_block_wrapper {
+    margin-left: 37px;
+    font-size: small;
+    line-height: 17px;
+  }
+
+  .steam_account_block img {
+    float: left;
+    border: 1px solid black;
+  }
+
+  .steam_account_block {
+    background-color: #2a3f5a;
+    color: white;
+    border: 1px solid black;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    min-width: 200px;
+    border-radius: 5px;
+    padding: 5px;
+  }
 </style>
 
 {#if loading}
-  <div id="steam_account_block">Loading...</div>
+  <div class="steam_account_block">Loading...</div>
 {:else if settings.steam_id == "0"}
   <a class="signin" href="/auth/steam">
     <img alt="Sign in using Steam" src="https://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_01.png" />
   </a>
 {:else}
-  <div id="steam_account_block">
+  <div class="steam_account_block">
     <img alt="avatar" src={settings.avatar} />
     <div class="right_block_wrapper">
-      <div class="hello">Hello, <QLNickname nickname={settings.name}! /></div>
-      <div class="cntrl">
+      <div>Hello, <QLNickname nickname={settings.name}! /></div>
+      <div>
         {#if settingsSavingStatus}
           <span>{settingsSavingStatus}</span>
         {:else}
