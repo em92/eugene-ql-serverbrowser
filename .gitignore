@@ -2,3 +2,5 @@ node_modules/*
 geoip.json
 public/js/serverbrowser.js
 npm-debug.log
+.env
+public/bundle.*

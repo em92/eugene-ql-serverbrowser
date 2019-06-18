@@ -1,20 +1,17 @@
 {
   "name": "eugene-ql-serverbrowser",
   "private": true,
-  "version": "0.8.0",
   "scripts": {
-    "compile": "./node_modules/babel/bin/babel.js public/js/serverbrowser.babel.js --out-file public/js/serverbrowser.js && ./node_modules/uglify-js/bin/uglifyjs public/js/serverbrowser.js -o public/js/serverbrowser.js",
-    "start": "./main.js",
-    "start-dev": "./main.js"
-  },
-  "config": {
-    "realm": "http://qlsb.eugenemolotov.ru/",
-    "redis_url": "redis://127.0.0.1:6379"
+    "build": "rollup -c",
+    "autobuild": "rollup -c -w",
+    "dev": "run-p start-dev autobuild",
+    "start": "rollup -c && node main.js",
+    "start-dev": "node main.js"
   },
   "dependencies": {
-    "babel": "5.8.38",
     "body-parser": "1.17.2",
     "connect-redis": "3.3.3",
+    "dotenv": "8.0.0",
     "express": "4.15.3",
     "express-session": "1.15.3",
     "game-server-query": "1.0.10",
@@ -22,7 +19,16 @@
     "passport-steam": "1.0.10",
     "q": "1.5.0",
     "redis": "2.7.1",
-    "request-promise": "3.0.0",
-    "uglify-js": "2.8.29"
+    "request-promise": "3.0.0"
+  },
+  "devDependencies": {
+    "npm-run-all": "4.1.5",
+    "rollup": "1.10.1",
+    "rollup-plugin-commonjs": "9.3.4",
+    "rollup-plugin-livereload": "1.0.0",
+    "rollup-plugin-node-resolve": "4.2.3",
+    "rollup-plugin-svelte": "5.0.3",
+    "rollup-plugin-terser": "4.0.4",
+    "svelte": "3.0.0"
   }
 }

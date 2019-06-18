@@ -34,14 +34,14 @@ th {
 	color: white;
 }
 
+.startup-error,
 noscript {
 	background-color: red;
 	border: 1px solid black;
 	width: 100%;
-	top: 0px;
 	text-align: center;
 	display: block;
-	position: fixed;
+	padding: 10px;
 }
 
 #content {
@@ -55,7 +55,7 @@ noscript {
 	padding: 3px;
 	background-color: #CCC;
 	border: 1px solid black;
-	width: 300px;
+	max-width: 300px;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
@@ -73,10 +73,6 @@ noscript {
   width: 20px;
   height: 19px;
   cursor: pointer;
-}
-
-.filter-block-wrapper:not(:first-child) {
-  margin-top: 20px;
 }
 
 .filter-block {
@@ -100,7 +96,7 @@ noscript {
   height: 29px;
 }
 
-.no-filters, .no-servers, .loading {
+.no-filters, .no-servers {
   background-color: #ccc;
   width: 100%;
   overflow:auto;
@@ -189,41 +185,6 @@ textarea {
   width: 100%;
 }
 
-.serverinfo {
-  padding: 2px;
-  position: fixed;
-  left: 0;
-  top: 0;
-  background-color: white;
-  border: 1px solid black;
-}
-
-.serverinfo .emptyserver {
-  text-align: center;
-}
-
-.serverinfo .closeblock {
-  background-image: url("/images/close.png");
-  position: absolute;
-  bottom: -10px;
-  right: -10px;
-  width: 20px;
-  height: 19px;
-  cursor: pointer;
-}
-
-.serverinfo tr {background: #000}
-.serverinfo tr:hover {background: #222}
-
-.serverinfo th {
-  background-color: white;
-  color: black;
-}
-
-.serverinfo td {
-  color: white;
-}
-
 .qc0 {
   color: rgb(128, 128, 128);
 }
@@ -280,41 +241,4 @@ textarea {
 
 .server-row {
   cursor: pointer;
-}
-
-#steam_account_block {
-  background-color: #2a3f5a;
-  color: white;
-  border: 1px solid black;
-  position: absolute;
-  right: 5px;
-  top: 5px;
-  min-width: 200px;
-  border-radius: 5px;
-  padding: 5px;,
-}
-
-#steam_account_block img {
-  float: left;
-  border: 1px solid black;
-}
-
-#steam_account_block .right_block_wrapper {
-  margin-left: 37px;
-  font-size: small;
-  line-height: 17px;
-}
-
-#steam_account_block a {
-  color: white;
-}
-
-#steam_account_block a:hover {
-  color: white;
-}
-
-#steam_signin {
-  position: absolute;
-  top: 5px;
-  right: 5px;
 }

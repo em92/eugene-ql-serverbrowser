@@ -12,8 +12,8 @@ if (!process.env.npm_config_node_version) {
   process.exit(1);
 }
 
-if (!process.env.npm_package_config_realm) {
-  console.error("realm value is not set in package.json. quitting...");
+if (!process.env.REALM) {
+  console.error("environment variable REALM is not set. quitting...");
   process.exit(1);
 }
 
@@ -26,12 +26,15 @@ passport.deserializeUser(function(obj, done) {
   .then( data => {
     Object.assign(obj, {'ratings': data});
     done(null, obj);
+  })
+  .catch( error => {
+    done(error);
   });
 });
 
 passport.use(new SteamStrategy({
-    returnURL: process.env.npm_package_config_realm + 'auth/steam/return',
-    realm: process.env.npm_package_config_realm,
+    returnURL: process.env.REALM + 'auth/steam/return',
+    realm: process.env.REALM,
     apiKey: process.env.STEAM_WEB_API_KEY
   },
   function(identifier, profile, done) {
@@ -50,13 +53,17 @@ function ensureAuthenticated(req, res, next) {
 }
 
 function bind_methods(app) {
-
-  app.use(session({
-    store: new RedisStore({
+  var store = undefined;
+  if (redis && !redis.fake) {
+    store = new RedisStore({
       client: redis,
       prefix: "qlsb:sess:" + get_current_timestamp().toString() + "_"
-    }),
-    secret: Math.random().toString(),
+    });
+  }
+
+  app.use(session({
+    store: store,
+    secret: process.env.SESSION_SECRET,
     name: 'sid',
     resave: false,
     saveUninitialized: false
