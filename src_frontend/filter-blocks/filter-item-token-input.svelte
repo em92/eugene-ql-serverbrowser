@@ -1,7 +1,6 @@
 <script>
   import { filters } from "./store.js";
   import { FILTER_ITEM_PROMPTS } from "../global.js";
-  import jQuery from 'jquery';
   import FilterItemAbstract from "./filter-item-abstract.svelte";
 
   export let filterId = "0default";
@@ -9,6 +8,7 @@
   export let value = [];
   export let options = [];
   export let allowFreeTagging = true;
+  let jQuery = window.jQuery;
 
   // @todo при изменении какого-либо другого свойства из блока происходит перерисовка
   function tokenInput(node) {
