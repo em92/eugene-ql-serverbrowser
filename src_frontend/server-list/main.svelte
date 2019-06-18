@@ -28,10 +28,10 @@
 
 {#if $filters.length == 0}
   <div class="message">No filters defined. Press &quot;Add filter&quot; to add one</div>
-{:else if $loading}
-  <div class="message">Loading...</div>
 {:else if $pause}
   <div class="message">Zzzzzz...</div>
+{:else if $loading}
+  <div class="message">Loading...</div>
 {:else if $servers.length == 0}
   <div class="message">No results</div>
 {:else}

@@ -27,3 +27,25 @@ export const servers = derived(
   }
 )
 // TODO: added error state
+
+let sleepTimer = null;
+
+function startSleepTimer() {
+  sleepTimer = setTimeout(dataUpdateStop, 60000);
+}
+
+function dataUpdateStop() {
+  clearInterval(sleepTimer);
+  sleepTimer = null;
+  pause.set(true);
+  loading.set(true);
+}
+
+function dataUpdateStart() {
+  if (sleepTimer) return;
+  pause.set(false);
+}
+
+window.addEventListener("blur",  startSleepTimer, false);
+window.addEventListener("focus", dataUpdateStart, false);
+startSleepTimer();
