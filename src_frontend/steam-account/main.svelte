@@ -19,7 +19,7 @@
   .catch( error => {
     console.error(error);
   })
-  .finally( () => {
+  .then( () => {
     loading = false;
     pause.set(false);
   })
@@ -41,7 +41,7 @@
       settingsSavingStatus = "Error";
       console.error(error);
     })
-    .finally( () => {
+    .then( () => {
       setTimeout( () => {settingsSavingStatus = ""}, 3000);
     })
   }
@@ -59,7 +59,7 @@
       promoteSettingStatus = "Error";
       console.error(error);
     })
-    .finally( () => {
+    .then( () => {
       setTimeout( () => {promoteSettingStatus = ""}, 3000);
     })
   }
