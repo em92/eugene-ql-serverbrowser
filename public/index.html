@@ -12,6 +12,13 @@
 <meta name="keywords" content="Quake Live, server browser, server list" />
 <meta property="og:image" content="/images/preview.png" />
 <title>Eugene's Quake Live Server Browser</title>
+<script>
+  window.onerror = function(error) {
+    var content = document.getElementById("content");
+    content.className = "startup-error";
+    content.innerHTML = "Error: " + error + "<br>Looks like your browser is not supported";
+  }
+</script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="/js/jquery.tokeninput.js"></script>
 </head>
