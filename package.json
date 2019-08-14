@@ -16,7 +16,7 @@
     "express-session": "1.16.2",
     "game-server-query": "1.0.10",
     "passport": "0.3.2",
-    "passport-steam": "1.0.10",
+    "passport-steam": "1.0.11",
     "redis": "2.7.1",
     "request": "2.88.0",
     "request-promise": "4.2.4"
