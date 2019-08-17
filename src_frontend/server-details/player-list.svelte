@@ -1,9 +1,9 @@
 <script>
-  import { serverDetails } from "./store.js";
   import PlayerListCommon from "./player-list-common.svelte";
   import PlayerListQLStats from "./player-list-qlstats.svelte";
   import PlayerListRace from "./player-list-race.svelte";
 
+  export let server = {};
 </script>
 
 <style>
@@ -25,13 +25,13 @@
 </style>
 
 <div class="playerlist">
-  {#if $serverDetails.gameinfo.players.length == 0 && $serverDetails.gameinfo.bots.length == 0}
+  {#if server.gameinfo.players.length == 0 && server.gameinfo.bots.length == 0}
     <div class="emptyserver">empty server</div>
-  {:else if $serverDetails.gameinfo.g_gametype == 2}
-    <PlayerListRace server={$serverDetails} />
-  {:else if $serverDetails.qlstats.ok}
-    <PlayerListQLStats server={$serverDetails} />
+  {:else if server.gameinfo.g_gametype == 2}
+    <PlayerListRace />
+  {:else if server.qlstats.ok}
+    <PlayerListQLStats />
   {:else}
-    <PlayerListCommon server={$serverDetails} />
+    <PlayerListCommon />
   {/if}
 </div>

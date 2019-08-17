@@ -1,29 +1,38 @@
 <script>
   import QLNickname from "../ql-nickname.svelte";
-
-  export let server = {};
+  import { serverDetails } from "./store.js";
+  import { derived } from 'svelte/store';
 
   const TEAMS = ["Play", "Red", "Blue", "Spec", "Bot"];
   const TEAM_CLASS = ['qc2', 'qc1', 'qc4', 'qc7', 'qc2'];
-  let players = server.qlstats.players;
 
-  players = players.filter( function(p) {
-    return p.steamid != "0";
-  });
+  const players = derived(
+    serverDetails, server => {
+      if (server.loading) return [];
+      let players = server.qlstats.players || [];
 
-  players = players.concat(server.gameinfo.bots.map( function(p) {
-    return {
-      "team": 4,
-      "score": p.score,
-      "name": p.name
-    };
-  }));
+      players = players.filter( function(p) {
+        return p.steamid != "0";
+      });
 
-  players.sort( function(a, b) {
-    if (b.team > a.team) return -1;
-    if (b.team < a.team) return 1;
-    return b.score - a.score;
-  });
+      players = players.concat(server.gameinfo.bots.map( function(p) {
+        return {
+          "team": 4,
+          "score": p.score,
+          "name": p.name
+        };
+      }));
+
+      players.sort( function(a, b) {
+        if (b.team > a.team) return -1;
+        if (b.team < a.team) return 1;
+        return b.score - a.score;
+      });
+
+      return players;
+    }
+  );
+
 
 </script>
 
@@ -35,7 +44,7 @@
     <th style="width: 50px">Glicko</th>
   </tr></thead>
   <tbody>
-    {#each players as { name, score, team, steamid, rating }}
+    {#each $players as { name, score, team, steamid, rating }(name) }
       <tr>
         <td><span class={TEAM_CLASS[team]}>{TEAMS[team]}</span></td>
 
