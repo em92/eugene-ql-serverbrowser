@@ -16,7 +16,7 @@
   window.onerror = function(error) {
     var content = document.getElementById("content");
     content.className = "startup-error";
-    content.innerHTML = "Error: " + error + "<br>Looks like your browser is not supported";
+    content.innerHTML = "Error: " + error + (window.loaded ? "" : "<br>Looks like your browser is not supported");
   }
 </script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
