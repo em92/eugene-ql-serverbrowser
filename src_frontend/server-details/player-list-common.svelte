@@ -5,6 +5,7 @@
 
   const players = derived(
     serverDetails, server => {
+      if (!server) return [];
 
       let result = server.gameinfo.players.concat(server.gameinfo.bots.map( function(p) {
         return {
