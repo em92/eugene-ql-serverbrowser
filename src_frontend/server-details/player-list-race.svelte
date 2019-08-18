@@ -1,23 +1,14 @@
 <script>
   import QLNickname from "../ql-nickname.svelte";
+  import { serverDetails } from "./store.js";
+  import { derived } from 'svelte/store';
 
-  export let server = {
-    gameinfo: {
-      players: [{
-        name: "Player1",
-        score: 10,
-      }, {
-        name: "Player2",
-        score: 1,
-      }],
-      bots: [{
-        name: "Bot1",
-        score: 20,
-      }]
+  const players = derived(
+    serverDetails, server => {
+      if (!server) return [];
+      return server.gameinfo.players;
     }
-  };
-
-  let players = server.gameinfo.players;
+  );
 
 </script>
 
@@ -26,7 +17,7 @@
     <th>Nick</th>
   </tr></thead>
   <tbody>
-    {#each players as { name, score }}
+    {#each $players as { name, score }(name)}
       <tr>
         <td><QLNickname nickname={name} /></td>
       </tr>
