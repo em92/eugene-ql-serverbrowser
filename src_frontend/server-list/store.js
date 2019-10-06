@@ -44,6 +44,7 @@ function dataUpdateStart() {
   if (get(pause)) pause.set(false);
 }
 
-window.addEventListener("blur",  startSleepTimer, false);
-window.addEventListener("focus", dataUpdateStart, false);
+document.onclick = dataUpdateStart;
+document.onblur = startSleepTimer;
+document.onfocus = dataUpdateStart;
 startSleepTimer();
