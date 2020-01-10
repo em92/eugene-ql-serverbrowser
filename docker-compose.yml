@@ -1,0 +1,19 @@
+version: '3.7'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      REDIS_URL: redis://redis:6379
+    env_file:
+      - .env
+    volumes:
+      - type: bind
+        source: ./src_frontend
+        target: /opt/app/src_frontend
+      - type: bind
+        source: ./geoip.json
+        target: /opt/app/geoip.json
+  redis:
+    image: "redis:alpine"

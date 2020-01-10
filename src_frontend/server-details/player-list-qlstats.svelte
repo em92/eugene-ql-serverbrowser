@@ -8,6 +8,7 @@
 
   const players = derived(
     serverDetails, server => {
+      if (!server) return [];
       if (server.loading) return [];
       let players = server.qlstats.players || [];
 
