@@ -1,4 +1,4 @@
-var geoip = require('./geoip.js');
+var geoip = require('./backend/geoip.js');
 var gsqw = require("./game-server-query-wrapper.js");
 var master = require('./master.js');
 var skillrating = require('./skillrating.js');
