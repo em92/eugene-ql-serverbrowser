@@ -21,7 +21,8 @@
     "passport-steam": "1.0.11",
     "redis": "2.7.1",
     "request": "2.88.0",
-    "request-promise": "4.2.4"
+    "request-promise": "4.2.4",
+    "timeout-signal": "^1.0.0"
   },
   "devDependencies": {
     "eslint": "5.16.0",
