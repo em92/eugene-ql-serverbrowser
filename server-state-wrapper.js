@@ -10,7 +10,7 @@ var UPDATE_SERVER_INFO_PERIOD = 10;
 var UPDATE_SERVER_LIST_INTERVAL_SECONDS = 60*60;
 
 var getGametypeByTags = function(tags) {
-  var gametypeString = tags.split(",")[0];
+  var gametypeString = tags[0];
   switch(gametypeString) {
     case 'ffa':
       return 0;
@@ -54,7 +54,7 @@ var getGametypeByTags = function(tags) {
 };
 
 var getFactoryByTags = function(tags) {
-  var gametypeString = tags.split(",")[0];
+  var gametypeString = tags[0];
   switch(gametypeString) {
     case 'ffa':
     case 'duel':
@@ -90,20 +90,21 @@ var getFactoryByTags = function(tags) {
 };
 
 var isInstagibByTags = function(tags) {
-  return tags.split(",").indexOf("instagib") == -1 ? 0 : 1;
+  return tags.indexOf("instagib") == -1 ? 0 : 1;
 };
 
 var format = function(address, state) {
   try {
-    if ( state.raw.gameid != "282440" )
-      throw new Error("invalid gameid: " + state.raw.gameid);
+    if ( state.raw.appId != 282440 )
+      throw new Error("invalid appId: " + state.raw.appId);
 
+    var rules = state.raw.rules || {};
     var item = {
       host_address: address,
       host_name: state.name,
       location: state.geo,
       password: state.password,
-      tags: state.raw.tags.split(",").map( tag => tag.trim().toLowerCase() ),
+      tags: state.raw.tags.map( tag => tag.trim().toLowerCase() ),
       dedicated: state.raw.listentype == "d",
       vac: state.raw.secure ? true : false,
       is_promoted: sp.is_promoted(address),
@@ -112,15 +113,15 @@ var format = function(address, state) {
         gt_short: getFactoryByTags(state.raw.tags),
 
         bots: state.bots,
-        g_gamestate: state.raw.rules ? state.raw.rules.g_gamestate : "n/a",
-        g_gametype: state.raw.rules ? parseInt(state.raw.rules.g_gametype) : getGametypeByTags(state.raw.tags),
-        g_factory: state.raw.rules ? state.raw.rules.g_factory : getFactoryByTags(state.raw.tags),
-        g_factorytitle: state.raw.rules ? state.raw.rules.g_factorytitle : "n/a",
-        g_instagib: state.raw.rules ? parseInt(state.raw.rules.g_instagib) : isInstagibByTags(state.raw.tags),
-        g_levelstarttime: state.raw.rules ? parseInt(state.raw.rules.g_levelstarttime) : 0,
+        g_gamestate: rules.g_gamestate || "n/a",
+        g_gametype: parseInt(rules.g_gametype) || getGametypeByTags(state.raw.tags),
+        g_factory: rules.g_factory || getFactoryByTags(state.raw.tags),
+        g_factorytitle: rules.g_factorytitle || "n/a",
+        g_instagib: parseInt(rules.g_instagib) ||  isInstagibByTags(state.raw.tags),
+        g_levelstarttime: parseInt(rules.g_levelstarttime) || 0,
 
-        g_bluescore: state.raw.rules && state.raw.rules.g_bluescore ? parseInt(state.raw.rules.g_bluescore) : 0,
-        g_redscore:  state.raw.rules && state.raw.rules.g_bluescore ? parseInt(state.raw.rules.g_redscore)  : 0,
+        g_bluescore: parseInt(rules.g_bluescore) || 0,
+        g_redscore:  parseInt(rules.g_redscore) || 0,
 
         mapname: state.map.toLowerCase(),
         rating_min: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].min : 0,
@@ -128,9 +129,9 @@ var format = function(address, state) {
         rating_avg: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].avg : null,
         rating_type: skillrating.skill_rating[ address ] ? skillrating.skill_rating[ address ].rating.toLowerCase() : null,
         players: state.players,
-        sv_maxclients: state.raw.rules ? parseInt(state.raw.rules.sv_maxclients): state.maxplayers,
-        timelimit: state.raw.rules ? parseInt(state.raw.rules.timelimit) : 0,
-        teamsize: state.raw.rules ? parseInt(state.raw.rules.teamsize) : 0
+        sv_maxclients: parseInt(rules.sv_maxclients) || state.maxplayers,
+        timelimit: parseInt(rules.timelimit) || 0,
+        teamsize: parseInt(rules.teamsize) || 0,
       }
     };
 
@@ -272,7 +273,7 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
           if (server_tag_index == server.tags.length - 1) return good_tags.length == 0;
 
           return [].concat(good_tags, bad_tags);
-        }, value.split(',').map( tag => tag.trim().toLowerCase() ) ) );
+        }, value.map( tag => tag.trim().toLowerCase() ) ) );
 
       case 'vampiric':
         return +(server.tags.some( tag => tag == 'vampiric' ) == value);
@@ -430,6 +431,12 @@ var updateServerInfo = function( update_server_list ) {
         }
       }
     } else {
+      state.players = state.players.map(function(player) {
+        player.time = player.raw.time;
+        player.score = player.raw.score;
+        delete player.raw;
+        return player;
+      });
       state.players = state.players.filter(function(player) {
         return (player.time < 43200);
       });

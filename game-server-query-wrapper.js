@@ -1,11 +1,24 @@
-var gsq = require("game-server-query");
+var gamedig = require("gamedig");
+
+var gsq = function(options, callback) {
+  gamedig.query(options)
+    .then(function(state) {
+      if (state.players.every(p => !p.name)) {
+        throw new Error("Missing all player names");
+      }
+      callback(Object.assign({query: options}, state));
+    })
+    .catch(function(error) {
+      callback({query: options, error: error});
+    });
+};
 
 var MAX_PARALLEL_QUERY_COUNT = 10;
 
 var endpoint_to_gsq_param = function( server ) {
   var host = server.split(':')[0];
   var port = parseInt(server.split(':')[1]);
-  return { type: "synergy", host: host, port: port };
+  return { type: "quakelive", host: host, port: port, requestRules: true };
 };
 
 var query = function(servers, callback) {
