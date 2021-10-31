@@ -3,7 +3,7 @@ var gamedig = require("gamedig");
 var gsq = function(options, callback) {
   gamedig.query(options)
     .then(function(state) {
-      if (state.players.every(p => !p.name)) {
+      if (state.players.length > 0 && state.players.every(p => !p.name)) {
         throw new Error("Missing all player names");
       }
       callback(Object.assign({query: options}, state));
