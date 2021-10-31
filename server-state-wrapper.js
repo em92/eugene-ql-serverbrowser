@@ -245,6 +245,10 @@ var checkServerUsingFilterData = function(server, filter_data, checking_key) {
         return +(server.host_address.split(':')[0] == value);
 
       case 'tags':
+        if (typeof(value) === "string") {
+          value = value.split(",");
+        }
+
         return +(server.tags.reduce(function(sum, server_tag, server_tag_index) {
           if (sum === true) return true;
           if (sum === false) return false;
