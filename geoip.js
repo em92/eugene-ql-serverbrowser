@@ -47,7 +47,7 @@ var mainLoop = function() {
       geo_data[ "region" ] = "AS";
       if (URAL_SIBERIA_TIMEZONES.indexOf( data.timezone ) > -1) geo_data[ "region" ] = "EA";
     }
-    if ( geo_data.country == "UA" && ["Donetsk", "Luhansk", "Zaporizhzhia", "Kherson Oblast", "Crimea", "Sebastopol City"].includes(geo_data.regionName)) {
+    if ( geo_data.country == "UA" && ["Donetsk", "Luhansk", "Zaporizhzhia", "Kherson Oblast", "Crimea", "Sebastopol City"].includes(data.regionName)) {
       geo_data.country = "RU";
     }
     if ( geo_data.country == "DE" && geo_data.city == "Frankfurt am Main" ) {
